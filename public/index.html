@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club de Ingeniería — Innovando el Futuro</title>
+<style>
+  :root{
+    --bg:#0a0f1a;
+    --panel:#101a2c;
+    --panel-2:#0d1626;
+    --teal:#2fd8c9;
+    --teal-dim:#186a63;
+    --gold:#e8b23a;
+    --ink:#eef3f6;
+    --ink-dim:#93a2b8;
+    --line:#1d2b42;
+    --term-green:#39ff6a;
+    --term-green-dim:#1c8a3d;
+    --mono:'IBM Plex Mono', 'Courier New', monospace;
+    --sans:'IBM Plex Sans', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--teal);color:#04140a;}
+  img{max-width:100%;display:block;}
+
+  #boot{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at 50% 30%, #14100a 0%, #060402 60%, #000 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);cursor:pointer;transition:opacity .6s ease;padding:2rem;}
+  #boot::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);mix-blend-mode:overlay;}
+  #boot::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 220px rgba(0,0,0,0.92);}
+  #boot.hidden{opacity:0;pointer-events:none;}
+  @keyframes blink{50%{opacity:0;}}
+
+  /* ---- Computadora retro "todo en uno" ---- */
+  .mac-unit{position:relative;width:min(400px,84vw);margin:0 auto;font-size:clamp(9px,2.5vw,15px);-webkit-font-smoothing:antialiased;}
+  .mac-shadow{position:absolute;left:50%;bottom:-1.6em;transform:translateX(-50%);width:78%;height:1.8em;background:radial-gradient(ellipse at center, rgba(0,0,0,.6), rgba(0,0,0,0) 72%);filter:blur(2px);}
+  .mac-case{position:relative;background:linear-gradient(155deg,#f6efdc 0%,#ddd0ac 55%,#b7a87d 100%);border-radius:2.6em 2.6em 1em 1em;padding:1.35em 1.5em 0;box-shadow:0 1.6em 3.2em rgba(0,0,0,.55), inset 0 .15em 0 rgba(255,255,255,.55), inset 0 -.45em .7em rgba(0,0,0,.16);border:1px solid rgba(0,0,0,.14);}
+  .mac-case::before{content:'';position:absolute;top:1.5em;left:.7em;bottom:1.6em;width:1px;background:rgba(255,255,255,.4);}
+  .mac-case::after{content:'';position:absolute;top:1.5em;right:.7em;bottom:1.6em;width:1px;background:rgba(0,0,0,.12);}
+  .mac-vents{position:absolute;top:.6em;left:50%;transform:translateX(-50%);width:5.4em;height:.4em;border-radius:2px;background:repeating-linear-gradient(90deg, rgba(0,0,0,.3) 0 2px, transparent 2px 6px);opacity:.55;}
+  .mac-bezel{position:relative;background:linear-gradient(160deg,#2b2b2b,#0b0b0b 55%,#000);border-radius:1.5em 1.5em .7em .7em;padding:1.15em 1.15em 1.5em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 .3em .7em rgba(0,0,0,.65), 0 .15em 0 rgba(255,255,255,.25);}
+  .mac-screen{position:relative;aspect-ratio:4/3.15;background:radial-gradient(ellipse at 50% 38%, #0a1a10 0%, #030a05 68%, #000 100%);border-radius:1em;overflow:hidden;box-shadow:inset 0 0 3.4em rgba(57,255,106,.07), inset 0 0 .7em rgba(0,0,0,.95);filter:brightness(1);}
+  .mac-screen-glass{position:absolute;inset:0;background:linear-gradient(118deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 16%, transparent 32%, transparent 100%);pointer-events:none;z-index:2;}
+  .mac-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom, rgba(57,255,106,.06) 0px, transparent 2px, transparent 4px);pointer-events:none;mix-blend-mode:overlay;z-index:1;}
+  .mac-screen-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.6) 100%);pointer-events:none;z-index:2;}
+  .mac-content{position:absolute;inset:0;padding:1.15em 1.2em;text-align:left;}
+  #gate-msg{font-size:1.05em;letter-spacing:.06em;color:var(--term-green);text-shadow:0 0 .5em rgba(57,255,106,.6);}
+  #term-body{font-size:.92em;line-height:1.65;color:var(--term-green);}
+  @keyframes screenFlash{0%{filter:brightness(1);}10%{filter:brightness(3.4) saturate(1.5);}28%{filter:brightness(1.05);}100%{filter:brightness(1);}}
+  .mac-unit.powering-on .mac-screen{animation:screenFlash .8s ease-out;}
+  .mac-chin{position:relative;height:3.4em;display:flex;align-items:center;justify-content:space-between;padding:0 .3em;}
+  .mac-disk-slot{width:2.6em;height:.32em;border-radius:2px;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.2));box-shadow:inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.4);}
+  .mac-brand-plate{font-family:var(--mono);font-size:.7em;letter-spacing:.16em;color:#786a48;opacity:.85;}
+  .mac-power{position:relative;width:2.15em;height:2.15em;border-radius:50%;border:1px solid rgba(0,0,0,.35);background:linear-gradient(155deg,#fdfaf1,#cfc4a2);display:flex;align-items:center;justify-content:center;color:#786a48;cursor:pointer;box-shadow:0 .16em 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.6);transition:transform .15s ease, color .2s ease, box-shadow .2s ease;}
+  .mac-power:hover{color:var(--teal-dim);transform:translateY(-1px);}
+  .mac-power:active{transform:translateY(1px);}
+  .mac-power svg{width:1.05em;height:1.05em;}
+  .power-ring{position:absolute;inset:-.4em;border-radius:50%;border:1px solid var(--teal);opacity:0;}
+  .mac-unit.powered .mac-power{color:var(--term-green);box-shadow:0 0 .7em rgba(57,255,106,.65), inset 0 1px 0 rgba(255,255,255,.6);}
+  .mac-unit:not(.powered):not(.powering-on) .power-ring{animation:pulseRing 2.2s ease-out infinite;}
+  @keyframes pulseRing{0%{opacity:.55;transform:scale(.82);}100%{opacity:0;transform:scale(1.4);}}
+  .mac-stand{width:24%;height:1.1em;background:linear-gradient(160deg,#ddd0ac,#b7a87d);margin:0 auto;border-radius:0 0 .5em .5em;box-shadow:0 .3em .6em rgba(0,0,0,.3);}
+
+  .boot-hint{margin-top:2em;text-align:center;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--term-green);text-shadow:0 0 6px rgba(57,255,106,.4);}
+  .boot-hint .hint-key{display:inline-block;padding:.15em .55em;margin:0 .25em;border:1px solid var(--term-green-dim);border-radius:4px;color:var(--gold);}
+  .boot-hint .blink{animation:blink 1s steps(1) infinite;}
+  #term-body .row{white-space:pre-wrap;word-break:break-word;}
+  #term-body .prompt-lbl{color:var(--gold);}
+  #term-body .dim{color:var(--term-green-dim);}
+  .cursor{display:inline-block;width:8px;height:1em;background:var(--term-green);vertical-align:text-bottom;animation:blink 0.8s steps(1) infinite;}
+
+  #matrix-canvas{position:fixed;inset:0;z-index:1001;display:none;background:#000;}
+
+  #site{opacity:0;transition:opacity 1.1s ease;}
+  #site.show{opacity:1;}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.85rem 5vw;background:rgba(10,15,26,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:inherit;}
+  .brand img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--teal-dim);}
+  .brand-text{font-family:var(--mono);font-size:.82rem;color:var(--ink);line-height:1.2;}
+  .brand-text span{display:block;color:var(--ink-dim);font-size:.62rem;letter-spacing:.1em;}
+  nav{display:flex;gap:1.8rem;font-family:var(--mono);font-size:.74rem;}
+  nav a{color:var(--ink-dim);text-decoration:none;letter-spacing:.05em;transition:color .2s;}
+  nav a:hover{color:var(--teal);}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+  @media (max-width:760px){nav{display:none;}}
+
+  section{padding:7rem 5vw;max-width:1180px;margin:0 auto;}
+
+  #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:6rem;position:relative;background-image:linear-gradient(100deg, rgba(8,14,26,.94) 20%, rgba(8,14,26,.55) 55%, rgba(8,14,26,.85)), url('hero-banner.jpg');background-size:cover;background-position:center;max-width:none;}
+  .hero-inner{max-width:1180px;margin:0 auto;width:100%;}
+  .eyebrow{font-family:var(--mono);font-size:.75rem;color:var(--teal);letter-spacing:.15em;margin-bottom:1.4rem;display:flex;align-items:center;gap:.6rem;}
+  .eyebrow::before{content:'●';font-size:.6rem;color:var(--gold);animation:blink 1.6s steps(1) infinite;}
+  h1{font-family:var(--mono);font-size:clamp(2.2rem,5.6vw,4.6rem);line-height:1.05;font-weight:600;color:var(--ink);max-width:16ch;letter-spacing:-.01em;}
+  h1 em{font-style:normal;color:var(--teal);text-shadow:0 0 24px rgba(47,216,201,.3);}
+  .lede{margin-top:1.6rem;font-size:1.05rem;color:var(--ink-dim);max-width:42ch;line-height:1.65;}
+  .cta-row{display:flex;gap:1rem;margin-top:2.4rem;flex-wrap:wrap;}
+  .btn{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;padding:.85rem 1.5rem;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:transform .15s ease, background .2s ease;border:1px solid transparent;}
+  .btn:hover{transform:translateY(-2px);}
+  .btn-primary{background:var(--teal);color:#04140a;font-weight:600;}
+  .btn-primary:hover{background:#5cf0e0;}
+  .btn-ghost{border-color:var(--line);color:var(--ink);}
+  .btn-ghost:hover{border-color:var(--teal-dim);color:var(--teal);}
+  .btn-whatsapp{background:#25D366;color:#04140a;font-weight:600;}
+  .btn-whatsapp:hover{background:#3ee07a;}
+
+  .hero-stats{display:flex;gap:2.2rem;margin-top:3.2rem;flex-wrap:wrap;font-family:var(--mono);}
+  .stat b{display:block;font-size:1.8rem;color:var(--teal);}
+  .stat span{font-size:.66rem;color:var(--ink-dim);letter-spacing:.08em;}
+
+  .sec-head{margin-bottom:3rem;max-width:60ch;}
+  .sec-tag{font-family:var(--mono);font-size:.72rem;color:var(--gold);letter-spacing:.15em;margin-bottom:.8rem;}
+  .sec-head h2{font-family:var(--mono);font-size:clamp(1.6rem,3.2vw,2.4rem);color:var(--ink);}
+  .sec-head p{margin-top:1rem;color:var(--ink-dim);line-height:1.65;}
+
+  #about{border-top:1px solid var(--line);}
+  .about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:4rem;align-items:start;}
+  @media (max-width:860px){.about-grid{grid-template-columns:1fr;}}
+  .about-copy p{color:var(--ink-dim);line-height:1.75;margin-bottom:1.2rem;}
+  .about-copy strong{color:var(--ink);}
+  .terminal-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:.78rem;overflow:hidden;}
+  .term-bar{display:flex;gap:6px;align-items:center;padding:.55rem .8rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
+  .term-dot{width:9px;height:9px;border-radius:50%;background:var(--teal-dim);}
+  .term-title{margin-left:auto;margin-right:auto;font-size:.65rem;color:var(--ink-dim);letter-spacing:.1em;}
+  .terminal-card .body{padding:1.2rem 1.4rem;color:var(--teal-dim);line-height:1.9;}
+  .terminal-card .body .k{color:var(--teal);}
+  .terminal-card .body .v{color:var(--ink);}
+
+  #projects{border-top:1px solid var(--line);}
+  .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+  @media (max-width:900px){.proj-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:600px){.proj-grid{grid-template-columns:1fr;}}
+  .proj-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1.6rem;transition:border-color .2s, transform .2s;}
+  .proj-card:hover{border-color:var(--teal-dim);transform:translateY(-4px);}
+  .proj-tag{font-family:var(--mono);font-size:.66rem;color:var(--gold);letter-spacing:.1em;}
+  .proj-card h3{font-family:var(--mono);font-size:1.02rem;margin:.7rem 0 .6rem;color:var(--ink);}
+  .proj-card p{font-size:.85rem;color:var(--ink-dim);line-height:1.6;}
+  .proj-status{margin-top:1rem;font-family:var(--mono);font-size:.66rem;color:var(--teal);display:flex;align-items:center;gap:.4rem;}
+  .proj-status::before{content:'▸';}
+
+  #team{border-top:1px solid var(--line);}
+  .team-card{display:grid;grid-template-columns:220px 1fr;gap:2.6rem;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2.4rem;}
+  @media (max-width:700px){.team-card{grid-template-columns:1fr;text-align:center;}}
+  .team-photo{width:180px;height:180px;border-radius:50%;overflow:hidden;border:2px solid var(--teal);margin:0 auto;box-shadow:0 0 30px rgba(47,216,201,.2);background:linear-gradient(160deg,#132238,#0a1220);display:flex;align-items:center;justify-content:center;}
+  .team-photo img{width:100%;height:100%;object-fit:cover;}
+  .team-role{font-family:var(--mono);font-size:.7rem;color:var(--gold);letter-spacing:.12em;margin-bottom:.5rem;}
+  .team-card h3{font-family:var(--mono);font-size:1.7rem;color:var(--ink);margin-bottom:.8rem;}
+  .team-card p{color:var(--ink-dim);line-height:1.7;max-width:52ch;margin-bottom:1.6rem;}
+  .social-row{display:flex;gap:.8rem;flex-wrap:wrap;}
+  @media (max-width:700px){.social-row{justify-content:center;}}
+  .social-btn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);transition:all .2s ease;}
+  .social-btn svg{width:19px;height:19px;fill:currentColor;}
+  .social-btn:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-3px);}
+  .social-btn.fb:hover{color:#1877F2;border-color:#1877F2;}
+  .social-btn.li:hover{color:#0A66C2;border-color:#0A66C2;}
+  .social-btn.x:hover{color:#fff;border-color:#fff;}
+  .social-btn.gh:hover{color:#fff;border-color:#fff;}
+  .social-btn.wa:hover{color:#25D366;border-color:#25D366;}
+
+  #media{border-top:1px solid var(--line);}
+  .media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+  @media (max-width:900px){.media-grid{grid-template-columns:1fr;}}
+  .media-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .media-card .frame-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;}
+  .media-card .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .media-card .cap{padding:1rem 1.2rem;}
+  .media-card .cap p{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);letter-spacing:.05em;}
+  .media-links{display:flex;gap:1rem;margin-top:2.6rem;flex-wrap:wrap;}
+  .media-link{display:flex;align-items:center;gap:.6rem;padding:.8rem 1.2rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;color:var(--ink);text-decoration:none;font-family:var(--mono);font-size:.78rem;transition:border-color .2s;}
+  .media-link:hover{border-color:var(--teal-dim);}
+  .media-link svg{width:18px;height:18px;fill:currentColor;flex-shrink:0;}
+
+  #join{border-top:1px solid var(--line);}
+  .join-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;}
+  @media (max-width:860px){.join-grid{grid-template-columns:1fr;}}
+  .steps{list-style:none;counter-reset:s;}
+  .steps li{counter-increment:s;position:relative;padding-left:2.6rem;margin-bottom:1.6rem;color:var(--ink-dim);line-height:1.6;}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:0;width:1.7rem;height:1.7rem;border:1px solid var(--teal-dim);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;color:var(--teal);}
+  .steps li strong{display:block;color:var(--ink);font-family:var(--mono);font-size:.9rem;margin-bottom:.2rem;}
+
+  form{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2rem;}
+  .field{margin-bottom:1.2rem;}
+  .field label{display:block;font-family:var(--mono);font-size:.7rem;color:var(--teal);letter-spacing:.08em;margin-bottom:.5rem;}
+  .field input, .field select, .field textarea{width:100%;background:#050c17;border:1px solid var(--line);border-radius:4px;padding:.7rem .8rem;color:var(--ink);font-family:var(--sans);font-size:.88rem;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--teal-dim);}
+  form .btn{width:100%;justify-content:center;margin-top:.4rem;cursor:pointer;font-size:.85rem;}
+  .form-note{font-size:.72rem;color:var(--ink-dim);margin-top:.9rem;font-family:var(--mono);}
+
+  footer{border-top:1px solid var(--line);padding:2.4rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);}
+  footer .foot-links{display:flex;gap:1.2rem;}
+  footer .foot-links a{color:var(--ink-dim);text-decoration:none;}
+  footer .foot-links a:hover{color:var(--teal);}
+
+  #wa-float{position:fixed;bottom:1.6rem;right:1.6rem;z-index:90;width:58px;height:58px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.4);text-decoration:none;animation:float-pulse 2.4s ease-in-out infinite;}
+  #wa-float svg{width:28px;height:28px;fill:#04140a;}
+  @keyframes float-pulse{0%,100%{box-shadow:0 6px 20px rgba(37,211,102,.35);}50%{box-shadow:0 6px 28px rgba(37,211,102,.65);}}
+
+  /* ---- Asistente de IA ---- */
+  #ai-float{position:fixed;bottom:1.6rem;left:1.6rem;z-index:90;width:58px;height:58px;border-radius:50%;background:linear-gradient(155deg,var(--teal),var(--teal-dim));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.4);border:none;cursor:pointer;animation:float-pulse-ai 2.4s ease-in-out infinite;}
+  #ai-float svg{width:26px;height:26px;stroke:#04140a;}
+  @keyframes float-pulse-ai{0%,100%{box-shadow:0 6px 20px rgba(47,216,201,.35);}50%{box-shadow:0 6px 28px rgba(47,216,201,.65);}}
+
+  #ai-panel{position:fixed;bottom:6.4rem;left:1.6rem;z-index:95;width:min(340px,88vw);max-height:min(480px,70vh);background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.55);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);}
+  #ai-panel.open{display:flex;}
+  .ai-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
+  .ai-bar .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);}
+  .ai-bar .ai-title{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--ink);}
+  .ai-bar .ai-close{margin-left:auto;background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;line-height:1;padding:.2rem;}
+  .ai-bar .ai-close:hover{color:var(--ink);}
+  #ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;font-size:.84rem;line-height:1.5;}
+  .ai-msg{max-width:88%;padding:.55rem .75rem;border-radius:8px;white-space:pre-wrap;word-break:break-word;}
+  .ai-msg.bot{align-self:flex-start;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);font-family:var(--mono);font-size:.8rem;}
+  .ai-msg.user{align-self:flex-end;background:var(--teal-dim);color:var(--ink);}
+  .ai-msg.error{align-self:center;color:var(--gold);font-family:var(--mono);font-size:.72rem;text-align:center;}
+  .ai-msg.typing{align-self:flex-start;color:var(--ink-dim);font-family:var(--mono);font-size:.8rem;}
+  .ai-input-row{display:flex;gap:.5rem;padding:.7rem;border-top:1px solid var(--line);background:var(--panel-2);}
+  .ai-input-row input{flex:1;background:#050c17;border:1px solid var(--line);border-radius:6px;padding:.6rem .7rem;color:var(--ink);font-family:var(--sans);font-size:.82rem;}
+  .ai-input-row input:focus{outline:none;border-color:var(--teal-dim);}
+  .ai-input-row button{background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:0 .9rem;font-family:var(--mono);font-size:.78rem;font-weight:600;cursor:pointer;}
+  .ai-input-row button:disabled{opacity:.5;cursor:not-allowed;}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+</style>
+</head>
+<body>
+
+<div id="boot">
+  <div class="mac-unit" id="mac-unit">
+    <div class="mac-shadow"></div>
+    <div class="mac-case">
+      <div class="mac-vents"></div>
+      <div class="mac-bezel">
+        <div class="mac-screen">
+          <div class="mac-scanlines"></div>
+          <div class="mac-content">
+            <div id="gate-msg">&gt; READY_ <span class="blink">▮</span></div>
+            <div id="term-body" style="display:none;"></div>
+          </div>
+          <div class="mac-screen-glass"></div>
+          <div class="mac-screen-vignette"></div>
+        </div>
+      </div>
+      <div class="mac-chin">
+        <div class="mac-disk-slot"></div>
+        <button class="mac-power" id="mac-power" type="button" aria-label="Encender el sistema">
+          <span class="power-ring"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>
+        </button>
+        <div class="mac-brand-plate">CIE&nbsp;·&nbsp;84</div>
+      </div>
+    </div>
+    <div class="mac-stand"></div>
+  </div>
+  <p class="boot-hint" id="boot-hint">PRESIONA <span class="hint-key">ENCENDER</span> O UNA TECLA <span class="blink">_</span></p>
+</div>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div id="site">
+  <header>
+    <a href="#hero" class="brand">
+      <img src="logo.jpg" alt="Logo Club de Ingeniería">
+      <div class="brand-text">CLUB DE INGENIERÍA<span>INNOVANDO EL FUTURO</span></div>
+    </a>
+    <nav>
+      <a href="#about">sobre-nosotros</a>
+      <a href="#projects">proyectos</a>
+      <a href="#team">equipo</a>
+      <a href="#media">contacto</a>
+      <a href="#join">unirse</a>
+    </nav>
+  </header>
+
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">SISTEMA EN LÍNEA — NODO ACTIVO</div>
+      <h1>Construimos lo que <em>otros</em> aún están imaginando.</h1>
+      <p class="lede">Somos el Club de Ingeniería en Tecnologías de la Información, Ciencias e Investigación: estudiantes que convierten ideas sueltas en software, datos e investigación aplicada que funcionan de verdad. Sin filtros corporativos, sin PowerPoints eternos: solo problemas reales y las manos que los resuelven.</p>
+      <div class="cta-row">
+        <a href="#join" class="btn btn-primary">Únete al club →</a>
+        <a href="https://wa.me/593986023149?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener" class="btn btn-whatsapp">Escríbenos por WhatsApp</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>120+</b><span>MIEMBROS ACTIVOS</span></div>
+        <div class="stat"><b>18</b><span>PROYECTOS EN CURSO</span></div>
+        <div class="stat"><b>6</b><span>ÁREAS TÉCNICAS</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="about-grid">
+      <div class="about-copy">
+        <div class="sec-tag">// SOBRE NOSOTROS</div>
+        <h2 style="font-family:var(--mono);font-size:clamp(1.6rem,3.2vw,2.4rem);color:var(--ink);margin-bottom:1.4rem;">Un club, seis frentes de la tecnología, un mismo laboratorio.</h2>
+        <p>Nacimos de un grupo pequeño que prefería <strong>programar y experimentar antes que solo estudiar la teoría</strong>. Hoy reunimos a estudiantes de desarrollo de software, ciencia de datos e IA, ciberseguridad, redes, sistemas de información e investigación aplicada bajo un mismo techo: el taller del club, abierto todas las tardes.</p>
+        <p>No hay jerarquías rígidas. Cada proyecto tiene un líder rotativo, presupuesto propio y una fecha de demo real frente a la comunidad universitaria. Aprendemos fallando rápido y documentando todo, como cualquier equipo de ingeniería serio.</p>
+      </div>
+      <div class="terminal-card">
+        <div class="term-bar"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div><div class="term-title">whoami.sh</div></div>
+        <div class="body">
+<span class="k">$ cat</span> perfil_club.txt<br>
+<span class="v">fundado:</span>&nbsp;&nbsp;2016<br>
+<span class="v">sede:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Taller-B, Facultad de Ingeniería<br>
+<span class="v">areas:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;software, datos e IA, ciberseguridad,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;redes, sistemas de información,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;investigación aplicada<br>
+<span class="v">acceso:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;abierto a toda carrera<br>
+<span class="v">status:</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">reclutando ahora</span><br>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="sec-head">
+      <div class="sec-tag">// PROYECTOS</div>
+      <h2>Lo que se está armando en el taller</h2>
+      <p>Cada proyecto va desde el primer boceto hasta una demo pública. Estos son los que están en construcción activa este semestre.</p>
+    </div>
+    <div class="proj-grid">
+      <div class="proj-card"><div class="proj-tag">SOFTWARE</div><h3>Portal web del club</h3><p>Plataforma construida en Next.js y Supabase: noticias, membresía y login social en un solo lugar.</p><div class="proj-status">En producción</div></div>
+      <div class="proj-card"><div class="proj-tag">DATOS &amp; IA</div><h3>Chatbot académico con IA</h3><p>Asistente que responde dudas de estudiantes usando modelos de lenguaje entrenados con el reglamento y el syllabus.</p><div class="proj-status">Entrenando modelo</div></div>
+      <div class="proj-card"><div class="proj-tag">CIBERSEGURIDAD</div><h3>Auditoría de seguridad interna</h3><p>Escaneo de vulnerabilidades y simulacros de phishing para fortalecer la higiene digital del campus.</p><div class="proj-status">Fase de pentesting</div></div>
+      <div class="proj-card"><div class="proj-tag">REDES &amp; CLOUD</div><h3>Laboratorio de contenedores</h3><p>Infraestructura Docker/Kubernetes para practicar despliegues y CI/CD como en la industria.</p><div class="proj-status">Instalación en curso</div></div>
+      <div class="proj-card"><div class="proj-tag">SISTEMAS DE INFORMACIÓN</div><h3>Gestión académica del club</h3><p>Base de datos y dashboard para llevar el control de miembros, proyectos y horas de práctica.</p><div class="proj-status">Diseño de esquema</div></div>
+      <div class="proj-card"><div class="proj-tag">INVESTIGACIÓN</div><h3>Semillero de IA aplicada</h3><p>Grupo de estudiantes documentando y publicando hallazgos de inteligencia artificial y ciencia de datos.</p><div class="proj-status">Recolectando datos</div></div>
+    </div>
+  </section>
+
+  <section id="team">
+    <div class="sec-head">
+      <div class="sec-tag">// NUESTRO EQUIPO</div>
+      <h2>Quién lidera el club</h2>
+      <p>El equipo directivo del Club de Ingeniería. Da clic en cualquier ícono para ir directo a sus redes.</p>
+    </div>
+    <div class="team-card">
+      <div class="team-photo"><img src="logo.jpg" alt="Marlon Pérez — CEO y Fundador"></div>
+      <div>
+        <div class="team-role">CEO Y FUNDADOR</div>
+        <h3>Ing. Marlon Pérez</h3>
+        <p>Fundador del Club de Ingeniería. Lidera la visión técnica y las alianzas del club, y sigue metido en el taller como uno más del equipo.</p>
+        <div class="social-row">
+          <a class="social-btn fb" href="https://www.facebook.com/IngMarlonPerez2026/" target="_blank" rel="noopener" aria-label="Facebook de Marlon Pérez">
+            <svg viewBox="0 0 24 24"><path d="M13.5 21v-8.2h2.75l.4-3.2h-3.15V7.4c0-.93.26-1.56 1.6-1.56h1.7V2.98c-.3-.04-1.3-.13-2.47-.13-2.45 0-4.13 1.5-4.13 4.24v2.5H7.5v3.2h2.75V21h3.25z"/></svg>
+          </a>
+          <a class="social-btn li" href="https://www.linkedin.com/in/marlon-p%C3%A9rez-06ab32303/" target="_blank" rel="noopener" aria-label="LinkedIn de Marlon Pérez">
+            <svg viewBox="0 0 24 24"><path d="M6.94 8.5H3.56V20.5H6.94V8.5ZM5.25 3.5C4.14 3.5 3.25 4.4 3.25 5.5C3.25 6.6 4.14 7.5 5.25 7.5C6.36 7.5 7.25 6.6 7.25 5.5C7.25 4.4 6.36 3.5 5.25 3.5ZM20.5 20.5V13.87C20.5 10.5 18.72 8.94 16.35 8.94C14.47 8.94 13.62 9.98 13.15 10.7V8.5H9.77C9.82 9.53 9.77 20.5 9.77 20.5H13.15V13.9C13.15 13.55 13.17 13.2 13.27 12.95C13.55 12.25 14.2 11.52 15.28 11.52C16.7 11.52 17.13 12.6 17.13 14.18V20.5H20.5Z"/></svg>
+          </a>
+          <a class="social-btn x" href="https://x.com/IngMarlonPere" target="_blank" rel="noopener" aria-label="X de Marlon Pérez">
+            <svg viewBox="0 0 24 24"><path d="M18.9 3H21.7L15.6 10.1L22.8 21H17.1L12.7 14.7L7.6 21H4.8L11.3 13.4L4.4 3H10.2L14.2 8.8L18.9 3ZM17.9 19.2H19.5L9.4 4.7H7.7L17.9 19.2Z"/></svg>
+          </a>
+          <a class="social-btn gh" href="https://github.com/ing-MarlonPerez" target="_blank" rel="noopener" aria-label="GitHub de Marlon Pérez">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.58 2 12.2C2 16.68 4.87 20.47 8.84 21.8C9.34 21.9 9.52 21.58 9.52 21.31C9.52 21.07 9.51 20.24 9.51 19.36C7 19.9 6.35 18.72 6.15 18.1C6.04 17.79 5.52 16.85 5.06 16.6C4.68 16.4 4.14 15.87 5.05 15.86C5.91 15.85 6.52 16.66 6.72 16.98C7.69 18.63 9.24 18.16 9.86 17.89C9.96 17.17 10.24 16.68 10.55 16.4C8.12 16.12 5.58 15.16 5.58 10.94C5.58 9.74 5.99 8.75 6.7 7.98C6.59 7.7 6.22 6.57 6.8 5.05C6.8 5.05 7.7 4.75 9.52 5.98C10.29 5.76 11.11 5.65 11.93 5.65C12.75 5.65 13.57 5.76 14.34 5.98C16.16 4.74 17.06 5.05 17.06 5.05C17.64 6.57 17.27 7.7 17.16 7.98C17.87 8.75 18.28 9.73 18.28 10.94C18.28 15.18 15.73 16.12 13.3 16.39C13.69 16.72 14.03 17.36 14.03 18.35C14.03 19.76 14.02 20.96 14.02 21.31C14.02 21.58 14.2 21.91 14.7 21.8C18.65 20.46 21.52 16.68 21.52 12.2C21.52 6.58 17.04 2 12 2Z"/></svg>
+          </a>
+          <a class="social-btn wa" href="https://wa.me/593986023149" target="_blank" rel="noopener" aria-label="WhatsApp del club">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.47 15.5 3.34 17L2 22L7.15 20.68C8.61 21.49 10.27 21.92 12 21.92H12.01C17.51 21.92 22 17.42 22 11.92C22 9.26 20.95 6.76 19.05 4.87C17.15 2.98 14.66 2 12 2ZM12 20.15C10.46 20.15 8.96 19.73 7.65 18.94L7.34 18.75L4.32 19.54L5.12 16.61L4.9 16.28C4.03 14.92 3.57 13.35 3.57 11.72C3.57 7.07 7.35 3.28 12 3.28C14.25 3.28 16.36 4.16 17.94 5.75C19.53 7.34 20.43 9.46 20.43 11.72C20.42 16.38 16.65 20.15 12 20.15ZM16.6 13.85C16.35 13.72 15.11 13.11 14.88 13.02C14.65 12.94 14.48 12.9 14.32 13.16C14.15 13.41 13.67 13.98 13.52 14.15C13.38 14.32 13.23 14.34 12.98 14.21C12.73 14.08 11.92 13.81 10.96 12.95C10.21 12.28 9.7 11.46 9.56 11.2C9.42 10.95 9.55 10.81 9.68 10.68C9.79 10.57 9.93 10.39 10.06 10.25C10.19 10.1 10.23 10 10.31 9.84C10.4 9.67 10.35 9.53 10.29 9.4C10.23 9.28 9.72 8.03 9.5 7.53C9.29 7.03 9.08 7.1 8.92 7.09C8.77 7.08 8.6 7.08 8.44 7.08C8.28 7.08 8.02 7.14 7.79 7.39C7.57 7.64 6.95 8.22 6.95 9.47C6.95 10.72 7.81 11.93 7.94 12.1C8.07 12.27 9.71 14.8 12.23 15.9C13.79 16.58 14.4 16.64 15.18 16.52C15.65 16.45 16.63 15.92 16.85 15.34C17.06 14.76 17.06 14.27 17 14.15C16.94 14.03 16.85 13.98 16.6 13.85Z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="media">
+    <div class="sec-head">
+      <div class="sec-tag">// CONTACTO Y MEDIOS</div>
+      <h2>Míranos en acción</h2>
+      <p>Contenido directo desde el taller: videos del canal de YouTube y clips desde nuestra página de Facebook.</p>
+    </div>
+    <div class="media-grid">
+      <div class="media-card">
+        <div class="frame-wrap">
+          <iframe src="https://www.youtube.com/embed/-MjXtWBno-4" title="Video del Club de Ingeniería" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="cap"><p>▸ YOUTUBE — VIDEO DESTACADO</p></div>
+      </div>
+      <div class="media-card">
+        <div class="frame-wrap">
+          <iframe src="https://www.youtube.com/embed/videoseries?list=UU_z6dXnuY56EAjdpokmDXyw" title="Últimos videos del canal" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="cap"><p>▸ YOUTUBE — ÚLTIMOS VIDEOS DEL CANAL</p></div>
+      </div>
+      <div class="media-card">
+        <div class="frame-wrap">
+          <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fv%2F1BwxQmfsXJ%2F&show_text=false&width=560&t=0" title="Video de Facebook del Club de Ingeniería" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="cap"><p>▸ FACEBOOK — CLIP DEL TALLER</p></div>
+      </div>
+    </div>
+
+    <div class="media-links">
+      <a class="media-link" href="https://www.facebook.com/profile.php?id=61593170550264" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M13.5 21v-8.2h2.75l.4-3.2h-3.15V7.4c0-.93.26-1.56 1.6-1.56h1.7V2.98c-.3-.04-1.3-.13-2.47-.13-2.45 0-4.13 1.5-4.13 4.24v2.5H7.5v3.2h2.75V21h3.25z"/></svg>
+        Página de Facebook del club
+      </a>
+      <a class="media-link" href="https://www.youtube.com/@ElClubDeLaIngenier%C3%ADa" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M21.6 7.2c-.24-1.05-1.02-1.86-2.02-2.1C17.8 4.6 12 4.6 12 4.6s-5.8 0-7.58.5c-1 .24-1.78 1.05-2.02 2.1C2 9 2 12 2 12s0 3 .4 4.8c.24 1.05 1.02 1.86 2.02 2.1 1.78.5 7.58.5 7.58.5s5.8 0 7.58-.5c1-.24 1.78-1.05 2.02-2.1.4-1.8.4-4.8.4-4.8s0-3-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>
+        Canal de YouTube del club
+      </a>
+      <a class="media-link" href="https://wa.me/593986023149?text=Hola%2C%20tengo%20una%20consulta%20para%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.47 15.5 3.34 17L2 22L7.15 20.68C8.61 21.49 10.27 21.92 12 21.92H12.01C17.51 21.92 22 17.42 22 11.92C22 9.26 20.95 6.76 19.05 4.87C17.15 2.98 14.66 2 12 2ZM12 20.15C10.46 20.15 8.96 19.73 7.65 18.94L7.34 18.75L4.32 19.54L5.12 16.61L4.9 16.28C4.03 14.92 3.57 13.35 3.57 11.72C3.57 7.07 7.35 3.28 12 3.28C14.25 3.28 16.36 4.16 17.94 5.75C19.53 7.34 20.43 9.46 20.43 11.72C20.42 16.38 16.65 20.15 12 20.15Z"/></svg>
+        WhatsApp — +593 98 602 3149
+      </a>
+    </div>
+  </section>
+
+  <section id="join">
+    <div class="join-grid">
+      <div>
+        <div class="sec-tag">// CÓMO UNIRTE</div>
+        <h2 style="font-family:var(--mono);font-size:clamp(1.6rem,3.2vw,2.4rem);margin-bottom:2rem;color:var(--ink);">Tres pasos, sin examen de admisión</h2>
+        <ul class="steps">
+          <li><strong>Completa el formulario</strong>Cuéntanos tu carrera y qué área te interesa. No necesitas experiencia previa.</li>
+          <li><strong>Ven a una tarde abierta</strong>Los jueves el taller recibe visitas. Conoces proyectos y a quienes los lideran.</li>
+          <li><strong>Elige tu primer proyecto</strong>Te sumas a un equipo activo o propones uno nuevo si tienes la idea lista.</li>
+        </ul>
+      </div>
+      <form onsubmit="event.preventDefault(); this.querySelector('.btn').textContent='Solicitud enviada ✓';">
+        <div class="field"><label for="nombre">NOMBRE COMPLETO</label><input id="nombre" type="text" required placeholder="Tu nombre"></div>
+        <div class="field"><label for="correo">CORREO</label><input id="correo" type="email" required placeholder="tucorreo@universidad.edu"></div>
+        <div class="field">
+          <label for="area">ÁREA DE INTERÉS</label>
+          <select id="area"><option>Desarrollo de Software</option><option>Ciencia de Datos &amp; IA</option><option>Ciberseguridad</option><option>Redes &amp; Cloud</option><option>Sistemas de Información</option><option>Investigación</option></select>
+        </div>
+        <div class="field"><label for="msg">CUÉNTANOS ALGO QUE HAYAS CONSTRUIDO (OPCIONAL)</label><textarea id="msg" rows="3" placeholder="..."></textarea></div>
+        <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+        <p class="form-note">// respuesta en 48h — sin bots, un miembro real te escribe</p>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div>club@ingenieria:~$ echo "hecho por estudiantes, para estudiantes"</div>
+    <div class="foot-links">
+      <a href="https://www.facebook.com/profile.php?id=61593170550264" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://www.youtube.com/@ElClubDeLaIngenier%C3%ADa" target="_blank" rel="noopener">YouTube</a>
+      <a href="https://wa.me/593986023149" target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+    <div>© 2026 Club de Ingeniería — taller-B</div>
+  </footer>
+</div>
+
+<a id="wa-float" href="https://wa.me/593986023149?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.47 15.5 3.34 17L2 22L7.15 20.68C8.61 21.49 10.27 21.92 12 21.92H12.01C17.51 21.92 22 17.42 22 11.92C22 9.26 20.95 6.76 19.05 4.87C17.15 2.98 14.66 2 12 2ZM12 20.15C10.46 20.15 8.96 19.73 7.65 18.94L7.34 18.75L4.32 19.54L5.12 16.61L4.9 16.28C4.03 14.92 3.57 13.35 3.57 11.72C3.57 7.07 7.35 3.28 12 3.28C14.25 3.28 16.36 4.16 17.94 5.75C19.53 7.34 20.43 9.46 20.43 11.72C20.42 16.38 16.65 20.15 12 20.15ZM16.6 13.85C16.35 13.72 15.11 13.11 14.88 13.02C14.65 12.94 14.48 12.9 14.32 13.16C14.15 13.41 13.67 13.98 13.52 14.15C13.38 14.32 13.23 14.34 12.98 14.21C12.73 14.08 11.92 13.81 10.96 12.95C10.21 12.28 9.7 11.46 9.56 11.2C9.42 10.95 9.55 10.81 9.68 10.68C9.79 10.57 9.93 10.39 10.06 10.25C10.19 10.1 10.23 10 10.31 9.84C10.4 9.67 10.35 9.53 10.29 9.4C10.23 9.28 9.72 8.03 9.5 7.53C9.29 7.03 9.08 7.1 8.92 7.09C8.77 7.08 8.6 7.08 8.44 7.08C8.28 7.08 8.02 7.14 7.79 7.39C7.57 7.64 6.95 8.22 6.95 9.47C6.95 10.72 7.81 11.93 7.94 12.1C8.07 12.27 9.71 14.8 12.23 15.9C13.79 16.58 14.4 16.64 15.18 16.52C15.65 16.45 16.63 15.92 16.85 15.34C17.06 14.76 17.06 14.27 17 14.15C16.94 14.03 16.85 13.98 16.6 13.85Z"/></svg>
+</a>
+
+<button id="ai-float" type="button" aria-label="Abrir asistente de IA del club">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M8 3v4M16 3v4"/><circle cx="8.5" cy="13" r="1"/><circle cx="15.5" cy="13" r="1"/><path d="M9 16.5c.9.8 2 1.2 3 1.2s2.1-.4 3-1.2"/></svg>
+</button>
+
+<div id="ai-panel">
+  <div class="ai-bar">
+    <span class="ai-dot"></span>
+    <span class="ai-title">asistente-ia.sh</span>
+    <button class="ai-close" id="ai-close" type="button" aria-label="Cerrar asistente">✕</button>
+  </div>
+  <div id="ai-messages">
+    <div class="ai-msg bot">Hola 👋 soy el asistente del Club de Ingeniería. Pregúntame sobre las áreas técnicas, los proyectos o cómo unirte.</div>
+  </div>
+  <form class="ai-input-row" id="ai-form">
+    <input id="ai-input" type="text" placeholder="Escribe tu pregunta..." autocomplete="off" maxlength="500" required>
+    <button type="submit" id="ai-send">Enviar</button>
+  </form>
+</div>
+
+<script>
+(function(){
+  const boot = document.getElementById('boot');
+  const macUnit = document.getElementById('mac-unit');
+  const gateMsg = document.getElementById('gate-msg');
+  const bootHint = document.getElementById('boot-hint');
+  const termBody = document.getElementById('term-body');
+  const canvas = document.getElementById('matrix-canvas');
+  const site = document.getElementById('site');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function revealSite(){
+    boot.classList.add('hidden');
+    canvas.style.display = 'none';
+    site.classList.add('show');
+    setTimeout(()=>{ boot.style.display='none'; }, 700);
+  }
+
+  if (reduceMotion || sessionStorage.getItem('bootDone') === '1') {
+    boot.style.display = 'none';
+    site.classList.add('show');
+    return;
+  }
+
+  let audioCtx;
+  function beep(freq, dur, vol){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      gain.gain.value = vol || 0.05;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+      osc.stop(audioCtx.currentTime + dur);
+    }catch(e){}
+  }
+  function tipTip(){ beep(920, .05, .05); setTimeout(()=>beep(920,.05,.05), 110); }
+
+  function startBoot(){
+    macUnit.classList.add('powering-on');
+    bootHint.style.display = 'none';
+    gateMsg.style.display = 'none';
+    termBody.style.display = 'block';
+    setTimeout(()=>{ macUnit.classList.remove('powering-on'); macUnit.classList.add('powered'); }, 750);
+
+    const row1 = document.createElement('div');
+    row1.className = 'row';
+    termBody.appendChild(row1);
+    const prefix = 'guest@club-ingenieria:~$ ';
+    const cmd = './iniciar_sistema.sh';
+    let full = '';
+    let i = 0;
+    row1.innerHTML = '<span class="prompt-lbl">'+prefix+'</span>';
+    const cursorSpan = document.createElement('span');
+    cursorSpan.className = 'cursor';
+    row1.appendChild(cursorSpan);
+
+    const typeIv = setInterval(()=>{
+      if(i < cmd.length){
+        full += cmd[i];
+        row1.innerHTML = '<span class="prompt-lbl">'+prefix+'</span>' + full;
+        row1.appendChild(cursorSpan);
+        tipTip();
+        i++;
+      } else {
+        clearInterval(typeIv);
+        setTimeout(showRest, 400);
+      }
+    }, 90);
+
+    function showRest(){
+      let idx = 0;
+      const rest = [
+        'Verificando hardware............ OK',
+        'Cargando módulos del club........ OK',
+        'Conectando con el taller.......... OK',
+        '&gt; Ejecutando secuencia de arranque...'
+      ];
+      function next(){
+        if(idx >= rest.length){ setTimeout(runMatrix, 500); return; }
+        const row = document.createElement('div');
+        row.className = 'row dim';
+        row.innerHTML = rest[idx];
+        termBody.appendChild(row);
+        beep(600, .04, .04);
+        idx++;
+        setTimeout(next, 280);
+      }
+      next();
+    }
+  }
+
+  function runMatrix(){
+    canvas.style.display = 'block';
+    const ctx = canvas.getContext('2d');
+    function size(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    size();
+    window.addEventListener('resize', size);
+
+    const chars = '01';
+    const fontSize = 15;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = new Array(columns).fill(0);
+
+    let frame = 0;
+    const maxFrames = 90;
+    const iv = setInterval(()=>{
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = '#39ff6a';
+      ctx.font = fontSize + 'px monospace';
+      for(let x=0; x<drops.length; x++){
+        const char = chars[Math.floor(Math.random()*chars.length)];
+        ctx.fillText(char, x*fontSize, drops[x]*fontSize);
+        if(drops[x]*fontSize > canvas.height && Math.random() > 0.975){ drops[x] = 0; }
+        drops[x]++;
+      }
+      frame++;
+      if(frame > maxFrames){
+        clearInterval(iv);
+        sessionStorage.setItem('bootDone','1');
+        revealSite();
+      }
+    }, 40);
+  }
+
+  function onStart(){
+    boot.removeEventListener('click', onStart);
+    document.removeEventListener('keydown', onStart);
+    beep(700,.06,.06);
+    startBoot();
+  }
+  boot.addEventListener('click', onStart);
+  document.addEventListener('keydown', onStart);
+})();
+</script>
+
+<script>
+(function(){
+  const floatBtn = document.getElementById('ai-float');
+  const panel = document.getElementById('ai-panel');
+  const closeBtn = document.getElementById('ai-close');
+  const messagesEl = document.getElementById('ai-messages');
+  const form = document.getElementById('ai-form');
+  const input = document.getElementById('ai-input');
+  const sendBtn = document.getElementById('ai-send');
+
+  const history = [];
+  let sending = false;
+
+  function addMessage(text, cls){
+    const div = document.createElement('div');
+    div.className = 'ai-msg ' + cls;
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function togglePanel(open){
+    const willOpen = open ?? !panel.classList.contains('open');
+    panel.classList.toggle('open', willOpen);
+    if (willOpen) setTimeout(() => input.focus(), 50);
+  }
+
+  floatBtn.addEventListener('click', () => togglePanel());
+  closeBtn.addEventListener('click', () => togglePanel(false));
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || sending) return;
+
+    addMessage(text, 'user');
+    history.push({ role: 'user', content: text });
+    input.value = '';
+    sending = true;
+    sendBtn.disabled = true;
+    const typingEl = addMessage('escribiendo...', 'typing');
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history.slice(-10) }),
+      });
+      const data = await res.json();
+      typingEl.remove();
+
+      if (!res.ok) {
+        addMessage(data.error || 'Algo salió mal. Intenta de nuevo.', 'error');
+      } else {
+        addMessage(data.reply, 'bot');
+        history.push({ role: 'assistant', content: data.reply });
+      }
+    } catch (err) {
+      typingEl.remove();
+      addMessage('No pude conectar con el asistente. Revisa tu conexión.', 'error');
+    } finally {
+      sending = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
