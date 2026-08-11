@@ -11,7 +11,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-MIT-2fd8c9?style=for-the-badge)](LICENSE)
-[![Status](https://img.shields.io/badge/Estado-MVP%20activo-e8b23a?style=for-the-badge)](https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a)
+[![Status](https://img.shields.io/badge/Estado-MVP%20activo-e8b23a?style=for-the-badge)](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a)
 
 **Comunidad universitaria · Proyectos reales · Aprendizaje colaborativo · IA integrada**
 
@@ -248,8 +248,8 @@ Cuenta Groq     →  https://console.groq.com/  (para el chat IA)
 ### 1 · Clonar el repositorio
 
 ```bash
-git clone https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a.git
-cd El-club-de-la-Ingenier-a
+git clone https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a.git
+cd El-Club-de-la-Ingenier-a
 ```
 
 ### 2 · Instalar dependencias
@@ -311,7 +311,7 @@ GROQ_API_KEY=tu_clave_de_groq_aqui
 ## 📁 Estructura del repositorio
 
 ```
-El-club-de-la-Ingenier-a/
+El-Club-de-la-Ingenier-a/
 │
 ├── 📂 public/                  # Assets estáticos servidos por Next.js
 │   ├── index.html              # Landing completa (boot retro + secciones)
@@ -416,7 +416,7 @@ Este proyecto sigue prácticas alineadas con **OWASP Top 10**:
 - 🔜 Cabeceras CSP, HSTS en producción
 - 🔜 Escaneo SAST (Semgrep) en CI
 
-¿Encontraste una vulnerabilidad? Repórtala de forma responsable vía [Issues](https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a/issues) o contacto directo (ver abajo).
+¿Encontraste una vulnerabilidad? Repórtala de forma responsable vía [Issues](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/issues) o contacto directo (ver abajo).
 
 ---
 
@@ -464,7 +464,7 @@ gitGraph
 |:------|:-------|
 | 📧 **Email** | [ingmarlonperez2026@gmail.com](mailto:ingmarlonperez2026@gmail.com) |
 | 💬 **WhatsApp** | [+593 98 602 3149](https://wa.me/593986023149) |
-| 🐙 **GitHub** | [@ing-MarlonPerez](https://github.com/ing-MarlonPerez) |
+| 🐙 **GitHub** | [@IngMarlonPerez](https://github.com/IngMarlonPerez) |
 | 📺 **YouTube** | El Club de la Ingeniería |
 | 📘 **Facebook** | El Club de la Ingeniería |
 
@@ -492,8 +492,8 @@ Este proyecto se distribuye bajo licencia **MIT**. Consulta el archivo [LICENSE]
 
 <br />
 
-[![GitHub stars](https://img.shields.io/github/stars/ing-MarlonPerez/El-club-de-la-Ingenier-a?style=social)](https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/ing-MarlonPerez/El-club-de-la-Ingenier-a?style=social)](https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/ing-MarlonPerez/El-club-de-la-Ingenier-a?style=social)](https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a/issues)
+[![GitHub stars](https://img.shields.io/github/stars/IngMarlonPerez/El-Club-de-la-Ingenier-a?style=social)](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/IngMarlonPerez/El-Club-de-la-Ingenier-a?style=social)](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/IngMarlonPerez/El-Club-de-la-Ingenier-a?style=social)](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/issues)
 
 </div>

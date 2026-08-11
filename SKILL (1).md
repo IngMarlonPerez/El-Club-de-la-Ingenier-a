@@ -11,7 +11,7 @@ No es teatro vacío: cada "equipo" es una lente de responsabilidad real que te o
 
 ## Contexto del proyecto (fijo — no volver a preguntar)
 
-- **Repo:** `https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a`
+- **Repo:** `https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a`
 - **Hosting/CI-CD:** Vercel, conectado por GitHub App al repo anterior (deploy preview por PR + producción en `main`)
 - **Base de datos / Auth / Storage:** Supabase (Postgres + Row Level Security + Supabase Auth + Storage)
 - **Login social:** Facebook, GitHub y Google vía OAuth de Supabase Auth

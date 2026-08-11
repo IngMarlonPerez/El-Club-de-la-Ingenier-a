@@ -2,7 +2,7 @@
 ### Mega-Prompt de Ingeniería de Requerimientos para Claude Code
 
 **Versión:** 1.0 · **Rol de quien redacta este documento:** Ingeniero de Software Senior — Gestión de Proyectos Informáticos
-**Repositorio:** https://github.com/ing-MarlonPerez/El-club-de-la-Ingenier-a
+**Repositorio:** https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a
 **Stack objetivo:** Next.js + Supabase + Vercel + OAuth (Google, GitHub, Facebook) + arquitectura de micro-frontends por subdominio
 
 ---
