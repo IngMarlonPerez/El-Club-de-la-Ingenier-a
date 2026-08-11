@@ -17,6 +17,8 @@
     --line:#1d2b42;
     --term-green:#39ff6a;
     --term-green-dim:#1c8a3d;
+    --neon-cyan:#00f3ff;
+    --neon-magenta:#ff0055;
     --mono:'IBM Plex Mono', 'Courier New', monospace;
     --sans:'IBM Plex Sans', -apple-system, sans-serif;
   }
@@ -65,6 +67,25 @@
   .boot-hint{margin-top:2em;text-align:center;font-family:var(--mono);font-size:.78rem;letter-spacing:.1em;color:var(--term-green);text-shadow:0 0 6px rgba(57,255,106,.4);}
   .boot-hint .hint-key{display:inline-block;padding:.15em .55em;margin:0 .25em;border:1px solid var(--term-green-dim);border-radius:4px;color:var(--gold);}
   .boot-hint .blink{animation:blink 1s steps(1) infinite;}
+
+  /* ---- Título neón cyberpunk sobre la computadora ---- */
+  .neon-title-container{position:absolute;top:6%;left:50%;transform:translateX(-50%);text-align:center;width:90%;max-width:600px;z-index:1010;pointer-events:none;font-family:var(--mono);}
+  .neon-title{font-size:clamp(1.5rem,4.5vw,2.8rem);font-weight:900;text-transform:uppercase;letter-spacing:.15em;color:#fff;line-height:1.15;margin-bottom:.2rem;
+    text-shadow:0 0 4px #fff,0 0 11px #fff,0 0 19px var(--neon-cyan),0 0 40px var(--neon-cyan),0 0 80px var(--neon-cyan);}
+  .neon-subtitle{font-size:clamp(.7rem,2vw,1rem);font-weight:500;letter-spacing:.35em;color:#fff;text-transform:uppercase;opacity:.85;
+    text-shadow:0 0 4px #fff,0 0 10px var(--neon-magenta),0 0 20px var(--neon-magenta),0 0 40px var(--neon-magenta);
+    animation:neon-flicker-sub 4s infinite alternate;}
+  @keyframes neon-flicker-main{
+    0%,18%,22%,25%,53%,57%,100%{text-shadow:0 0 4px #fff,0 0 11px #fff,0 0 19px var(--neon-cyan),0 0 40px var(--neon-cyan),0 0 80px var(--neon-cyan);}
+    20%,24%,55%{text-shadow:none;color:rgba(255,255,255,.2);}
+  }
+  @keyframes neon-flicker-sub{
+    0%,19%,21%,23%,25%,54%,56%,100%{text-shadow:0 0 4px #fff,0 0 10px var(--neon-magenta),0 0 20px var(--neon-magenta),0 0 40px var(--neon-magenta);}
+    20%,24%,55%{text-shadow:none;color:rgba(255,255,255,.15);}
+  }
+  .flickering-letter{animation:neon-flicker-main 5s infinite;}
+  @media (max-height:560px){.neon-title-container{top:3%;}.neon-title{font-size:clamp(1.1rem,4vw,2rem);}}
+  @media (prefers-reduced-motion: reduce){.neon-subtitle, .flickering-letter{animation:none;}}
   #term-body .row{white-space:pre-wrap;word-break:break-word;}
   #term-body .prompt-lbl{color:var(--gold);}
   #term-body .dim{color:var(--term-green-dim);}
@@ -226,6 +247,10 @@
 <body>
 
 <div id="boot">
+  <div class="neon-title-container" aria-hidden="true">
+    <div class="neon-title">EL CLUB DE LA<br>INGENIER<span class="flickering-letter">Í</span>A</div>
+    <div class="neon-subtitle">NODO_ACTIVO // CIE_84</div>
+  </div>
   <div class="mac-unit" id="mac-unit">
     <div class="mac-shadow"></div>
     <div class="mac-case">
