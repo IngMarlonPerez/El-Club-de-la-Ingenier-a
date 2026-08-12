@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Club de Ingeniería — Innovando el Futuro</title>
+<title>El Club de la Ingeniería | Comunidad y Software Tecnológico</title>
+<meta name="description" content="El Club de la Ingeniería es la comunidad estudiantil de Tecnologías de la Información, Ciencias e Investigación: desarrollo de software, ciencia de datos e IA, ciberseguridad, redes y proyectos de investigación aplicada.">
+<meta property="og:title" content="El Club de la Ingeniería | Comunidad y Software Tecnológico">
+<meta property="og:description" content="Comunidad estudiantil de Tecnologías de la Información, Ciencias e Investigación: software, ciencia de datos e IA, ciberseguridad, redes e investigación aplicada.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/logo.jpg">
+<link rel="canonical" href="https://elclubdelaingenieria.com/">
+
 <style>
   :root{
     --bg:#0a0f1a;
@@ -107,15 +114,25 @@
   a:focus-visible, button:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
   @media (max-width:760px){nav{display:none;}}
 
+  .account-area{font-family:var(--mono);font-size:.74rem;display:flex;align-items:center;gap:.7rem;}
+  .account-link{color:var(--teal);text-decoration:none;letter-spacing:.05em;border:1px solid var(--teal-dim);padding:.4rem .8rem;border-radius:4px;transition:background .2s;}
+  .account-link:hover{background:rgba(47,216,201,.1);}
+  .account-user{color:var(--ink-dim);}
+  .account-user strong{color:var(--ink);}
+  .account-logout{background:none;border:none;color:var(--ink-dim);font-family:var(--mono);font-size:.72rem;cursor:pointer;text-decoration:underline;padding:0;}
+  .account-logout:hover{color:var(--teal);}
+
   section{padding:7rem 5vw;max-width:1180px;margin:0 auto;}
 
   #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:6rem;position:relative;background-image:linear-gradient(100deg, rgba(8,14,26,.94) 20%, rgba(8,14,26,.55) 55%, rgba(8,14,26,.85)), url('hero-banner.jpg');background-size:cover;background-position:center;max-width:none;}
   .hero-inner{max-width:1180px;margin:0 auto;width:100%;}
-  .eyebrow{font-family:var(--mono);font-size:.75rem;color:var(--teal);letter-spacing:.15em;margin-bottom:1.4rem;display:flex;align-items:center;gap:.6rem;}
+  .eyebrow{font-family:var(--mono);font-size:.75rem;color:var(--teal);letter-spacing:.15em;margin-bottom:0.8rem;display:flex;align-items:center;gap:.6rem;}
   .eyebrow::before{content:'●';font-size:.6rem;color:var(--gold);animation:blink 1.6s steps(1) infinite;}
-  h1{font-family:var(--mono);font-size:clamp(2.2rem,5.6vw,4.6rem);line-height:1.05;font-weight:600;color:var(--ink);max-width:16ch;letter-spacing:-.01em;}
-  h1 em{font-style:normal;color:var(--teal);text-shadow:0 0 24px rgba(47,216,201,.3);}
+  h1{font-family:var(--mono);font-size:clamp(1.4rem,3vw,2.2rem);line-height:1.1;font-weight:700;color:var(--ink);margin-bottom:1rem;letter-spacing:.02em;}
+  .hero-tagline{font-family:var(--mono);font-size:clamp(2.2rem,5.6vw,4.6rem);line-height:1.05;font-weight:600;color:var(--ink);max-width:16ch;letter-spacing:-.01em;}
+  .hero-tagline em{font-style:normal;color:var(--teal);text-shadow:0 0 24px rgba(47,216,201,.3);}
   .lede{margin-top:1.6rem;font-size:1.05rem;color:var(--ink-dim);max-width:42ch;line-height:1.65;}
+
   .cta-row{display:flex;gap:1rem;margin-top:2.4rem;flex-wrap:wrap;}
   .btn{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;padding:.85rem 1.5rem;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:transform .15s ease, background .2s ease;border:1px solid transparent;}
   .btn:hover{transform:translateY(-2px);}
@@ -159,6 +176,17 @@
   .proj-card p{font-size:.85rem;color:var(--ink-dim);line-height:1.6;}
   .proj-status{margin-top:1rem;font-family:var(--mono);font-size:.66rem;color:var(--teal);display:flex;align-items:center;gap:.4rem;}
   .proj-status::before{content:'▸';}
+
+  #eventos{border-top:1px solid var(--line);}
+  .events-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+  @media (max-width:900px){.events-grid{grid-template-columns:1fr;}}
+  .event-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1.6rem;}
+  .event-when{font-family:var(--mono);font-size:.66rem;color:var(--gold);letter-spacing:.1em;margin-bottom:.7rem;}
+  .event-card h3{font-family:var(--mono);font-size:1rem;color:var(--ink);margin-bottom:.6rem;}
+  .event-card p{font-size:.85rem;color:var(--ink-dim);line-height:1.6;}
+  .events-cta{margin-top:2.4rem;padding:1.8rem 2rem;background:var(--panel);border:1px solid var(--teal-dim);border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:1.4rem;flex-wrap:wrap;}
+  .events-cta p{font-family:var(--mono);font-size:.9rem;color:var(--ink);}
+  .events-cta .btn{flex-shrink:0;}
 
   #team{border-top:1px solid var(--line);}
   .team-card{display:grid;grid-template-columns:220px 1fr;gap:2.6rem;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2.4rem;}
@@ -207,6 +235,31 @@
   .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--teal-dim);}
   form .btn{width:100%;justify-content:center;margin-top:.4rem;cursor:pointer;font-size:.85rem;}
   .form-note{font-size:.72rem;color:var(--ink-dim);margin-top:.9rem;font-family:var(--mono);}
+  .form-note.error{color:var(--gold);}
+  .form-note.ok{color:var(--teal);}
+
+  #join-oauth{background:var(--panel);border:1px solid var(--line);border-radius:6px 6px 0 0;border-bottom:none;padding:1.6rem 2rem 0;}
+  .oauth-row{display:flex;flex-direction:column;gap:.7rem;}
+  .btn-oauth{display:flex;align-items:center;gap:.7rem;width:100%;padding:.75rem 1rem;border-radius:5px;border:1px solid var(--line);background:#0d1626;color:var(--ink);font-family:var(--sans);font-size:.86rem;cursor:pointer;transition:border-color .2s,transform .15s;}
+  .btn-oauth:hover:not(:disabled){border-color:var(--teal-dim);transform:translateY(-1px);}
+  .btn-oauth:disabled{opacity:.45;cursor:not-allowed;}
+  .oauth-divider{display:flex;align-items:center;gap:.8rem;margin:1.4rem 0 -.1rem;font-family:var(--mono);font-size:.68rem;color:var(--ink-dim);letter-spacing:.05em;}
+  .oauth-divider::before, .oauth-divider::after{content:'';flex:1;height:1px;background:var(--line);}
+  #join-form{border-radius:0 0 6px 6px;}
+
+  .consent-row{display:flex;align-items:flex-start;gap:.6rem;font-size:.78rem;color:var(--ink-dim);margin-bottom:1.2rem;line-height:1.5;cursor:pointer;}
+  .consent-row input{margin-top:.2rem;accent-color:var(--teal);flex-shrink:0;}
+  .consent-row input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .consent-row a{color:var(--teal);}
+
+
+  #join-profile, #join-done{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2rem;}
+  .profile-lead{color:var(--ink);margin-bottom:1.4rem;line-height:1.6;}
+
+  #privacy-banner{position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--panel-2);border-top:1px solid var(--line);padding:1rem 5vw;display:none;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;font-size:.82rem;color:var(--ink-dim);}
+  #privacy-banner.show{display:flex;}
+  #privacy-banner a{color:var(--teal);}
+  #privacy-banner .btn{font-size:.76rem;padding:.6rem 1.1rem;flex-shrink:0;}
 
   footer{border-top:1px solid var(--line);padding:2.4rem 5vw;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);}
   footer .foot-links{display:flex;gap:1.2rem;}
@@ -293,14 +346,20 @@
       <a href="#projects">proyectos</a>
       <a href="#team">equipo</a>
       <a href="#media">contacto</a>
+      <a href="#eventos">eventos</a>
       <a href="#join">unirse</a>
     </nav>
+    <div class="account-area" id="account-area">
+      <a href="#join" class="account-link" id="account-link">unirse</a>
+    </div>
   </header>
 
   <section id="hero">
     <div class="hero-inner">
       <div class="eyebrow">SISTEMA EN LÍNEA — NODO ACTIVO</div>
-      <h1>Construimos lo que <em>otros</em> aún están imaginando.</h1>
+      <h1>El Club de la Ingeniería</h1>
+      <p class="hero-tagline">Construimos lo que <em>otros</em> aún están imaginando.</p>
+
       <p class="lede">Somos el Club de Ingeniería en Tecnologías de la Información, Ciencias e Investigación: estudiantes que convierten ideas sueltas en software, datos e investigación aplicada que funcionan de verdad. Sin filtros corporativos, sin PowerPoints eternos: solo problemas reales y las manos que los resuelven.</p>
       <div class="cta-row">
         <a href="#join" class="btn btn-primary">Únete al club →</a>
@@ -430,6 +489,35 @@
     </div>
   </section>
 
+  <section id="eventos">
+    <div class="sec-head">
+      <div class="sec-tag">// PRÓXIMOS EVENTOS</div>
+      <h2>Lo que viene este semestre</h2>
+      <p>Actividades fijas del club, abiertas a cualquier estudiante — no necesitas ser miembro todavía para asistir.</p>
+    </div>
+    <div class="events-grid">
+      <div class="event-card">
+        <div class="event-when">TODOS LOS JUEVES</div>
+        <h3>Tarde abierta en el taller</h3>
+        <p>Conoce los proyectos activos y a quienes los lideran. Es la puerta de entrada para unirte a un equipo.</p>
+      </div>
+      <div class="event-card">
+        <div class="event-when">FIN DE SEMESTRE</div>
+        <h3>Demo pública de proyectos</h3>
+        <p>Cada equipo presenta su avance frente a la comunidad universitaria — la fecha se confirma y se publica en nuestras redes.</p>
+      </div>
+      <div class="event-card">
+        <div class="event-when">CADA SEMESTRE</div>
+        <h3>Nueva convocatoria de proyectos</h3>
+        <p>Se abren cupos para sumarte a un equipo existente o proponer uno nuevo en software, datos, ciberseguridad, redes o investigación.</p>
+      </div>
+    </div>
+    <div class="events-cta">
+      <p>¿Quieres que te avisemos de la próxima fecha?</p>
+      <a href="#join" class="btn btn-primary">Recibir avisos →</a>
+    </div>
+  </section>
+
   <section id="join">
     <div class="join-grid">
       <div>
@@ -441,17 +529,57 @@
           <li><strong>Elige tu primer proyecto</strong>Te sumas a un equipo activo o propones uno nuevo si tienes la idea lista.</li>
         </ul>
       </div>
-      <form onsubmit="event.preventDefault(); this.querySelector('.btn').textContent='Solicitud enviada ✓';">
-        <div class="field"><label for="nombre">NOMBRE COMPLETO</label><input id="nombre" type="text" required placeholder="Tu nombre"></div>
-        <div class="field"><label for="correo">CORREO</label><input id="correo" type="email" required placeholder="tucorreo@universidad.edu"></div>
-        <div class="field">
-          <label for="area">ÁREA DE INTERÉS</label>
-          <select id="area"><option>Desarrollo de Software</option><option>Ciencia de Datos &amp; IA</option><option>Ciberseguridad</option><option>Redes &amp; Cloud</option><option>Sistemas de Información</option><option>Investigación</option></select>
+      <div id="join-panel">
+
+        <div id="join-oauth">
+          <div class="oauth-row">
+            <button type="button" class="btn-oauth" id="oauth-google">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.15.8 3.88 1.5l2.65-2.55C16.9 3.05 14.7 2 12 2 6.98 2 2.9 6.02 2.9 11s4.08 9 9.1 9c5.25 0 8.74-3.7 8.74-8.9 0-.6-.07-1.05-.15-1.5H12Z"/></svg>
+              Continuar con Google
+            </button>
+            <button type="button" class="btn-oauth" id="oauth-github">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="#fff"><path d="M12 2C6.48 2 2 6.58 2 12.2C2 16.68 4.87 20.47 8.84 21.8C9.34 21.9 9.52 21.58 9.52 21.31C9.52 21.07 9.51 20.24 9.51 19.36C7 19.9 6.35 18.72 6.15 18.1C6.04 17.79 5.52 16.85 5.06 16.6C4.68 16.4 4.14 15.87 5.05 15.86C5.91 15.85 6.52 16.66 6.72 16.98C7.69 18.63 9.24 18.16 9.86 17.89C9.96 17.17 10.24 16.68 10.55 16.4C8.12 16.12 5.58 15.16 5.58 10.94C5.58 9.74 5.99 8.75 6.7 7.98C6.59 7.7 6.22 6.57 6.8 5.05C6.8 5.05 7.7 4.75 9.52 5.98C10.29 5.76 11.11 5.65 11.93 5.65C12.75 5.65 13.57 5.76 14.34 5.98C16.16 4.74 17.06 5.05 17.06 5.05C17.64 6.57 17.27 7.7 17.16 7.98C17.87 8.75 18.28 9.73 18.28 10.94C18.28 15.18 15.73 16.12 13.3 16.39C13.69 16.72 14.03 17.36 14.03 18.35C14.03 19.76 14.02 20.96 14.02 21.31C14.02 21.58 14.2 21.91 14.7 21.8C18.65 20.46 21.52 16.68 21.52 12.2C21.52 6.58 17.04 2 12 2Z"/></svg>
+              Continuar con GitHub
+            </button>
+            <button type="button" class="btn-oauth" disabled title="Próximamente, en revisión con Meta">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="#1877F2"><path d="M13.5 21v-8.2h2.75l.4-3.2h-3.15V7.4c0-.93.26-1.56 1.6-1.56h1.7V2.98c-.3-.04-1.3-.13-2.47-.13-2.45 0-4.13 1.5-4.13 4.24v2.5H7.5v3.2h2.75V21h3.25z"/></svg>
+              Facebook (próximamente)
+            </button>
+          </div>
+          <div class="oauth-divider"><span>o completa el formulario</span></div>
         </div>
-        <div class="field"><label for="msg">CUÉNTANOS ALGO QUE HAYAS CONSTRUIDO (OPCIONAL)</label><textarea id="msg" rows="3" placeholder="..."></textarea></div>
-        <button type="submit" class="btn btn-primary">Enviar solicitud</button>
-        <p class="form-note">// respuesta en 48h — sin bots, un miembro real te escribe</p>
-      </form>
+
+        <form id="join-form" onsubmit="return false;">
+          <div class="field"><label for="nombre">NOMBRE COMPLETO</label><input id="nombre" name="nombre" type="text" required placeholder="Tu nombre"></div>
+          <div class="field"><label for="correo">CORREO</label><input id="correo" name="correo" type="email" required placeholder="tucorreo@universidad.edu"></div>
+          <div class="field">
+            <label for="area">ÁREA DE INTERÉS</label>
+            <select id="area" name="area"><option>Desarrollo de Software</option><option>Ciencia de Datos &amp; IA</option><option>Ciberseguridad</option><option>Redes &amp; Cloud</option><option>Sistemas de Información</option><option>Investigación</option></select>
+          </div>
+          <div class="field"><label for="msg">CUÉNTANOS ALGO QUE HAYAS CONSTRUIDO (OPCIONAL)</label><textarea id="msg" name="msg" rows="3" placeholder="..."></textarea></div>
+          <label class="consent-row"><input type="checkbox" id="consent" required> He leído y acepto la <a href="/privacidad.html" target="_blank" rel="noopener">Política de Tratamiento de Datos Personales</a></label>
+          <button type="submit" class="btn btn-primary" id="join-submit">Enviar solicitud</button>
+          <p class="form-note" id="join-note">// respuesta en 48h — sin bots, un miembro real te escribe</p>
+        </form>
+
+        <div id="join-profile" style="display:none;">
+          <div class="sec-tag">// CASI LISTO</div>
+          <p class="profile-lead">¡Hola<span id="profile-name-slot"></span>! Cuéntanos tu área de interés para terminar de unirte.</p>
+          <div class="field">
+            <label for="profile-area">ÁREA DE INTERÉS</label>
+            <select id="profile-area"><option>Desarrollo de Software</option><option>Ciencia de Datos &amp; IA</option><option>Ciberseguridad</option><option>Redes &amp; Cloud</option><option>Sistemas de Información</option><option>Investigación</option></select>
+          </div>
+          <div class="field"><label for="profile-msg">CUÉNTANOS ALGO QUE HAYAS CONSTRUIDO (OPCIONAL)</label><textarea id="profile-msg" rows="3" placeholder="..."></textarea></div>
+          <button type="button" class="btn btn-primary" id="profile-save">Guardar y unirme</button>
+          <p class="form-note" id="profile-note"></p>
+        </div>
+
+        <div id="join-done" style="display:none;">
+          <div class="sec-tag">// YA ERES PARTE DEL CLUB</div>
+          <p class="profile-lead">Gracias por unirte<span id="done-name-slot"></span> 👋 Te esperamos en la próxima tarde abierta.</p>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -487,6 +615,11 @@
     <input id="ai-input" type="text" placeholder="Escribe tu pregunta..." autocomplete="off" maxlength="500" required>
     <button type="submit" id="ai-send">Enviar</button>
   </form>
+</div>
+
+<div id="privacy-banner">
+  <span>Cuando inicias sesión guardamos tu token de acceso en el almacenamiento local de tu navegador (no usamos cookies de rastreo). <a href="/privacidad.html" target="_blank" rel="noopener">Ver política de tratamiento de datos</a>.</span>
+  <button type="button" class="btn btn-ghost" id="privacy-banner-ok">Entendido</button>
 </div>
 
 <script>
@@ -697,6 +830,179 @@
     }
   });
 })();
+</script>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const accountArea = document.getElementById('account-area');
+const joinOauth = document.getElementById('join-oauth');
+const joinForm = document.getElementById('join-form');
+const joinProfile = document.getElementById('join-profile');
+const joinDone = document.getElementById('join-done');
+const profileNameSlot = document.getElementById('profile-name-slot');
+const doneNameSlot = document.getElementById('done-name-slot');
+const profileArea = document.getElementById('profile-area');
+const profileMsg = document.getElementById('profile-msg');
+const profileNote = document.getElementById('profile-note');
+const joinNote = document.getElementById('join-note');
+const joinSubmit = document.getElementById('join-submit');
+const privacyBanner = document.getElementById('privacy-banner');
+const privacyBannerOk = document.getElementById('privacy-banner-ok');
+
+// Aviso de almacenamiento local — se muestra una sola vez por navegador
+if (!localStorage.getItem('privacyNoticeSeen')) {
+  privacyBanner.classList.add('show');
+}
+privacyBannerOk.addEventListener('click', () => {
+  localStorage.setItem('privacyNoticeSeen', '1');
+  privacyBanner.classList.remove('show');
+});
+
+let supabase;
+try {
+  const res = await fetch('/api/public-config');
+  const config = await res.json();
+  if (!res.ok || !config.supabaseUrl) throw new Error(config.error || 'config no disponible');
+  supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+} catch (err) {
+  console.error('No se pudo inicializar Supabase', err);
+}
+
+function showLoggedOut() {
+  accountArea.innerHTML = '<a href="#join" class="account-link" id="account-link">unirse</a>';
+  joinOauth.style.display = '';
+  joinForm.style.display = '';
+  joinProfile.style.display = 'none';
+  joinDone.style.display = 'none';
+}
+
+function showLoggedIn(displayName) {
+  accountArea.innerHTML =
+    '<span class="account-user">Hola, <strong>' + escapeHtml(displayName) + '</strong></span>' +
+    '<button type="button" class="account-logout" id="account-logout">Salir</button>';
+  document.getElementById('account-logout').addEventListener('click', () => supabase.auth.signOut());
+  joinOauth.style.display = 'none';
+  joinForm.style.display = 'none';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+async function refreshMemberState(session) {
+  if (!session) {
+    showLoggedOut();
+    return;
+  }
+  const meta = session.user.user_metadata || {};
+  const displayName = meta.full_name || meta.name || session.user.email || 'miembro';
+  showLoggedIn(displayName);
+
+  const { data, error } = await supabase
+    .from('miembros')
+    .select('nombre, area_interes')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('No se pudo leer el perfil de miembro', error);
+    return;
+  }
+
+  const nombre = (data && data.nombre) || displayName;
+  if (!data || !data.area_interes) {
+    profileNameSlot.textContent = ', ' + nombre;
+    joinProfile.style.display = '';
+    joinDone.style.display = 'none';
+  } else {
+    doneNameSlot.textContent = ', ' + nombre;
+    joinProfile.style.display = 'none';
+    joinDone.style.display = '';
+  }
+}
+
+if (supabase) {
+  const { data: { session } } = await supabase.auth.getSession();
+  refreshMemberState(session);
+  supabase.auth.onAuthStateChange((_event, session) => refreshMemberState(session));
+
+  document.getElementById('oauth-google').addEventListener('click', () => {
+    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/' } });
+  });
+  document.getElementById('oauth-github').addEventListener('click', () => {
+    supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/' } });
+  });
+
+  document.getElementById('profile-save').addEventListener('click', async () => {
+    const { data: { session: current } } = await supabase.auth.getSession();
+    if (!current) return;
+    profileNote.textContent = 'Guardando...';
+    profileNote.className = 'form-note';
+    const { error } = await supabase
+      .from('miembros')
+      .update({ area_interes: profileArea.value, mensaje: profileMsg.value.trim() })
+      .eq('user_id', current.user.id);
+    if (error) {
+      console.error('Error guardando perfil', error);
+      profileNote.textContent = 'No pudimos guardar. Intenta de nuevo.';
+      profileNote.className = 'form-note error';
+      return;
+    }
+    profileNote.textContent = '';
+    refreshMemberState(current);
+  });
+} else {
+  document.getElementById('oauth-google').disabled = true;
+  document.getElementById('oauth-github').disabled = true;
+}
+
+joinForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const consent = document.getElementById('consent');
+  if (!consent.checked) {
+    joinNote.textContent = 'Debes aceptar la Política de Tratamiento de Datos Personales.';
+    joinNote.className = 'form-note error';
+    return;
+  }
+
+  const payload = {
+    nombre: document.getElementById('nombre').value.trim(),
+    correo: document.getElementById('correo').value.trim(),
+    area: document.getElementById('area').value,
+    mensaje: document.getElementById('msg').value.trim(),
+    consentimiento: true,
+  };
+
+  joinSubmit.disabled = true;
+  joinNote.textContent = 'Enviando...';
+  joinNote.className = 'form-note';
+
+  try {
+    const res = await fetch('/api/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      joinNote.textContent = data.error || 'Algo salió mal. Intenta de nuevo.';
+      joinNote.className = 'form-note error';
+      return;
+    }
+    joinSubmit.textContent = 'Solicitud enviada ✓';
+    joinNote.textContent = '// respuesta en 48h — sin bots, un miembro real te escribe';
+    joinNote.className = 'form-note ok';
+    joinForm.reset();
+  } catch (err) {
+    joinNote.textContent = 'No pudimos conectar. Revisa tu conexión.';
+    joinNote.className = 'form-note error';
+  } finally {
+    joinSubmit.disabled = false;
+  }
+});
 </script>
 
 </body>
