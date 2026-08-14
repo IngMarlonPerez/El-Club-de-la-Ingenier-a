@@ -108,7 +108,7 @@ Landing estática preservada + API Routes. Sin reescribir el DOM manual en React
 <tr>
 <td align="center">
 <h3>📱 Responsive</h3>
-Diseño mobile-first con tipografía IBM Plex y paleta teal/gold sobre dark mode.
+Diseño fluido de móvil a Smart TV/monitor grande, con tipografía IBM Plex y paleta teal/gold sobre dark mode.
 </td>
 <td align="center">
 <h3>🛡️ Seguridad</h3>
@@ -117,6 +117,12 @@ API keys solo en servidor. Validación de entrada. Límites anti-abuso por IP.
 <td align="center">
 <h3>🚀 Deploy-ready</h3>
 Preparado para <strong>Vercel</strong> con configuración mínima y variables de entorno documentadas.
+</td>
+</tr>
+<tr>
+<td align="center" colspan="3">
+<h3>🎮 Reto Terminal Linux con INGenioso</h3>
+<strong>Operación Laboratorio-B</strong>: aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 16 etapas secuenciales de dificultad creciente repartidas en 2 niveles (~1 hora), 100% simulado y ficticio.
 </td>
 </tr>
 </table>
@@ -378,11 +384,18 @@ curl -X POST http://localhost:3000/api/chat \
 
 ## 🎮 Reto Terminal Linux (Operación Laboratorio-B)
 
-El proyecto incluye un entorno simulado de terminal Linux interactiva, accesible desde `/linux-cli.html`, pensado para que los nuevos miembros aprendan comandos básicos mediante la gamificación.
+Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux-cli.html`](public/linux-cli.html), pensado para que cualquier persona —incluso sin experiencia previa— aprenda comandos reales de la mano de **INGenioso**, un oso cyborg asistente con IA.
 
-- **Nivel 1:** Navegación por directorios, lectura de archivos y decodificación de mensajes.
-- **Nivel 2:** Simulación educativa de escaneo de red local (`nmap`) y auditoría de redes WiFi (`aircrack-ng`).
-- **Características:** Registro de objetivos completados, sistema de ayuda integrado y diseño retro futurista.
+**Cómo está armado:**
+
+- **La computadora es la pantalla del juego.** Reutiliza el mismo componente visual de la computadora retro "todo en uno" de la animación de arranque del sitio (`.mac-unit`): el mismo chasis, bisel y brillo de fósforo verde, ahora como el terminal donde corre la partida.
+- **Un solo input para todo.** No hay una caja de comandos y otra de chat separadas: escribes un comando real (se ejecuta contra el simulador) o le preguntas algo en lenguaje natural a INGenioso ("no sé qué hacer", "dame una pista") y él responde — el propio input decide a quién hablarle según lo que escribas.
+- **Progresión secuencial de dificultad**, 8 etapas por nivel con barra de progreso visible:
+  - **Nivel 1 — Reconocimiento:** `pwd` → `ls` → `ls -a` → `cat readme.txt` → `cat briefing.txt` (revela el objetivo) → `ping` → `nmap` → `nmap -sV` (revela la vulnerabilidad).
+  - **Nivel 2 — Infiltración WiFi:** `iwconfig` → `airmon-ng start` → `airodump-ng` → captura dirigida → `aireplay-ng --deauth` (con recordatorio ético explícito) → confirmación del handshake → `cat wordlist.txt` → `aircrack-ng` (contraseña final, pista conectada al Nivel 1).
+- **IA contextual real:** las preguntas a INGenioso golpean el mismo endpoint `/api/chat` (Groq → NVIDIA con presupuesto diario), enviando el nivel y la etapa pendiente como contexto para que la pista sea específica, no genérica.
+- **Selector de niveles** con Nivel 2 bloqueado hasta completar el Nivel 1, objetivos clickeables (piden pista directamente), progreso guardado en `localStorage`, y una pantalla final con cheatsheet de todos los comandos practicados.
+- **Aviso ético no-saltable** al inicio: toda la red, IPs y credenciales son ficticias; se recuerda explícitamente que usar estas herramientas reales sin autorización es ilegal.
 
 ---
 

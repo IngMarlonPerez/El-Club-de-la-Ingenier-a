@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Operación Laboratorio-B — Reto de Terminal Linux | Club de Ingeniería</title>
-<meta name="description" content="Aprende comandos de Linux jugando: escaneo de red y auditoría WiFi en un laboratorio 100% ficticio y educativo. Dos niveles, ~1 hora.">
+<meta name="description" content="Aprende comandos de Linux jugando: escaneo de red y auditoría WiFi en un laboratorio 100% ficticio y educativo. Dos niveles, ~1 hora, con INGenioso como guía.">
 <meta name="robots" content="noindex">
 <style>
   :root{
@@ -24,15 +24,15 @@
     --sans:'IBM Plex Sans',-apple-system,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;}
+  html{height:auto;overflow-x:hidden;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;}
   button{font-family:inherit;}
   a{color:var(--teal);}
   a:focus-visible, button:focus-visible, input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 
-  #app{display:flex;flex-direction:column;height:100vh;}
+  #app{display:flex;flex-direction:column;min-height:100vh;}
 
-  header{flex-shrink:0;display:flex;align-items:center;gap:1rem;padding:.8rem 1.4rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
+  header{flex-shrink:0;display:flex;align-items:center;gap:1rem;padding:.8rem 1.4rem;background:var(--panel-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;}
   header a.back{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);text-decoration:none;flex-shrink:0;}
   header a.back:hover{color:var(--teal);}
   header .title{font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink);}
@@ -40,44 +40,89 @@
   header .meta{margin-left:auto;display:flex;align-items:center;gap:1.2rem;font-family:var(--mono);font-size:.7rem;color:var(--ink-dim);flex-shrink:0;}
   header .dot{width:7px;height:7px;border-radius:50%;background:var(--term-green);box-shadow:0 0 6px var(--term-green);animation:blink 1.6s steps(1) infinite;}
   @keyframes blink{50%{opacity:.3;}}
+  header .menu-btn{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
+  header .menu-btn:hover{color:var(--teal);border-color:var(--teal-dim);}
+  #aside-toggle{display:none;background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
 
-  main{flex:1;display:flex;min-height:0;}
-  aside{width:290px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
+  main{flex:1;display:flex;}
+  aside{width:280px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
   aside h2{font-size:.66rem;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem;}
-  aside .briefing{color:var(--ink-dim);line-height:1.6;white-space:pre-wrap;margin-bottom:1.4rem;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);}
+  aside .briefing{color:var(--ink-dim);line-height:1.6;white-space:pre-wrap;margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);}
+  .stage-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:.4rem;}
+  .stage-track-fill{height:100%;background:linear-gradient(90deg,var(--teal-dim),var(--term-green));width:0;transition:width .4s ease;}
+  .stage-count{font-size:.64rem;color:var(--gold);letter-spacing:.08em;margin-bottom:1rem;}
   .obj-list{list-style:none;margin-bottom:1.4rem;}
-  .obj-list li{display:flex;gap:.5rem;align-items:flex-start;color:var(--ink-dim);margin-bottom:.7rem;line-height:1.4;}
-  .obj-list li .chk{flex-shrink:0;width:16px;height:16px;border:1px solid var(--teal-dim);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--term-green);margin-top:.1rem;}
-  .obj-list li.done{color:var(--ink);}
+  .obj-list li{padding:0;margin-bottom:.5rem;}
+  .obj-list li button{all:unset;display:flex;gap:.5rem;align-items:flex-start;cursor:pointer;width:100%;border-radius:5px;padding:.3rem;color:var(--ink-dim);line-height:1.4;}
+  .obj-list li button:hover{background:rgba(47,216,201,.08);}
+  .obj-list li button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .obj-list li.done button{color:var(--ink);}
+  .obj-list li.current button{color:var(--term-green);}
+  .obj-list .chk{flex-shrink:0;width:16px;height:16px;border:1px solid var(--teal-dim);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--term-green);margin-top:.1rem;}
   .obj-list li.done .chk{background:var(--teal-dim);border-color:var(--teal);}
   .help-box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.8rem;color:var(--ink-dim);line-height:1.7;}
   .help-box b{color:var(--teal);}
-
-  #terminal-col{flex:1;display:flex;flex-direction:column;min-width:0;}
-  #scrollback{flex:1;overflow-y:auto;padding:1.2rem 1.4rem;font-family:var(--mono);font-size:.86rem;line-height:1.65;}
-  .line{white-space:pre-wrap;word-break:break-word;margin-bottom:.15rem;}
-  .line.echo{color:var(--ink);}
-  .line.echo .prompt{color:var(--gold);}
-  .line.out{color:var(--term-green);}
-  .line.info{color:var(--ink-dim);}
-  .line.tip{color:var(--teal);}
-  .line.tip::before{content:'💡 ';}
-  .line.warn{color:var(--danger);}
-  .line.ethic{display:block;background:rgba(232,178,58,.08);border:1px solid var(--gold);border-radius:6px;padding:.6rem .8rem;color:var(--gold);margin:.5rem 0;}
-  .line.success{color:var(--term-green);font-weight:700;}
-
-  #input-row{flex-shrink:0;display:flex;align-items:center;gap:.5rem;padding:.8rem 1.4rem;background:var(--panel-2);border-top:1px solid var(--line);font-family:var(--mono);font-size:.86rem;}
-  #input-row .prompt{color:var(--gold);white-space:nowrap;}
-  #cmd-input{flex:1;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:.86rem;}
-  #cmd-input:focus{outline:none;}
-  .cursor{display:inline-block;width:8px;height:1em;background:var(--term-green);vertical-align:text-bottom;animation:blink .8s steps(1) infinite;}
 
   @media (max-width:760px){
     aside{position:fixed;inset:0 0 0 auto;width:min(280px,80vw);transform:translateX(100%);transition:transform .25s ease;z-index:40;height:100%;}
     aside.open{transform:translateX(0);}
     #aside-toggle{display:inline-flex;}
   }
-  #aside-toggle{display:none;background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
+
+  /* ---- Escenario del juego: reutiliza la computadora retro del boot ---- */
+  #stage-col{flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4rem 1.4rem 2rem;min-width:0;}
+
+  .mac-unit{position:relative;width:min(880px,94vw);font-size:clamp(11px,1.15vw,16px);-webkit-font-smoothing:antialiased;}
+  @media (min-width:1024px){.mac-unit{width:clamp(760px,58vw,1000px);}}
+  .mac-shadow{position:absolute;left:50%;bottom:-1.6em;transform:translateX(-50%);width:70%;height:1.8em;background:radial-gradient(ellipse at center, rgba(0,0,0,.6), rgba(0,0,0,0) 72%);filter:blur(2px);}
+  .mac-case{position:relative;background:linear-gradient(155deg,#f6efdc 0%,#ddd0ac 55%,#b7a87d 100%);border-radius:1.8em 1.8em .8em .8em;padding:1.3em 1.4em 0;box-shadow:0 1.6em 3.2em rgba(0,0,0,.55), inset 0 .15em 0 rgba(255,255,255,.55), inset 0 -.45em .7em rgba(0,0,0,.16);border:1px solid rgba(0,0,0,.14);}
+  .mac-case::before{content:'';position:absolute;top:1.4em;left:.7em;bottom:1.5em;width:1px;background:rgba(255,255,255,.4);}
+  .mac-case::after{content:'';position:absolute;top:1.4em;right:.7em;bottom:1.5em;width:1px;background:rgba(0,0,0,.12);}
+  .mac-vents{position:absolute;top:.55em;left:50%;transform:translateX(-50%);width:5.4em;height:.4em;border-radius:2px;background:repeating-linear-gradient(90deg, rgba(0,0,0,.3) 0 2px, transparent 2px 6px);opacity:.55;}
+  .mac-bezel{position:relative;background:linear-gradient(160deg,#2b2b2b,#0b0b0b 55%,#000);border-radius:1.1em 1.1em .6em .6em;padding:.9em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07), inset 0 .3em .7em rgba(0,0,0,.65), 0 .15em 0 rgba(255,255,255,.25);}
+  .mac-screen{position:relative;aspect-ratio:16/10;background:radial-gradient(ellipse at 50% 30%, #0a1a10 0%, #030a05 68%, #000 100%);border-radius:.7em;overflow:hidden;box-shadow:inset 0 0 3.4em rgba(57,255,106,.07), inset 0 0 .7em rgba(0,0,0,.95);}
+  .mac-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom, rgba(57,255,106,.05) 0px, transparent 2px, transparent 4px);pointer-events:none;z-index:2;}
+  .mac-screen-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6) 100%);pointer-events:none;z-index:2;}
+  .mac-chin{position:relative;height:2.6em;display:flex;align-items:center;justify-content:space-between;padding:.5em .3em 0;}
+  .mac-disk-slot{width:2.6em;height:.3em;border-radius:2px;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.2));box-shadow:inset 0 1px 2px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.4);}
+  .mac-led{width:.5em;height:.5em;border-radius:50%;background:var(--term-green);box-shadow:0 0 .5em var(--term-green);animation:blink 2s steps(1) infinite;}
+  .mac-brand-plate{font-family:var(--mono);font-size:.68em;letter-spacing:.14em;color:#786a48;opacity:.85;}
+  .mac-stand{width:22%;height:1.1em;background:linear-gradient(160deg,#ddd0ac,#b7a87d);margin:0 auto;border-radius:0 0 .5em .5em;box-shadow:0 .3em .6em rgba(0,0,0,.3);}
+
+  #scrollback{position:absolute;inset:0;overflow-y:auto;padding:1.15em 1.35em;font-family:var(--mono);font-size:.92em;line-height:1.6;}
+  .line{white-space:pre-wrap;word-break:break-word;margin-bottom:.2em;color:var(--term-green);}
+  .line.echo{color:var(--ink);}
+  .line.echo .prompt{color:var(--gold);}
+  .line.info{color:var(--ink-dim);}
+  .line.tip{color:var(--teal);}
+  .line.tip::before{content:'💡 ';}
+  .line.warn{color:var(--danger);}
+  .line.ethic{display:block;background:rgba(232,178,58,.08);border:1px solid var(--gold);border-radius:6px;padding:.6em .8em;color:var(--gold);margin:.5em 0;}
+  .line.success{color:var(--term-green);font-weight:700;}
+
+  /* ---- INGenioso, junto a la computadora ---- */
+  .ingenioso-dock{display:flex;gap:1rem;align-items:flex-start;width:min(880px,94vw);margin-top:1.6rem;}
+  @media (min-width:1024px){.ingenioso-dock{width:clamp(760px,58vw,1000px);}}
+  .ing-avatar-lg{width:60px;height:60px;flex-shrink:0;animation:ing-bob 3.4s ease-in-out infinite;}
+  @keyframes ing-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+  .ing-eye{animation:ing-blink 4.5s ease-in-out infinite;transform-origin:65px 48px;}
+  @keyframes ing-blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.1);}}
+  .ing-bubble-lg{flex:1;background:var(--panel);border:1px solid var(--teal-dim);border-radius:10px;padding:.8em 1em;font-size:.86rem;line-height:1.6;color:var(--ink);position:relative;min-width:0;}
+  .ing-bubble-lg::before{content:'';position:absolute;left:-8px;top:1.1em;border:8px solid transparent;border-right-color:var(--teal-dim);}
+  .ing-bubble-lg.thinking{color:var(--ink-dim);font-style:italic;}
+  .ing-bubble-lg b{color:var(--teal);}
+
+  /* ---- Input único ---- */
+  .cmd-row{display:flex;align-items:center;gap:.6rem;width:min(880px,94vw);margin:1.1rem 0 0;padding:.85rem 1.1rem;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:.88rem;}
+  @media (min-width:1024px){.cmd-row{width:clamp(760px,58vw,1000px);}}
+  .cmd-row:focus-within{border-color:var(--teal-dim);}
+  .cmd-row .prompt{color:var(--gold);white-space:nowrap;}
+  .cmd-row input{flex:1;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:.88rem;min-width:0;}
+  .cmd-row input:focus{outline:none;}
+  .cmd-row button{background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:.55rem 1rem;font-family:var(--mono);font-weight:700;font-size:.78rem;cursor:pointer;flex-shrink:0;}
+  .cmd-row button:disabled{opacity:.5;cursor:not-allowed;}
+  .cmd-hint{width:min(880px,94vw);margin-top:.5rem;font-family:var(--mono);font-size:.66rem;color:var(--ink-dim);letter-spacing:.02em;}
+  @media (min-width:1024px){.cmd-hint{width:clamp(760px,58vw,1000px);}}
 
   /* ---- Modales ---- */
   .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(2,6,4,.92);display:flex;align-items:center;justify-content:center;padding:2rem;}
@@ -102,15 +147,6 @@
   #cheatsheet .cs-item b{color:var(--teal);flex-shrink:0;min-width:150px;}
   #cheatsheet .cs-item span{color:var(--ink-dim);}
 
-  header .menu-btn{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
-  header .menu-btn:hover{color:var(--teal);border-color:var(--teal-dim);}
-
-  /* ---- Objetivos clickeables ---- */
-  .obj-list li{padding:0;}
-  .obj-list li button{all:unset;display:flex;gap:.5rem;align-items:flex-start;cursor:pointer;width:100%;border-radius:5px;padding:.2rem;color:inherit;}
-  .obj-list li button:hover{background:rgba(47,216,201,.08);}
-  .obj-list li button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
-
   /* ---- Selección de nivel ---- */
   .level-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.4rem 0;}
   @media (max-width:520px){.level-cards{grid-template-columns:1fr;}}
@@ -121,36 +157,6 @@
   .level-card h3{font-family:var(--mono);font-size:.94rem;margin-bottom:.5rem;}
   .level-card p{font-size:.8rem;color:var(--ink-dim);line-height:1.5;margin-bottom:.6rem;}
   .level-card .level-status{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--gold);}
-
-  /* ---- INGenioso: mascota/asistente del juego ---- */
-  #ingenioso-float{position:fixed;right:1.4rem;bottom:1.4rem;z-index:60;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%, #14382e, #071510 75%);border:2px solid var(--teal-dim);box-shadow:0 8px 26px rgba(0,0,0,.55);cursor:pointer;padding:2px;overflow:visible;animation:ing-bob 3.2s ease-in-out infinite;}
-  #ingenioso-float svg{width:100%;height:100%;}
-  #ingenioso-float .ping{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:none;}
-  #ingenioso-float.has-msg .ping{display:block;animation:blink 1s steps(1) infinite;}
-  @keyframes ing-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
-  .ing-eye{animation:ing-blink 4.5s ease-in-out infinite;transform-origin:65px 46px;}
-  @keyframes ing-blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.1);}}
-
-  #ingenioso-panel{position:fixed;right:1.4rem;bottom:6rem;z-index:65;width:min(320px,88vw);max-height:min(440px,68vh);background:var(--panel);border:1px solid var(--teal-dim);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;}
-  #ingenioso-panel.open{display:flex;}
-  .ing-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.72rem;color:var(--ink);flex-shrink:0;}
-  .ing-bar b{color:var(--teal);}
-  .ing-close{margin-left:auto;background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;}
-  .ing-close:hover{color:var(--ink);}
-  .ing-body{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;}
-  .ing-row{display:flex;gap:.7rem;align-items:flex-start;}
-  .ing-avatar-sm{width:44px;height:44px;flex-shrink:0;}
-  .ing-bubble{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;font-size:.82rem;color:var(--ink);line-height:1.55;}
-  .ing-bubble.thinking{color:var(--ink-dim);font-style:italic;}
-  .ing-ask-row{display:flex;gap:.5rem;padding:.7rem;border-top:1px solid var(--line);background:var(--panel-2);flex-shrink:0;}
-  .ing-ask-row input{flex:1;background:#050c17;border:1px solid var(--line);border-radius:6px;padding:.6rem .7rem;color:var(--ink);font-family:var(--sans);font-size:.82rem;}
-  .ing-ask-row button{background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:0 .9rem;font-family:var(--mono);font-size:.76rem;font-weight:700;cursor:pointer;}
-  .ing-ask-row button:disabled{opacity:.5;cursor:not-allowed;}
-
-  @media (min-width:1600px){
-    aside{width:340px;}
-    #scrollback,#input-row{font-size:.94rem;}
-  }
 
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;}}
 </style>
@@ -173,18 +179,45 @@
     <aside id="aside">
       <h2>// BRIEFING</h2>
       <div class="briefing" id="briefing-text">Cargando misión...</div>
-      <h2>// OBJETIVOS</h2>
+      <h2>// PROGRESO</h2>
+      <div class="stage-track"><div class="stage-track-fill" id="stage-bar-fill"></div></div>
+      <div class="stage-count" id="stage-count">Etapa 1/8</div>
       <ul class="obj-list" id="obj-list"></ul>
-      <div class="help-box">Escribe <b>ayuda</b> para ver los comandos disponibles, o <b>pista</b> si te trabas. <b>limpiar</b> borra la pantalla.</div>
+      <div class="help-box">Escribe cualquier comando abajo. Si algo no te sale, escríbele a <b>INGenioso</b> tu duda directo en la misma línea (ej. "no sé qué hacer") — él te responde.</div>
     </aside>
 
-    <div id="terminal-col">
-      <div id="scrollback"></div>
-      <div id="input-row">
-        <span class="prompt" id="prompt-label">agente@labclub:~$</span>
-        <input id="cmd-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Línea de comandos">
-        <span class="cursor"></span>
+    <div id="stage-col">
+      <div class="mac-unit" id="game-mac">
+        <div class="mac-shadow"></div>
+        <div class="mac-case">
+          <div class="mac-vents"></div>
+          <div class="mac-bezel">
+            <div class="mac-screen">
+              <div class="mac-scanlines"></div>
+              <div id="scrollback"></div>
+              <div class="mac-screen-vignette"></div>
+            </div>
+          </div>
+          <div class="mac-chin">
+            <div class="mac-disk-slot"></div>
+            <div class="mac-led" aria-hidden="true"></div>
+            <div class="mac-brand-plate">CIE · LAB-B</div>
+          </div>
+        </div>
+        <div class="mac-stand"></div>
       </div>
+
+      <div class="ingenioso-dock">
+        <div class="ing-avatar-lg" id="ing-avatar-slot"></div>
+        <div class="ing-bubble-lg" id="ing-bubble"><b>INGenioso:</b> ¡Hola, agente! Yo te voy guiando. Escribe tu primer comando abajo cuando quieras — y si te trabas, solo pregúntame en la misma línea.</div>
+      </div>
+
+      <form id="cmd-form" class="cmd-row" autocomplete="off">
+        <span class="prompt" id="prompt-label">agente@labclub:~$</span>
+        <input id="cmd-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Comando, o pregunta para INGenioso" placeholder="Escribe un comando, o pregúntale algo a INGenioso...">
+        <button type="submit">Enviar</button>
+      </form>
+      <div class="cmd-hint">Comandos reales del laboratorio, o preguntas en tu idioma ("no entiendo", "dame una pista") — INGenioso responde ambos.</div>
     </div>
   </main>
 </div>
@@ -196,7 +229,7 @@
     <div class="warn-box">
       <b>⚠️ Antes de empezar:</b> los comandos que vas a escribir (nmap, airmon-ng, aircrack-ng, etc.) existen de verdad y son herramientas profesionales de auditoría. Usarlas contra una red o dispositivo que no sea tuyo, o sin autorización explícita por escrito, <b>es ilegal</b>. Esta práctica es solo para que aprendas la sintaxis y el propósito de cada comando en un entorno seguro.
     </div>
-    <p>Tu mentor de ciberseguridad del club armó una red de laboratorio para que la audites paso a paso. Dos niveles, ~1 hora en total. Cada comando trae una explicación pensada para quien recién empieza.</p>
+    <p>Tu mentor de ciberseguridad del club armó una red de laboratorio para que la audites paso a paso, con INGenioso guiándote. Dos niveles, 8 etapas cada uno, ~1 hora en total.</p>
     <button class="btn" id="intro-start" type="button">Entendido, comenzar misión →</button>
   </div>
 </div>
@@ -209,13 +242,13 @@
       <button class="level-card" id="select-l1" type="button" data-level="1">
         <div class="level-num">01</div>
         <h3>Reconocimiento</h3>
-        <p>Encuentra el objetivo asignado y escanéalo con nmap.</p>
+        <p>8 etapas: desde ubicarte en el sistema hasta escanear el objetivo y encontrar su vulnerabilidad.</p>
         <span class="level-status" id="l1-status">Disponible</span>
       </button>
       <button class="level-card" id="select-l2" type="button" data-level="2">
         <div class="level-num">02</div>
         <h3>Infiltración WiFi</h3>
-        <p>Captura el handshake de la red del laboratorio y crackea su contraseña.</p>
+        <p>8 etapas: desde tu adaptador WiFi hasta capturar el handshake y crackear la contraseña.</p>
         <span class="level-status" id="l2-status">🔒 Completa el Nivel 1 primero</span>
       </button>
     </div>
@@ -237,34 +270,13 @@
   </div>
 </div>
 
-<button id="ingenioso-float" type="button" aria-label="Abrir a INGenioso, tu asistente">
-  <span class="ping"></span>
-</button>
-
-<div id="ingenioso-panel">
-  <div class="ing-bar">
-    <span>🐻</span> <b>INGenioso</b> — asistente del juego
-    <button class="ing-close" id="ing-close" type="button" aria-label="Cerrar">✕</button>
-  </div>
-  <div class="ing-body" id="ing-body">
-    <div class="ing-row">
-      <div class="ing-avatar-sm" id="ing-avatar-slot"></div>
-      <div class="ing-bubble" id="ing-bubble">¡Hola, agente! Soy INGenioso 🐻⚙️ Si te trabas, hazme clic en un objetivo del panel izquierdo o pregúntame lo que quieras aquí abajo.</div>
-    </div>
-  </div>
-  <form class="ing-ask-row" id="ing-ask-form">
-    <input id="ing-ask-input" type="text" placeholder="Pregúntale a INGenioso..." autocomplete="off" maxlength="300">
-    <button type="submit" id="ing-ask-send">Enviar</button>
-  </form>
-</div>
-
 <script>
 (function(){
   'use strict';
 
   const TARGET_IP = '192.168.56.10';
   const BSSID = 'AA:BB:CC:11:22:33';
-  const STORAGE_KEY = 'linuxGameProgress_v2';
+  const STORAGE_KEY = 'linuxGameProgress_v3';
 
   const INGENIOSO_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true">'
     + '<circle cx="22" cy="22" r="14" fill="#0d1f1a" stroke="#2fd8c9" stroke-width="2"/>'
@@ -288,6 +300,7 @@
 
   const scrollback = document.getElementById('scrollback');
   const input = document.getElementById('cmd-input');
+  const cmdForm = document.getElementById('cmd-form');
   const objList = document.getElementById('obj-list');
   const briefingText = document.getElementById('briefing-text');
   const levelLabel = document.getElementById('level-label');
@@ -297,9 +310,18 @@
   const completeModal = document.getElementById('complete-modal');
   const asideEl = document.getElementById('aside');
   const levelSelectModal = document.getElementById('level-select-modal');
-  const ingeniosoFloat = document.getElementById('ingenioso-float');
-  const ingeniosoPanel = document.getElementById('ingenioso-panel');
   const ingBubble = document.getElementById('ing-bubble');
+  const stageBarFill = document.getElementById('stage-bar-fill');
+  const stageCount = document.getElementById('stage-count');
+
+  const ENCOURAGEMENTS = [
+    '¡Bien hecho! Vamos por buen camino. 🐻',
+    '¡Eso es! Sigamos.',
+    '¡Perfecto! Un paso más cerca.',
+    '¡Así se hace, agente!',
+    '¡Excelente! Continuemos.',
+  ];
+  function encourage(){ return ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]; }
 
   // ---- Catálogo de comandos aprendidos (para el cheatsheet final) ----
   const CHEATSHEET = [
@@ -319,6 +341,34 @@
   ];
   const learned = new Set();
 
+  // ---- Etapas secuenciales por nivel ----
+  const STAGES = {
+    1: [
+      { id: 'pwd', label: 'Ubícate en el sistema (pwd)' },
+      { id: 'ls', label: 'Lista tu carpeta de inicio (ls)' },
+      { id: 'lsA', label: 'Descubre los archivos ocultos (ls -a)' },
+      { id: 'readme', label: 'Lee el archivo de bienvenida (cat readme.txt)' },
+      { id: 'findIp', label: 'Encuentra tu misión (cat briefing.txt)' },
+      { id: 'ping', label: 'Confirma que el objetivo está en línea (ping)' },
+      { id: 'scan', label: 'Escaneo básico de puertos (nmap)' },
+      { id: 'scanV', label: 'Descubre versiones y la vulnerabilidad (nmap -sV)' },
+    ],
+    2: [
+      { id: 'iwconfig', label: 'Revisa tu adaptador WiFi (iwconfig)' },
+      { id: 'monitor', label: 'Activa el modo monitor (airmon-ng start)' },
+      { id: 'findAp', label: 'Escanea redes cercanas (airodump-ng)' },
+      { id: 'capture', label: 'Apunta una captura dirigida (--bssid/-c/-w)' },
+      { id: 'deauth', label: 'Acelera la captura, con ética (aireplay-ng --deauth)' },
+      { id: 'handshake', label: 'Confirma el handshake capturado' },
+      { id: 'wordlist', label: 'Revisa tu diccionario (cat wordlist.txt)' },
+      { id: 'crack', label: 'Crackea la contraseña (aircrack-ng)' },
+    ],
+  };
+  const STAGE_FLAG = {
+    1: { pwd: 'pwd', ls: 'ls', lsA: 'lsA', readme: 'readme', findIp: 'findIp', ping: 'ping', scan: 'scanned', scanV: 'scannedVersion' },
+    2: { iwconfig: 'iwconfig', monitor: 'monitor', findAp: 'findAp', capture: 'captureAttempted', deauth: 'deauth', handshake: 'handshake', wordlist: 'wordlist', crack: 'crack' },
+  };
+
   // ---- Estado persistente ----
   let state = loadState() || {
     level: 1,
@@ -326,8 +376,8 @@
     elapsedBefore: 0,
     hintsUsed: 0,
     inHidden: false,
-    l1: { findIp: false, scanned: false, scannedVersion: false },
-    l2: { monitor: false, findAp: false, deauth: false, handshake: false, crack: false },
+    l1: { pwd: false, ls: false, lsA: false, readme: false, findIp: false, ping: false, scanned: false, scannedVersion: false },
+    l2: { iwconfig: false, monitor: false, findAp: false, captureAttempted: false, deauth: false, handshake: false, wordlist: false, crack: false },
     completed: false,
   };
 
@@ -376,37 +426,34 @@
   }
   async function sleep(ms){ return new Promise((r) => setTimeout(r, ms)); }
 
-  // ---- Objetivos (sidebar) ----
+  // ---- Etapas (sidebar) ----
+  function stageDone(level, id){
+    const s = level === 1 ? state.l1 : state.l2;
+    return !!s[STAGE_FLAG[level][id]];
+  }
   function objectivesFor(level){
-    if (level === 1){
-      return [
-        { id: 'findIp', label: 'Encuentra la IP objetivo en el briefing', done: state.l1.findIp },
-        { id: 'scan', label: 'Escanea la IP y descubre el servicio vulnerable (nmap -sV)', done: state.l1.scannedVersion },
-      ];
-    }
-    return [
-      { id: 'monitor', label: 'Activa el modo monitor en tu adaptador WiFi', done: state.l2.monitor },
-      { id: 'findAp', label: 'Encuentra la red del laboratorio (LAB-WIFI-CLUBING)', done: state.l2.findAp },
-      { id: 'handshake', label: 'Captura el handshake WPA', done: state.l2.handshake },
-      { id: 'crack', label: 'Crackea la contraseña con el wordlist', done: state.l2.crack },
-    ];
+    return STAGES[level].map((st) => ({ id: st.id, label: st.label, done: stageDone(level, st.id) }));
   }
   function renderObjectives(){
     const objs = objectivesFor(state.level);
+    const firstPending = objs.find((o) => !o.done);
     objList.innerHTML = '';
     objs.forEach((o) => {
       const li = document.createElement('li');
-      li.className = o.done ? 'done' : '';
+      li.className = o.done ? 'done' : (o.id === (firstPending && firstPending.id) ? 'current' : '');
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.innerHTML = '<span class="chk">' + (o.done ? '✓' : '') + '</span><span>' + o.label + '</span>';
       btn.addEventListener('click', () => {
-        if (o.done){ sayIngenioso('¡Ese objetivo ya lo tienes resuelto! 🎉'); return; }
+        if (o.done){ sayIngenioso('¡Esa etapa ya la tienes resuelta! 🎉'); return; }
         hintForObjective(o.id);
       });
       li.appendChild(btn);
       objList.appendChild(li);
     });
+    const doneCount = objs.filter((o) => o.done).length;
+    stageBarFill.style.width = (doneCount / objs.length * 100) + '%';
+    stageCount.textContent = 'Etapa ' + Math.min(doneCount + 1, objs.length) + '/' + objs.length;
   }
   function renderBriefing(){
     briefingText.textContent = state.level === 1
@@ -421,26 +468,24 @@
   // ---- Sistema de pistas progresivas ----
   const HINTS = {
     1: {
-      findIp: [
-        'Empieza mirando qué archivos tienes con "ls".',
-        'Usa "cat" seguido del nombre de un archivo para leer su contenido, por ejemplo: cat readme.txt',
-        'El archivo que buscas se llama briefing.txt — pruébalo con: cat briefing.txt',
-      ],
-      scan: [
-        'Con la IP en mano, intenta "nmap" seguido de la IP.',
-        'nmap por sí solo no muestra las versiones de los servicios. Agrega el flag -sV.',
-        'Comando completo: nmap -sV ' + TARGET_IP,
-      ],
+      pwd: ['Escribe "pwd" para ver en qué carpeta estás parado.'],
+      ls: ['Escribe "ls" para listar los archivos de tu carpeta.'],
+      lsA: ['Los archivos que empiezan con "." están ocultos. Agrega el flag -a: ls -a'],
+      readme: ['Usa "cat" seguido del nombre del archivo, por ejemplo: cat readme.txt'],
+      findIp: ['El archivo que buscas se llama briefing.txt — pruébalo con: cat briefing.txt'],
+      ping: ['Usa "ping" seguido de la IP que encontraste en el briefing.'],
+      scan: ['Con la IP en mano, intenta "nmap" seguido de la IP.'],
+      scanV: ['nmap por sí solo no muestra versiones. Agrega el flag -sV: nmap -sV ' + TARGET_IP],
     },
     2: {
-      monitor: ['Primero activa el modo monitor con airmon-ng.', 'La sintaxis es: airmon-ng start wlan0'],
-      findAp: ['Con el modo monitor activo, escanea redes cercanas con airodump-ng.', 'Comando: airodump-ng wlan0mon'],
-      handshake: [
-        'Necesitas apuntar la captura a la red del laboratorio con --bssid, -c (canal) y -w (archivo de salida).',
-        'Revisa el canal y BSSID que te mostró airodump-ng.',
-        'Si tarda mucho, puedes acelerar la captura forzando una reconexión con aireplay-ng --deauth (solo en este laboratorio ficticio).',
-      ],
-      crack: ['Usa aircrack-ng con el diccionario que ya está en tu carpeta: aircrack-ng -w wordlist.txt captura-01.cap'],
+      iwconfig: ['Escribe "iwconfig" para ver tus interfaces WiFi.'],
+      monitor: ['Activa el modo monitor con: airmon-ng start wlan0'],
+      findAp: ['Con el modo monitor activo, escanea redes con: airodump-ng wlan0mon'],
+      capture: ['Apunta la captura con --bssid, -c (canal) y -w (archivo de salida) usando el BSSID y canal que viste.'],
+      deauth: ['Puedes acelerar la captura forzando una reconexión: aireplay-ng --deauth 5 -a ' + BSSID + ' wlan0mon'],
+      handshake: ['Vuelve a correr tu captura dirigida (airodump-ng --bssid ...) para que registre el handshake.'],
+      wordlist: ['Revisa qué diccionario tienes disponible con: cat wordlist.txt'],
+      crack: ['Usa: aircrack-ng -w wordlist.txt captura-01.cap'],
     },
   };
   function currentUnmetObjective(){
@@ -450,37 +495,26 @@
   function hintForObjective(objId){
     const bucket = (HINTS[state.level] && HINTS[state.level][objId]) || [];
     const text = bucket.length ? bucket[Math.min(state.hintsUsed, bucket.length - 1)] : 'Sigue explorando con los comandos que ya conoces.';
-    print(text, 'tip');
     sayIngenioso(text);
     if (bucket.length){ state.hintsUsed++; saveState(); }
   }
   function giveHint(){
     const unmet = currentUnmetObjective();
-    if (!unmet){ sayIngenioso('Ya completaste todos los objetivos de este nivel. Usa "🎯 niveles" arriba para elegir el siguiente.'); return; }
+    if (!unmet){ sayIngenioso('Ya completaste todas las etapas de este nivel. Usa "🎯 niveles" arriba para elegir el siguiente.'); return; }
     hintForObjective(unmet.id);
   }
 
-  // ---- INGenioso: diálogo y panel flotante ----
+  // ---- INGenioso: diálogo junto a la computadora ----
   function sayIngenioso(text, thinking){
-    ingBubble.textContent = text;
-    ingBubble.className = 'ing-bubble' + (thinking ? ' thinking' : '');
-    if (!ingeniosoPanel.classList.contains('open')){
-      ingeniosoFloat.classList.add('has-msg');
-    }
-  }
-  function toggleIngenioso(open){
-    const willOpen = open ?? !ingeniosoPanel.classList.contains('open');
-    ingeniosoPanel.classList.toggle('open', willOpen);
-    if (willOpen) ingeniosoFloat.classList.remove('has-msg');
+    ingBubble.innerHTML = '<b>INGenioso:</b> ' + escapeHtml(text);
+    ingBubble.className = 'ing-bubble-lg' + (thinking ? ' thinking' : '');
   }
   async function askIngenioso(question){
-    const sendBtn = document.getElementById('ing-ask-send');
-    sendBtn.disabled = true;
     sayIngenioso('Dejame pensar...', true);
     const objs = objectivesFor(state.level);
     const pending = objs.find((o) => !o.done);
-    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Objetivo pendiente: ' +
-      (pending ? pending.label : 'todos completos, listo para avanzar de nivel') + '. Pistas ya usadas en este nivel: ' + state.hintsUsed + '.';
+    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Etapa pendiente: ' +
+      (pending ? pending.label : 'todas completas, listo para avanzar de nivel') + '. Pistas ya usadas en este nivel: ' + state.hintsUsed + '.';
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -488,11 +522,10 @@
         body: JSON.stringify({ messages: [{ role: 'user', content: context + '\n\nPregunta del jugador: ' + question }] }),
       });
       const data = await res.json();
-      sayIngenioso(res.ok ? data.reply : (data.error || 'No pude responder, intenta de nuevo.'));
+      const clean = res.ok ? String(data.reply || '').replace(/^\s*ingenioso\s*:\s*/i, '') : (data.error || 'No pude responder, intenta de nuevo.');
+      sayIngenioso(clean);
     } catch (err) {
       sayIngenioso('No pude conectarme para pensar la respuesta. Revisa tu conexión.');
-    } finally {
-      sendBtn.disabled = false;
     }
   }
 
@@ -540,6 +573,7 @@
     switch (cmd){
       case 'pwd':
         print(state.inHidden ? '/home/agente/.oculto' : '/home/agente');
+        if (!state.l1.pwd){ state.l1.pwd = true; saveState(); renderObjectives(); sayIngenioso(encourage()); }
         return;
       case 'whoami':
         print('agente');
@@ -553,6 +587,8 @@
           print(Object.keys(FILES).join('   ') + (showHidden ? '   .oculto/' : ''));
           if (!showHidden) print('tip: los directorios que empiezan con "." no se muestran a menos que uses -a', 'tip');
         }
+        if (!state.l1.ls){ state.l1.ls = true; saveState(); renderObjectives(); sayIngenioso(encourage()); }
+        if (showHidden && !state.l1.lsA){ state.l1.lsA = true; saveState(); renderObjectives(); sayIngenioso('¡Buen ojo! Encontraste una carpeta oculta. ' + encourage()); }
         return;
       }
       case 'cd': {
@@ -582,13 +618,16 @@
         }
         if (!state.inHidden && FILES[file] !== undefined){
           print(FILES[file]);
+          if (file === 'readme.txt' && !state.l1.readme){
+            state.l1.readme = true; saveState(); renderObjectives(); sayIngenioso(encourage());
+          }
           if (file === 'briefing.txt' && !state.l1.findIp){
             state.l1.findIp = true;
             saveState();
             renderObjectives();
             await sleep(200);
-            print('✅ Objetivo completado: encontraste la IP objetivo (' + TARGET_IP + ').', 'success');
-            print('Ahora escanéala con nmap.', 'tip');
+            print('✅ Etapa completada: encontraste la IP objetivo (' + TARGET_IP + ').', 'success');
+            sayIngenioso('¡Ahí está tu objetivo: ' + TARGET_IP + '! Confírmalo con "ping" antes de escanearlo.');
           }
           return;
         }
@@ -605,7 +644,10 @@
           '--- estadísticas de ping ---',
           '2 paquetes transmitidos, 2 recibidos, 0% packet loss',
         ]);
-        print('ping confirma que el host está activo antes de escanearlo a fondo.', 'tip');
+        if (!state.l1.ping){
+          state.l1.ping = true; saveState(); renderObjectives();
+          sayIngenioso('El host está vivo. Ahora sí, escanéalo con "nmap ' + TARGET_IP + '".');
+        }
         return;
       }
       case 'ip':
@@ -631,8 +673,7 @@
             '8080/tcp  open    http-proxy',
           ]);
           print('Nmap listo: 1 dirección IP escaneada.', 'info');
-          if (!state.l1.scanned){ state.l1.scanned = true; saveState(); }
-          print('Para ver la versión de cada servicio (y encontrar la vulnerabilidad), agrega el flag -sV.', 'tip');
+          if (!state.l1.scanned){ state.l1.scanned = true; saveState(); renderObjectives(); sayIngenioso('Bien, viste los puertos abiertos. Para ver versiones (y la vulnerabilidad) agrega el flag -sV.'); }
           return;
         }
         printBlock([
@@ -649,6 +690,7 @@
           renderObjectives();
           await sleep(300);
           print('🎉 Nivel 1 completado. Escribe "siguiente" para pasar a la Fase 2.', 'success');
+          sayIngenioso('¡Nivel 1 completo! Encontraste la vulnerabilidad. Escribe "siguiente" cuando quieras pasar a la Fase 2.');
         }
         return;
       }
@@ -657,7 +699,7 @@
         return;
       case 'siguiente':
       case 'next':
-        if (!state.l1.scannedVersion){ print('Todavía te falta completar los objetivos del Nivel 1.', 'warn'); return; }
+        if (!state.l1.scannedVersion){ print('Todavía te falta completar las etapas del Nivel 1.', 'warn'); return; }
         goToLevel(2);
         return;
     }
@@ -671,17 +713,21 @@
         print('wordlist.txt' + (state.l2.handshake ? '   captura-01.cap' : ''));
         return;
       case 'cat':
-        if (args[0] === 'wordlist.txt'){ print(WORDLIST.join('\n')); return; }
+        if (args[0] === 'wordlist.txt'){
+          print(WORDLIST.join('\n'));
+          if (!state.l2.wordlist){ state.l2.wordlist = true; saveState(); renderObjectives(); sayIngenioso('Ese es tu diccionario para el crackeo. ' + encourage()); }
+          return;
+        }
         print('cat: ' + (args[0] || '') + ': No existe el archivo o el directorio', 'warn');
         return;
       case 'iwconfig':
         printBlock(['wlan0     IEEE 802.11  ESSID:off/any', '          Mode:Managed  Access Point: Not-Associated']);
-        print('Necesitas activar el modo monitor antes de escanear redes: airmon-ng start wlan0', 'tip');
+        if (!state.l2.iwconfig){ state.l2.iwconfig = true; saveState(); renderObjectives(); sayIngenioso('Ese es tu adaptador. Actívalo en modo monitor: airmon-ng start wlan0'); }
         return;
       case 'airmon-ng':
         if (args[0] !== 'start'){ print('Uso: airmon-ng start wlan0', 'info'); return; }
         printBlock(['Encontrados 1 proceso que podría causar interferencia.', 'wlan0mon habilitado en modo monitor sobre wlan0.']);
-        if (!state.l2.monitor){ state.l2.monitor = true; saveState(); renderObjectives(); }
+        if (!state.l2.monitor){ state.l2.monitor = true; saveState(); renderObjectives(); sayIngenioso('Modo monitor activo. Ahora escanea redes cercanas: airodump-ng wlan0mon'); }
         return;
       case 'airodump-ng': {
         if (!state.l2.monitor){ print('airodump-ng: wlan0mon no existe todavía. Activa el modo monitor primero.', 'warn'); return; }
@@ -693,16 +739,15 @@
             BSSID + '   6    -42    LAB-WIFI-CLUBING   [LAB-FICTICIO]',
             '99:88:77:CC:DD:02  11    -81    Facultad-Ing-5G',
           ]);
-          if (!state.l2.findAp){ state.l2.findAp = true; saveState(); renderObjectives(); }
-          print('Encontraste la red del laboratorio. Ahora captura su handshake apuntando con --bssid, -c (canal) y -w (archivo).', 'tip');
+          if (!state.l2.findAp){ state.l2.findAp = true; saveState(); renderObjectives(); sayIngenioso('Ahí está LAB-WIFI-CLUBING, canal 6. Apunta tu captura con --bssid, -c y -w.'); }
           return;
         }
         if (!raw.includes(BSSID)){ print('airodump-ng: BSSID no reconocido en este laboratorio.', 'warn'); return; }
+        if (!state.l2.captureAttempted){ state.l2.captureAttempted = true; saveState(); renderObjectives(); }
         if (state.l2.deauth){
           await sleep(400);
           print('WPA handshake: ' + BSSID, 'success');
-          if (!state.l2.handshake){ state.l2.handshake = true; saveState(); renderObjectives(); }
-          print('Handshake capturado en captura-01.cap. Ya puedes intentar crackear la contraseña.', 'tip');
+          if (!state.l2.handshake){ state.l2.handshake = true; saveState(); renderObjectives(); sayIngenioso('¡Handshake capturado! Revisa tu diccionario con "cat wordlist.txt" antes de crackear.'); }
         } else {
           print('CH  6 ][ Esperando handshake ][ Elapsed: 1 min', 'info');
           print('En una auditoría real esto puede tardar horas. Para acelerarlo en este laboratorio puedes forzar una reconexión con aireplay-ng --deauth.', 'tip');
@@ -714,9 +759,7 @@
         printHTML('<b>⚠️ Recordatorio ético:</b> un ataque de deauth desconecta dispositivos reales de una red real. Fuera de este laboratorio ficticio, hacer esto sin autorización explícita es ilegal y puede tener consecuencias legales serias.', 'ethic');
         await sleep(300);
         printBlock(['Enviando 5 paquetes deauth a ' + BSSID + '...', 'Cliente reconectado — handshake interceptado.']);
-        state.l2.deauth = true;
-        saveState();
-        print('Vuelve a correr tu captura dirigida (airodump-ng --bssid ...) para registrar el handshake.', 'tip');
+        if (!state.l2.deauth){ state.l2.deauth = true; saveState(); renderObjectives(); sayIngenioso('Deauth enviado. Vuelve a correr tu captura dirigida para registrar el handshake.'); }
         return;
       }
       case 'aircrack-ng': {
@@ -763,7 +806,7 @@
       case 'mision':
       case 'misión':
       case 'mission':
-        print(state.level === 1 ? briefingText.textContent : briefingText.textContent, 'info');
+        print(briefingText.textContent, 'info');
         return true;
       case 'salir':
       case 'exit':
@@ -800,7 +843,12 @@
     const handler = state.level === 1 ? handleLevel1 : handleLevel2;
     const result = await handler(cmd, args, trimmed);
     if (result === 'unknown'){
-      print('bash: ' + cmd + ': orden no encontrada', 'warn');
+      if (parts.length > 1){
+        // Varias palabras sin coincidir con un comando conocido → tratamos como pregunta para INGenioso
+        await askIngenioso(trimmed);
+      } else {
+        print('bash: ' + cmd + ': orden no encontrada', 'warn');
+      }
     }
   }
 
@@ -830,14 +878,14 @@
     scrollback.innerHTML = '';
     renderBriefing();
     renderObjectives();
-    const fresh = n === 1 ? !state.l1.findIp : !state.l2.monitor;
+    const fresh = n === 1 ? !state.l1.pwd : !state.l2.iwconfig;
     print(n === 1 ? '=== FASE 1: RECONOCIMIENTO ===' : '=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
     if (fresh){
-      print(n === 1 ? 'Escribe "ls" para ver qué archivos tienes en tu carpeta de inicio.' : 'Escribe "ayuda" para ver los comandos disponibles.', 'tip');
-      sayIngenioso(n === 1 ? '¡Vamos, agente! Empieza escribiendo "ls" para ver qué hay en tu carpeta de inicio.' : '¡Fase 2! Activa el modo monitor con "airmon-ng start wlan0" para arrancar.');
+      print(n === 1 ? 'Escribe "pwd" para empezar.' : 'Escribe "iwconfig" para empezar.', 'tip');
+      sayIngenioso(n === 1 ? '¡Vamos, agente! Escribe "pwd" para ver dónde estás parado.' : '¡Fase 2! Escribe "iwconfig" para revisar tu adaptador WiFi.');
     } else {
       print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
-      sayIngenioso('¡Seguimos donde lo dejamos! Si quieres repasar, hazme clic en cualquier objetivo del panel izquierdo.');
+      sayIngenioso('¡Seguimos donde lo dejamos! Si quieres repasar, hazme clic en cualquier etapa del panel izquierdo.');
     }
     input.focus();
   }
@@ -864,7 +912,6 @@
   function boot(){
     renderBriefing();
     renderObjectives();
-    ingeniosoFloat.insertAdjacentHTML('afterbegin', INGENIOSO_SVG);
     document.getElementById('ing-avatar-slot').innerHTML = INGENIOSO_SVG;
   }
 
@@ -875,16 +922,6 @@
   document.getElementById('menu-btn').addEventListener('click', showLevelSelect);
   document.getElementById('select-l1').addEventListener('click', () => goToLevel(1));
   document.getElementById('select-l2').addEventListener('click', (e) => { if (!e.currentTarget.disabled) goToLevel(2); });
-  ingeniosoFloat.addEventListener('click', () => toggleIngenioso());
-  document.getElementById('ing-close').addEventListener('click', () => toggleIngenioso(false));
-  document.getElementById('ing-ask-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const q = document.getElementById('ing-ask-input');
-    const text = q.value.trim();
-    if (!text) return;
-    q.value = '';
-    askIngenioso(text);
-  });
 
   document.getElementById('restart-btn').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -892,8 +929,8 @@
   });
   document.getElementById('aside-toggle').addEventListener('click', () => asideEl.classList.toggle('open'));
 
-  input.addEventListener('keydown', async (e) => {
-    if (e.key !== 'Enter') return;
+  cmdForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const raw = input.value;
     input.value = '';
     input.disabled = true;
@@ -902,7 +939,7 @@
     input.focus();
   });
 
-  document.getElementById('terminal-col').addEventListener('click', () => {
+  document.getElementById('stage-col').addEventListener('click', () => {
     if (introModal.hidden && levelSelectModal.hidden) input.focus();
   });
 
