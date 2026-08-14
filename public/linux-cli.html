@@ -50,6 +50,7 @@
   main{flex:1;display:flex;}
   aside{width:280px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
   aside h2{font-size:.66rem;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem;}
+  .rank-badge{display:inline-block;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;color:var(--term-green);background:rgba(57,255,106,.08);border:1px solid var(--term-green-dim);border-radius:20px;padding:.3rem .7rem;margin-bottom:1rem;}
   aside .briefing{color:var(--ink-dim);line-height:1.6;white-space:pre-wrap;margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);}
   .stage-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:.4rem;}
   .stage-track-fill{height:100%;background:linear-gradient(90deg,var(--teal-dim),var(--term-green));width:0;transition:width .4s ease;}
@@ -98,7 +99,11 @@
   }
 
   /* ---- Escenario del juego: reutiliza la computadora retro del boot ---- */
-  #stage-col{flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4rem 1.4rem 2rem;min-width:0;}
+  #stage-col{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4rem 1.4rem 2rem;min-width:0;}
+  .lvlup-matrix{position:absolute;inset:0;z-index:0;opacity:0;pointer-events:none;transition:opacity .5s ease;}
+  .lvlup-matrix.show{opacity:1;}
+  .mac-unit, .ingenioso-dock{position:relative;z-index:1;}
+  @media (min-width:761px){ #action-bar{position:relative;z-index:1;} }
 
   .mac-unit{position:relative;width:min(880px,94vw);font-size:clamp(11px,1.15vw,16px);-webkit-font-smoothing:antialiased;}
   @media (min-width:1024px){.mac-unit{width:clamp(760px,58vw,1000px);}}
@@ -216,6 +221,7 @@
 
   <main>
     <aside id="aside">
+      <div class="rank-badge" id="rank-badge">// RANGO: RECLUTA</div>
       <h2>// BRIEFING</h2>
       <div class="briefing" id="briefing-text">Cargando misión...</div>
       <h2>// PROGRESO</h2>
@@ -226,6 +232,7 @@
     </aside>
 
     <div id="stage-col">
+      <canvas id="lvlup-matrix" class="lvlup-matrix" aria-hidden="true"></canvas>
       <div class="mac-unit" id="game-mac">
         <div class="mac-shadow"></div>
         <div class="mac-case">
@@ -392,6 +399,7 @@
   const currentStepEl = document.getElementById('current-step');
   const actionBar = document.getElementById('action-bar');
   const soundToggle = document.getElementById('sound-toggle');
+  const rankBadge = document.getElementById('rank-badge');
 
   // ---- Sonidos retro (sintetizados, sin archivos externos) ----
   const SOUND_KEY = 'linuxGameSound';
@@ -444,6 +452,45 @@
       beep(f, 0.2, { type: 'square', vol: 0.075, delay: i * 0.11 });
     });
   }
+
+  // ---- Código binario en los márgenes del monitor (momentos críticos) ----
+  let lvlupMatrixInterval = null;
+  function runLevelUpMatrix(durationMs){
+    const canvas = document.getElementById('lvlup-matrix');
+    const stageColEl = document.getElementById('stage-col');
+    if (!canvas || !stageColEl) return;
+    const rect = stageColEl.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const chars = '01';
+    const fontSize = 14;
+    const columns = Math.max(1, Math.floor(canvas.width / fontSize));
+    const drops = new Array(columns).fill(0);
+    canvas.classList.add('show');
+    if (lvlupMatrixInterval) clearInterval(lvlupMatrixInterval);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const startTime = Date.now();
+    lvlupMatrixInterval = setInterval(() => {
+      ctx.fillStyle = 'rgba(3,17,10,0.15)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#39ff6a';
+      ctx.font = fontSize + 'px monospace';
+      for (let x = 0; x < drops.length; x++){
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, x * fontSize, drops[x] * fontSize);
+        if (drops[x] * fontSize > canvas.height && Math.random() > 0.975) drops[x] = 0;
+        drops[x]++;
+      }
+      if (Date.now() - startTime > durationMs){
+        clearInterval(lvlupMatrixInterval);
+        lvlupMatrixInterval = null;
+        canvas.classList.remove('show');
+        setTimeout(() => { ctx.clearRect(0, 0, canvas.width, canvas.height); }, 550);
+      }
+    }, 45);
+  }
   function setSoundUI(){
     soundToggle.textContent = soundOn ? '🔊' : '🔇';
     soundToggle.classList.toggle('muted', !soundOn);
@@ -478,6 +525,12 @@
     '¡Eso es! 🎯', '¡Directo al grano! 💪', 'Instinto de hacker 😏', '¡Seco!',
     'Nivel pro ⚡', '¡Así se hace!', 'Precisión total 🔥', '¡Ahí está!',
     'Con estilo 😎', '¡Excelente!', 'Reflejo de experto', '¡Eso no lo ve cualquiera!',
+    '¡Terminal dominada! 🖥️', 'Cero dudas, puro movimiento', '¡Ese es el flow!',
+    'Sintaxis impecable ✅', '¡Vas encendida/o! 🔥', 'Hackeo con estilo, me gusta',
+    '¡Ni una tecla de sobra!', 'Eso se ve profesional', '¡Cazadora/cazador nata!',
+    'Confirmado: tienes madera de agente', '¡Justo lo que Vera pediría!',
+    'Rápido y limpio — combo raro', '¡Ese es el nivel!', 'Movimiento de veterana/o',
+    '¡Sin titubear!', 'Instinto afilado como cuchillo 🔪', '¡Ahí lo tienes, agente!',
   ];
   const HACKER_MINDSET_TIPS = [
     'Respira. Todo comando bueno empieza por preguntarte: "¿qué necesito confirmar antes de esto?"',
@@ -490,6 +543,16 @@
     'Escribe "pista" si quieres una mano — hasta los mejores hackers piden ayuda.',
     'Un truco real: vuelve a leer el objetivo actual, palabra por palabra, antes de reintentar.',
     'Tómate un segundo. La prisa es la razón número uno de los errores de sintaxis.',
+    'Vera siempre dice: "el pánico no encuentra vulnerabilidades, la calma sí."',
+    '¿Probaste revisar el panel de la izquierda? Ahí está literalmente el comando que falta.',
+    'Un agente de verdad no repite el mismo comando esperando un resultado distinto — cambia algo primero.',
+    'Piensa como detective: ¿qué evidencia ya tienes? ¿qué te falta confirmar todavía?',
+    'A veces el error está en un espacio, una mayúscula o una comilla. Revisa letra por letra.',
+    'Cada nivel se construye sobre el anterior — si algo no cuadra, ¿ya viste un comando parecido antes?',
+    'No hay prisa. Este laboratorio no se va a ninguna parte, y tú tampoco necesitas irte sin resolverlo.',
+    'Escribe "ayuda" para ver la lista de comandos disponibles en este nivel — a veces el bloqueo es solo no recordar la sintaxis.',
+    'Los mejores hackers no son los que nunca fallan, son los que fallan rápido y ajustan más rápido todavía.',
+    'Pregúntate qué "sabe" el sistema en este punto de la historia — eso limita mucho las opciones.',
   ];
   let mistakeStreak = 0;
   function celebrate(){
@@ -1080,42 +1143,58 @@
       currentStepEl.innerHTML = '<b>¡Nivel completo! 🎉</b> Escribe "siguiente" para continuar.';
     }
   }
+  const MENTOR = 'Vera';
   const BRIEFINGS = {
-    1: 'OPERACIÓN LABORATORIO-B [LAB-FICTICIO]\n\nUn equipo de la red de práctica del club necesita auditoría. Todavía no sabes cuál es. Explora tu carpeta de inicio para encontrar instrucciones.',
-    2: 'FASE 2 [LAB-FICTICIO]\n\nEl servicio vulnerable que encontraste apunta a un panel administrado por WiFi. El mentor te dio acceso a un adaptador en modo monitor. Encuentra la red del laboratorio y consigue su contraseña.',
-    3: 'FASE 3 — COMUNICACIÓN SEGURA [LAB-FICTICIO]\n\nYa tienes acceso a la red. Antes de seguir, el mentor pide establecer un canal cifrado y autenticado (nada de "invisible": seguro de verdad) para coordinar con el equipo: SSH, GPG y WireGuard.',
-    4: 'FASE 4 — DETECCIÓN [LAB-FICTICIO]\n\nLlegó una alerta: hay actividad sospechosa en la red del laboratorio. Ponte el sombrero de analista defensivo y encuentra qué (o quién) está ahí.',
-    5: 'FASE 5 — RESPUESTA A INCIDENTES [LAB-FICTICIO]\n\nConfirmaste la amenaza. Ahora sigue el ciclo de respuesta a incidentes: contén, erradica, recupera. Cierra el caso.',
-    6: 'SIMULACRO DE INCIDENTE [LAB-FICTICIO]\n\nUn nuevo servidor, un nuevo incidente. Aplica todo lo que aprendiste: reconocimiento, comunicación segura, detección y respuesta. Sin red de seguridad.',
-    7: 'FASE 7 — BAJO ATAQUE [LAB-FICTICIO]\n\nEl sitio del club está lento o caído. Los reportes llegan en tiempo real. Antes de tocar nada, confirma qué está pasando: revisa la carga, el servicio y el patrón de tráfico.',
-    8: 'FASE 8 — MITIGACIÓN DE EMERGENCIA [LAB-FICTICIO]\n\nConfirmaste el flood volumétrico. Ahora frena lo peor a mano mientras preparas algo más permanente: bloquea las IPs identificadas.',
-    9: 'FASE 9 — ENDURECIMIENTO [LAB-FICTICIO]\n\nBloquear IPs una por una no escala. Configura límites de tasa y activa el modo de defensa del sitio para que aguante solo.',
-    10: 'FASE 10 — RECUPERACIÓN [LAB-FICTICIO]\n\nEl ataque está contenido. Levanta los servicios que se apagaron por precaución, confirma que todo esté sano y cierra el caso con un informe.',
-    11: 'FASE 11 — RASTREO DE INDICIOS [LAB-FICTICIO]\n\nAlgo no cuadra: un archivo en el servidor del laboratorio no lo dejó el bot del DDoS. Alguien entró antes. Sigue el rastro.',
-    12: 'FASE 12 — CAPTURA FORENSE [LAB-FICTICIO]\n\nEncontraste indicios reales. Ahora hay que preservarlos como evidencia: copia forense, hash de integridad y cadena de custodia, sin errores.',
-    13: 'FASE 13 — PERITAJE INFORMÁTICO [LAB-FICTICIO]\n\nLa evidencia está en el laboratorio. Analízala con Autopsy, reconstruye lo ocurrido y redacta tu informe pericial.',
-    14: 'FASE 14 — RECONOCIMIENTO WEB [LAB-FICTICIO]\n\nCon autorización de la dirección del club, toca ponerse el sombrero ofensivo: una prueba de penetración contra el propio sitio del club, antes de que alguien más la haga sin permiso.',
-    15: 'FASE 15 — ANÁLISIS DE DEPENDENCIAS [LAB-FICTICIO]\n\nEl código fuente reveló varias dependencias de terceros. Alguna de ellas puede ser el eslabón más débil: sin mantenimiento, sin parches, con un solo responsable.',
-    16: 'FASE 16 — EXPLOTACIÓN CONTROLADA [LAB-FICTICIO]\n\nEncontraste el riesgo. Con autorización explícita y por escrito, confírmalo con una prueba de concepto mínima y responsable — nunca sin permiso, nunca más de lo necesario.',
-    17: 'FASE 17 — REMEDIACIÓN E INFORME [LAB-FICTICIO]\n\nVulnerabilidad confirmada. Ahora corrígela de verdad y documenta todo en un informe de seguridad profesional.',
-    18: 'FASE 18 — ALCANCE Y ACTIVOS [LAB-FICTICIO]\n\nEl club creció: más miembros, más proyectos, más datos que proteger. Es momento de diseñar un Sistema de Gestión de Seguridad de la Información bajo ISO/IEC 27001, empezando por definir qué se protege.',
-    19: 'FASE 19 — RIESGOS [LAB-FICTICIO]\n\nCon los activos claros, evalúa qué tan probable e impactante es cada amenaza — muchas de ellas ya las viviste en este laboratorio — y decide cómo tratarlas.',
-    20: 'FASE 20 — POLÍTICAS Y CONTROLES [LAB-FICTICIO]\n\nLos riesgos están evaluados. Ahora conviértelos en políticas reales que el club pueda seguir día a día.',
-    21: 'FASE 21 — AUDITORÍA DEL SGSI [LAB-FICTICIO]\n\nEl SGSI está diseñado. Audítalo, encuentra sus huecos, corrígelos y ciérralo.',
-    22: 'FASE 22 — ALERTA [LAB-FICTICIO]\n\nUna universidad aliada, la ' + UNIV_NAME + ' (' + UNIV_ABBR + '), pide ayuda: su sistema de gestión académica está perdiendo calificaciones. El Club de la Ingeniería va al rescate. Empieza por entender qué está pasando.',
-    23: 'FASE 23 — DATACENTER: CONTROLES [LAB-FICTICIO]\n\nCon autorización de TI de ' + UNIV_ABBR + ', audita el datacenter on-premise: acceso físico, ambiente, inventario y el estado real del hardware.',
-    24: 'FASE 24 — DATACENTER: RESPALDOS [LAB-FICTICIO]\n\nSi algo falla, los respaldos deberían salvarlos. Confirma que realmente funcionan — nunca confíes en un backup que no has probado a restaurar.',
+    1: 'OPERACIÓN LABORATORIO-B [LAB-FICTICIO]\n\n"Bienvenido al taller, agente. Soy ' + MENTOR + ', Jefa de Ciberseguridad del club — y sí, yo empecé exactamente donde tú estás ahora." Te asigna tu primer equipo de práctica sin decirte qué tiene de especial. "No te voy a decir qué buscar. Un buen analista aprende a mirar antes de que se lo digan." Explora tu carpeta de inicio.',
+    2: 'FASE 2 [LAB-FICTICIO]\n\n' + MENTOR + ' revisa tu hallazgo del Nivel 1 con una ceja levantada. "Ese servicio vulnerable habla con un panel administrado por WiFi. Interesante." Te presta un adaptador en modo monitor. "Encuentra esa red y tráete su contraseña. Y recuerda: todo lo que hagas aquí, en un laboratorio de verdad, necesita autorización por escrito. Sin excepciones, ni para mí."',
+    3: 'FASE 3 — COMUNICACIÓN SEGURA [LAB-FICTICIO]\n\n"Ya tienes acceso. Ahora hagamos esto bien." ' + MENTOR + ' insiste en un punto: nada de canales "invisibles" — cifrado y autenticado, con herramientas reales y auditadas. SSH, GPG, WireGuard. "Vas a necesitar un canal así muy pronto, agente. Confía en mí."',
+    4: 'FASE 4 — DETECCIÓN [LAB-FICTICIO]\n\nEl tono de ' + MENTOR + ' cambia. "Esto no estaba en el plan de hoy." Una alerta real llegó desde la red del laboratorio — no es un ejercicio programado. "Ponte el sombrero de analista y dime qué —o quién— está ahí. Y avísame apenas veas algo raro."',
+    5: 'FASE 5 — RESPUESTA A INCIDENTES [LAB-FICTICIO]\n\nConfirmaste la amenaza. ' + MENTOR + ' revisa tus notas en silencio un momento. "Quien haya dejado esto ahí sabía lo que hacía. No fue un accidente." Sigue el ciclo de respuesta: contén, erradica, recupera. Cierra el caso — por ahora.',
+    6: 'SIMULACRO DE INCIDENTE [LAB-FICTICIO]\n\n"Necesito saber que puedes hacer esto sin mi voz en el oído." ' + MENTOR + ' te da un servidor nuevo y se aparta. Reconocimiento, comunicación segura, detección, respuesta — todo, de punta a punta, sin red de seguridad. Es una prueba. Pásala.',
+    7: 'FASE 7 — BAJO ATAQUE [LAB-FICTICIO]\n\nEl sitio del club está lento o caído, en tiempo real, mientras lees esto. ' + MENTOR + ' entra corriendo al taller. "Esto se siente distinto. Personal." Antes de tocar nada, confirma qué está pasando: carga, servicio, patrón de tráfico.',
+    8: 'FASE 8 — MITIGACIÓN DE EMERGENCIA [LAB-FICTICIO]\n\nConfirmaste el flood volumétrico. "Frena la hemorragia primero, piensa después." Bloquea las IPs identificadas mientras preparas algo que dure más que un parche de emergencia.',
+    9: 'FASE 9 — ENDURECIMIENTO [LAB-FICTICIO]\n\nBloquear IPs una por una no escala — y quien está detrás de esto ya lo demostró rotando de dirección. Configura límites de tasa y activa el modo de defensa del sitio para que aguante sin que tengas que estar ahí cada vez.',
+    10: 'FASE 10 — RECUPERACIÓN [LAB-FICTICIO]\n\nEl ataque está contenido. Levanta los servicios, confirma que todo esté sano, cierra el caso con un informe. Pero cuando revisas una vez más el servidor del Nivel 3-5... hay un archivo que no encaja con la firma del bot del DDoS. ' + MENTOR + ' lo mira contigo, seria. "Eso no lo dejó un bot."',
+    11: 'FASE 11 — RASTREO DE INDICIOS [LAB-FICTICIO]\n\n"Alguien entró antes del DDoS. El ataque fue una cortina de humo." ' + MENTOR + ' te deja seguir el rastro sola — quiere ver hasta dónde llegas. Metadatos, historial, una imagen señuelo. La primera pista real de quién es esto.',
+    12: 'FASE 12 — CAPTURA FORENSE [LAB-FICTICIO]\n\nEncontraste indicios reales — ahora hay que preservarlos como se debe, porque un descuido aquí invalida todo lo que sigue. Copia forense, hash de integridad, cadena de custodia sin huecos.',
+    13: 'FASE 13 — PERITAJE INFORMÁTICO [LAB-FICTICIO]\n\nLa evidencia está en el laboratorio. Analízala con Autopsy y ponle nombre a quien estuvo detrás de todo esto. ' + MENTOR + ' espera tu informe en su escritorio. "Cierra el caso, agente. Te lo ganaste."',
+    14: 'FASE 14 — RECONOCIMIENTO WEB [LAB-FICTICIO]\n\n"Atrapaste una amenaza real. Ahora usemos eso." ' + MENTOR + ' te pide algo distinto: dejar de reaccionar y empezar a buscar los puntos ciegos del club antes de que alguien más los encuentre. Con autorización por escrito, claro. Pentest al propio sitio del club.',
+    15: 'FASE 15 — ANÁLISIS DE DEPENDENCIAS [LAB-FICTICIO]\n\nEl código fuente reveló varias dependencias de terceros. Alguna puede ser el eslabón más débil: sin mantenimiento, sin parches, con un solo responsable que quizás ya ni la revisa.',
+    16: 'FASE 16 — EXPLOTACIÓN CONTROLADA [LAB-FICTICIO]\n\nEncontraste el riesgo. Con autorización explícita y por escrito, confírmalo con una prueba de concepto mínima y responsable — nunca sin permiso, nunca más de lo necesario. ' + MENTOR + ': "La diferencia entre nosotros y quien nos atacó es exactamente esta línea."',
+    17: 'FASE 17 — REMEDIACIÓN E INFORME [LAB-FICTICIO]\n\nVulnerabilidad confirmada. Ahora corrígela de verdad y documenta todo en un informe de seguridad profesional — el mismo estándar que usaste para cerrar el caso del Nivel 13.',
+    18: 'FASE 18 — ALCANCE Y ACTIVOS [LAB-FICTICIO]\n\n"Atrapar amenazas está bien. Pero un club de verdad no puede depender solo de héroes." El club creció — más miembros, más proyectos, más datos. ' + MENTOR + ' te pide diseñar un SGSI bajo ISO/IEC 27001, empezando por definir qué se protege.',
+    19: 'FASE 19 — RIESGOS [LAB-FICTICIO]\n\nCon los activos claros, evalúa qué tan probable e impactante es cada amenaza — muchas de ellas ya las viviste en carne propia en este laboratorio — y decide cómo tratarlas.',
+    20: 'FASE 20 — POLÍTICAS Y CONTROLES [LAB-FICTICIO]\n\nLos riesgos están evaluados. Ahora conviértelos en políticas reales que el club pueda seguir día a día, con o sin ti presente.',
+    21: 'FASE 21 — AUDITORÍA DEL SGSI [LAB-FICTICIO]\n\nEl SGSI está diseñado. Audítalo, encuentra sus huecos, corrígelos y ciérralo. ' + MENTOR + ' revisa tu trabajo en silencio... y entonces suena su teléfono.',
+    22: 'FASE 22 — ALERTA [LAB-FICTICIO]\n\n"Te necesito para algo grande." ' + MENTOR + ' cuelga y te mira serio. Una universidad aliada, la ' + UNIV_NAME + ' (' + UNIV_ABBR + '), está perdiendo calificaciones de estudiantes de verdad. "Les hablé de ti. Vas a representar al club — no me hagas quedar mal." El Club de la Ingeniería va al rescate.',
+    23: 'FASE 23 — DATACENTER: CONTROLES [LAB-FICTICIO]\n\nCon autorización de TI de ' + UNIV_ABBR + ', audita el datacenter on-premise: acceso físico, ambiente, inventario y el estado real del hardware. Estás sola en esto — pero ya no eres la recluta del Nivel 1.',
+    24: 'FASE 24 — DATACENTER: RESPALDOS [LAB-FICTICIO]\n\nSi algo falla, los respaldos deberían salvarlos. Confirma que realmente funcionan — nunca confíes en un backup que no has probado a restaurar. Esa lección la aprendiste hace 23 niveles y nunca dejó de servir.',
     25: 'FASE 25 — NUBE: IDENTIDAD Y ACCESOS [LAB-FICTICIO]\n\n' + UNIV_ABBR + ' también usa un proveedor cloud. Audita quién tiene acceso a qué, y si alguien lo está vigilando.',
     26: 'FASE 26 — NUBE: ALMACENAMIENTO [LAB-FICTICIO]\n\nRevisa dónde viven las calificaciones en la nube: permisos, versionado, y si algo se borró que no debía.',
-    27: 'FASE 27 — NUBE: MONITOREO Y SINCRONIZACIÓN [LAB-FICTICIO]\n\nEl servicio que sincroniza calificaciones entre el datacenter y la nube es sospechoso. Revísalo a fondo.',
-    28: 'FASE 28 — CAUSA RAÍZ [LAB-FICTICIO]\n\nTienes varios hallazgos sueltos. Correlaciónalos, confirma cuál es la causa raíz real y descarta lo que no lo es.',
-    29: 'FASE 29 — EVALUACIÓN DE IMPACTO [LAB-FICTICIO]\n\nAntes de arreglar nada, entiende qué tan grave es: cuántos registros, qué tan recuperables, y a quién avisar.',
-    30: 'FASE 30 — REMEDIACIÓN Y RECUPERACIÓN [LAB-FICTICIO]\n\nCon la causa raíz confirmada, corrígela de verdad: revierte, repara, recupera y verifica.',
-    31: 'EXAMEN FINAL — INFORME Y RECONOCIMIENTO [LAB-FICTICIO]\n\nCompila todo en un informe final. Este es el cierre de Operación Laboratorio-B — y de tu camino como agente del Club de la Ingeniería.',
+    27: 'FASE 27 — NUBE: MONITOREO Y SINCRONIZACIÓN [LAB-FICTICIO]\n\nEl servicio que sincroniza calificaciones entre el datacenter y la nube es sospechoso. Revísalo a fondo — y no asumas que es un ataque solo porque duele como uno.',
+    28: 'FASE 28 — CAUSA RAÍZ [LAB-FICTICIO]\n\nTienes varios hallazgos sueltos. Correlaciónalos, confirma cuál es la causa raíz real y descarta lo que no lo es. No siempre hay un villano — a veces el enemigo es un bug sin nombre, y eso también hay que probarlo.',
+    29: 'FASE 29 — EVALUACIÓN DE IMPACTO [LAB-FICTICIO]\n\nAntes de arreglar nada, entiende qué tan grave es: cuántos registros, qué tan recuperables, y a quién avisar. Los números que traigas hoy son los que ' + UNIV_ABBR + ' va a recordar de este día.',
+    30: 'FASE 30 — REMEDIACIÓN Y RECUPERACIÓN [LAB-FICTICIO]\n\nCon la causa raíz confirmada, corrígela de verdad: revierte, repara, recupera y verifica. Cada paso de este nivel es algo que ya hiciste antes, en otro nombre, en otro nivel. Esta vez lo haces sola, y lo haces bien.',
+    31: 'EXAMEN FINAL — INFORME Y RECONOCIMIENTO [LAB-FICTICIO]\n\nCompila todo en un informe final. Este es el cierre de Operación Laboratorio-B — desde la agente que no sabía qué buscar en el Nivel 1, hasta quien ' + MENTOR + ' envió a representar al club fuera de casa. Escribe el último comando, agente. Te lo ganaste.',
   };
+  const RANKS = [
+    { max: 2, title: 'Recluta' },
+    { max: 6, title: 'Operador de Campo' },
+    { max: 10, title: 'Analista de Respuesta' },
+    { max: 13, title: 'Investigador Forense' },
+    { max: 17, title: 'Auditor Ofensivo' },
+    { max: 21, title: 'Arquitecto de Seguridad' },
+    { max: 30, title: 'Agente de Rescate' },
+    { max: 31, title: 'Héroe del Club' },
+  ];
+  function rankForLevel(n){
+    for (const r of RANKS){ if (n <= r.max) return r.title; }
+    return RANKS[RANKS.length - 1].title;
+  }
   function renderBriefing(){
     briefingText.textContent = BRIEFINGS[state.level] || '';
     levelLabel.textContent = state.level === 31 ? 'EXAMEN FINAL' : 'NIVEL ' + state.level;
+    if (rankBadge) rankBadge.textContent = '// RANGO: ' + rankForLevel(state.level).toUpperCase();
     promptLabel.textContent = state.level === 1
       ? 'agente@labclub:' + (state.inHidden ? '~/.oculto' : '~') + '$'
       : 'agente@labclub:~$';
@@ -4144,7 +4223,7 @@
     if (doneAfter > doneBefore){
       mistakeStreak = 0;
       celebrate();
-      if (doneAfter >= totalStages && doneBefore < totalStages && levelAtStart !== 31) playLevelClearFanfare();
+      if (doneAfter >= totalStages && doneBefore < totalStages && levelAtStart !== 31){ playLevelClearFanfare(); runLevelUpMatrix(2600); }
     } else {
       registerMistake();
     }
@@ -4239,6 +4318,7 @@
     state.completed = true;
     saveState();
     playVictoryJingle();
+    runLevelUpMatrix(3600);
     document.getElementById('stat-time').textContent = fmtTime(elapsedMs());
     document.getElementById('stat-hints').textContent = String(state.hintsUsed);
     document.getElementById('stat-commands').textContent = String(learned.size) + ' / ' + CHEATSHEET.length;
