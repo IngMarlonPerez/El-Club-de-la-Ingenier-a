@@ -129,7 +129,17 @@
   .line.success{color:var(--term-green);font-weight:700;}
 
   /* ---- INGenioso, junto a la computadora ---- */
-  .ingenioso-dock{display:flex;gap:1rem;align-items:flex-start;width:min(880px,94vw);margin-top:1.6rem;}
+  .ingenioso-dock{position:relative;display:flex;gap:1rem;align-items:flex-start;width:min(880px,94vw);margin-top:1.6rem;}
+  .ing-celebrate{position:absolute;left:2px;top:-18px;display:flex;align-items:center;gap:.4rem;background:linear-gradient(135deg,var(--gold),#f5d68a);color:#2a1d02;font-family:var(--mono);font-size:.72rem;font-weight:700;padding:.35rem .7rem;border-radius:20px;box-shadow:0 6px 18px rgba(0,0,0,.4);opacity:0;transform:translateY(8px) scale(.7) rotate(-6deg);pointer-events:none;white-space:nowrap;z-index:6;}
+  .ing-celebrate svg{width:22px;height:22px;flex-shrink:0;}
+  .ing-celebrate.show{animation:ingCelebrate 1.9s cubic-bezier(.34,1.56,.64,1) forwards;}
+  @keyframes ingCelebrate{
+    0%{opacity:0;transform:translateY(10px) scale(.5) rotate(-10deg);}
+    18%{opacity:1;transform:translateY(-6px) scale(1.18) rotate(6deg);}
+    32%{transform:translateY(-3px) scale(1) rotate(-2deg);}
+    82%{opacity:1;transform:translateY(-3px) scale(1) rotate(0deg);}
+    100%{opacity:0;transform:translateY(-14px) scale(.85) rotate(0deg);}
+  }
   @media (min-width:1024px){.ingenioso-dock{width:clamp(760px,58vw,1000px);}}
   .ing-avatar-lg{width:60px;height:60px;flex-shrink:0;animation:ing-bob 3.4s ease-in-out infinite;}
   @keyframes ing-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
@@ -238,6 +248,7 @@
 
       <div class="ingenioso-dock">
         <div class="ing-avatar-lg" id="ing-avatar-slot"></div>
+        <div class="ing-celebrate" id="ing-celebrate" aria-hidden="true"></div>
         <div class="ing-bubble-lg" id="ing-bubble"><b>INGenioso:</b> ¡Hola, agente! Yo te voy guiando. Escribe tu primer comando abajo cuando quieras — y si te trabas, solo pregúntame en la misma línea.</div>
       </div>
 
@@ -355,6 +366,14 @@
     + '<circle cx="50" cy="6" r="3" fill="#e8b23a"/>'
     + '</svg>';
 
+  const THUMBS_UP_SVG = '<svg viewBox="0 0 60 60" aria-hidden="true">'
+    + '<rect x="12" y="26" width="32" height="26" rx="11" fill="#173229" stroke="#2fd8c9" stroke-width="2.5"/>'
+    + '<rect x="19" y="4" width="13" height="32" rx="6.5" fill="#0f2620" stroke="#2fd8c9" stroke-width="2.5"/>'
+    + '<circle cx="25.5" cy="12" r="2.2" fill="#39ff6a"/>'
+    + '<line x1="16" y1="35" x2="40" y2="35" stroke="#2fd8c9" stroke-width="1.4" opacity=".55"/>'
+    + '<line x1="16" y1="43" x2="40" y2="43" stroke="#2fd8c9" stroke-width="1.4" opacity=".55"/>'
+    + '</svg>';
+
   const scrollback = document.getElementById('scrollback');
   const input = document.getElementById('cmd-input');
   const cmdForm = document.getElementById('cmd-form');
@@ -415,6 +434,16 @@
       beep(f, 0.18, { type: 'square', vol: 0.08, delay: i * 0.15 });
     });
   }
+  function playTensionSting(){
+    [220, 233.08, 220, 277.18, 220, 329.63].forEach((f, i) => {
+      beep(f, 0.14, { type: 'sawtooth', vol: 0.045, delay: i * 0.11 });
+    });
+  }
+  function playLevelClearFanfare(){
+    [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      beep(f, 0.2, { type: 'square', vol: 0.075, delay: i * 0.11 });
+    });
+  }
   function setSoundUI(){
     soundToggle.textContent = soundOn ? '🔊' : '🔇';
     soundToggle.classList.toggle('muted', !soundOn);
@@ -434,8 +463,47 @@
     '¡Perfecto! Un paso más cerca.',
     '¡Así se hace, agente!',
     '¡Excelente! Continuemos.',
+    '¡Eso es tener instinto de hacker! 🎯',
+    'Ese reflejo ya es profesional. 💪',
+    'Directo al grano — así se hace.',
+    'Mmm, me gusta cómo piensas. 😏',
+    '¡Seco! Ni una tecla de más.',
+    'Te mueves como si ya hubieras hecho esto mil veces.',
+    'Ese es el nivel de precisión que buscamos aquí.',
   ];
   function encourage(){ return ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)]; }
+
+  // ---- Personalidad: celebración visual (mano con pulgar arriba) y guía de mentalidad ----
+  const HACKER_PRAISE = [
+    '¡Eso es! 🎯', '¡Directo al grano! 💪', 'Instinto de hacker 😏', '¡Seco!',
+    'Nivel pro ⚡', '¡Así se hace!', 'Precisión total 🔥', '¡Ahí está!',
+    'Con estilo 😎', '¡Excelente!', 'Reflejo de experto', '¡Eso no lo ve cualquiera!',
+  ];
+  const HACKER_MINDSET_TIPS = [
+    'Respira. Todo comando bueno empieza por preguntarte: "¿qué necesito confirmar antes de esto?"',
+    'Un hacker de verdad no adivina — relee la etapa pendiente en la barra de abajo, ahí está el siguiente paso.',
+    'Si algo no funciona, no es magia rota: revisa el orden. ¿Ya hiciste el paso anterior?',
+    'La pista más subestimada: lee literal el mensaje de error. Casi siempre te dice qué falta.',
+    'Cuando te trabes, pregúntate: "¿qué comando ya usé en un nivel parecido a este?"',
+    'No hay una sola forma correcta de pensarlo, pero sí un orden: reconocer, confirmar, actuar.',
+    'Los errores no son fracasos, son el sistema diciéndote "todavía no, pero vas bien".',
+    'Escribe "pista" si quieres una mano — hasta los mejores hackers piden ayuda.',
+    'Un truco real: vuelve a leer el objetivo actual, palabra por palabra, antes de reintentar.',
+    'Tómate un segundo. La prisa es la razón número uno de los errores de sintaxis.',
+  ];
+  let mistakeStreak = 0;
+  function celebrate(){
+    const el = document.getElementById('ing-celebrate');
+    if (!el) return;
+    const text = HACKER_PRAISE[Math.floor(Math.random() * HACKER_PRAISE.length)];
+    el.innerHTML = THUMBS_UP_SVG + '<span>' + escapeHtml(text) + '</span>';
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  }
+  function mindsetTip(){
+    return HACKER_MINDSET_TIPS[Math.floor(Math.random() * HACKER_MINDSET_TIPS.length)];
+  }
 
   // ---- Catálogo de comandos aprendidos (para el cheatsheet final) ----
   const CHEATSHEET = [
@@ -4053,6 +4121,12 @@
     if (handledUniversal) return;
 
     const LEVEL_HANDLERS = { 1: handleLevel1, 2: handleLevel2, 3: handleLevel3, 4: handleLevel4, 5: handleLevel5, 6: handleLevel6, 7: handleLevel7, 8: handleLevel8, 9: handleLevel9, 10: handleLevel10, 11: handleLevel11, 12: handleLevel12, 13: handleLevel13, 14: handleLevel14, 15: handleLevel15, 16: handleLevel16, 17: handleLevel17, 18: handleLevel18, 19: handleLevel19, 20: handleLevel20, 21: handleLevel21, 22: handleLevel22, 23: handleLevel23, 24: handleLevel24, 25: handleLevel25, 26: handleLevel26, 27: handleLevel27, 28: handleLevel28, 29: handleLevel29, 30: handleLevel30, 31: handleLevel31 };
+
+    const currentObjs = objectivesFor(state.level);
+    const doneBefore = currentObjs.filter((o) => o.done).length;
+    const totalStages = currentObjs.length;
+    const levelAtStart = state.level;
+
     const handler = LEVEL_HANDLERS[state.level];
     const result = await handler(cmd, args, trimmed);
     if (result === 'unknown'){
@@ -4061,7 +4135,24 @@
         if (!tryLocalAnswer(trimmed)) await askIngenioso(trimmed);
       } else {
         print('bash: ' + cmd + ': orden no encontrada', 'warn');
+        registerMistake();
       }
+      return;
+    }
+
+    const doneAfter = objectivesFor(levelAtStart).filter((o) => o.done).length;
+    if (doneAfter > doneBefore){
+      mistakeStreak = 0;
+      celebrate();
+      if (doneAfter >= totalStages && doneBefore < totalStages && levelAtStart !== 31) playLevelClearFanfare();
+    } else {
+      registerMistake();
+    }
+  }
+  function registerMistake(){
+    mistakeStreak++;
+    if (mistakeStreak >= 2 && mistakeStreak % 2 === 0){
+      sayIngenioso(mindsetTip());
     }
   }
 
@@ -4132,6 +4223,7 @@
     const meta = LEVEL_META[n - 1];
     const objs = objectivesFor(n);
     const fresh = !objs[0].done;
+    if (fresh && [6, 13, 21, 31].includes(n)) playTensionSting();
     print(meta.banner, 'success');
     if (fresh){
       print('Escribe "' + meta.firstCmd + '" para empezar.', 'tip');
@@ -4171,6 +4263,7 @@
 
   document.getElementById('intro-start').addEventListener('click', () => {
     introModal.hidden = true;
+    playTensionSting();
     showLevelSelect();
   });
   document.getElementById('menu-btn').addEventListener('click', showLevelSelect);
