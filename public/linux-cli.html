@@ -43,6 +43,9 @@
   header .menu-btn{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
   header .menu-btn:hover{color:var(--teal);border-color:var(--teal-dim);}
   #aside-toggle{display:none;background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
+  #sound-toggle{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .55rem;font-size:.8rem;cursor:pointer;line-height:1;}
+  #sound-toggle:hover{color:var(--teal);border-color:var(--teal-dim);}
+  #sound-toggle.muted{opacity:.5;}
 
   main{flex:1;display:flex;}
   aside{width:280px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
@@ -197,6 +200,7 @@
       <span id="timer">00:00</span>
       <button class="menu-btn" id="menu-btn" type="button">🎯 <span class="btn-label">niveles</span></button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ <span class="btn-label">briefing</span></button>
+      <button id="sound-toggle" type="button" aria-label="Silenciar sonidos">🔊</button>
     </div>
   </header>
 
@@ -208,7 +212,7 @@
       <div class="stage-track"><div class="stage-track-fill" id="stage-bar-fill"></div></div>
       <div class="stage-count" id="stage-count">Etapa 1/8</div>
       <ul class="obj-list" id="obj-list"></ul>
-      <div class="help-box">Escribe cualquier comando abajo. Si algo no te sale, escríbele a <b>INGenioso</b> tu duda directo en la misma línea (ej. "no sé qué hacer") — él te responde.</div>
+      <div class="help-box">Escribe cualquier comando abajo. Si algo no te sale, escríbele a <b>INGenioso</b> tu duda directo en la misma línea (ej. "no sé qué hacer") — él te responde.<br><br>📖 ¿Quieres estudiar la teoría de cada nivel con calma? Lee el <a href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/blob/main/docs/teoria-operacion-laboratorio-b.md" target="_blank" rel="noopener">documento de teoría aplicada</a>.</div>
     </aside>
 
     <div id="stage-col">
@@ -285,6 +289,7 @@
       <div class="stat"><b id="stat-commands">0</b><span>COMANDOS APRENDIDOS</span></div>
     </div>
     <div id="cheatsheet"></div>
+    <p style="text-align:center;">📖 <a href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/blob/main/docs/teoria-operacion-laboratorio-b.md" target="_blank" rel="noopener">Repasa la teoría completa de los 31 niveles →</a></p>
     <a class="btn" href="/#join">Únete al club →</a>
     <button class="btn btn-secondary" id="restart-btn" type="button">Reiniciar reto</button>
   </div>
@@ -367,6 +372,61 @@
   const stageCount = document.getElementById('stage-count');
   const currentStepEl = document.getElementById('current-step');
   const actionBar = document.getElementById('action-bar');
+  const soundToggle = document.getElementById('sound-toggle');
+
+  // ---- Sonidos retro (sintetizados, sin archivos externos) ----
+  const SOUND_KEY = 'linuxGameSound';
+  let soundOn = localStorage.getItem(SOUND_KEY) !== 'off';
+  let audioCtx = null;
+  function getAudioCtx(){
+    if (!soundOn) return null;
+    if (!audioCtx){
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function beep(freq, duration, opts){
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + ((opts && opts.delay) || 0);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = (opts && opts.type) || 'square';
+    osc.frequency.setValueAtTime(freq, t0);
+    const vol = (opts && opts.vol) || 0.06;
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(vol, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.03);
+  }
+  function playTypeTick(){
+    beep(680 + Math.random() * 180, 0.032, { type: 'square', vol: 0.04 });
+  }
+  function playSuccessChime(){
+    beep(523.25, 0.09, { type: 'square', vol: 0.07, delay: 0 });
+    beep(659.25, 0.09, { type: 'square', vol: 0.07, delay: 0.09 });
+    beep(783.99, 0.16, { type: 'square', vol: 0.08, delay: 0.18 });
+  }
+  function playVictoryJingle(){
+    [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((f, i) => {
+      beep(f, 0.18, { type: 'square', vol: 0.08, delay: i * 0.15 });
+    });
+  }
+  function setSoundUI(){
+    soundToggle.textContent = soundOn ? '🔊' : '🔇';
+    soundToggle.classList.toggle('muted', !soundOn);
+    soundToggle.setAttribute('aria-label', soundOn ? 'Silenciar sonidos' : 'Activar sonidos');
+  }
+  soundToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off');
+    setSoundUI();
+    if (soundOn) playTypeTick();
+  });
+  setSoundUI();
 
   const ENCOURAGEMENTS = [
     '¡Bien hecho! Vamos por buen camino. 🐻',
@@ -430,6 +490,51 @@
     ['raidcli rebuild', 'Reconstruye un arreglo RAID degradado siguiendo el procedimiento.'],
   ];
   const learned = new Set();
+
+  // ---- Glosario de conceptos (respuestas locales, sin gastar cuota de IA) ----
+  const CONCEPT_GLOSSARY = [
+    [/\braid\b/i, 'RAID combina varios discos para tolerar fallos o ganar velocidad. "Degradado" significa que un disco falló y el arreglo sigue funcionando con el resto, pero sin margen — hay que repararlo pronto, siguiendo el procedimiento formal, no a las carreras.'],
+    [/\biam\b/i, 'IAM (Identity and Access Management) es cómo un sistema decide quién es quién y qué puede hacer. Un rol con permisos "Action: *, Resource: *" es la mala práctica clásica: dale a cada cuenta solo lo que necesita, ni un permiso más (mínimo privilegio).'],
+    [/iso\s?27001|\bsgsi\b/i, 'ISO/IEC 27001 es el estándar internacional para un SGSI (Sistema de Gestión de Seguridad de la Información): un ciclo de mejora continua (Plan-Do-Check-Act) que cubre alcance, activos, riesgos, controles, políticas y auditoría — no es solo tecnología, es proceso y gobierno.'],
+    [/declaraci[oó]n de aplicabilidad|\bsoa\b/i, 'La Declaración de Aplicabilidad (SoA) es el documento central de ISO 27001: lista los 93 controles del Anexo A y dice, para cada uno, si aplica a tu organización y por qué (o por qué no).'],
+    [/cadena de custodia/i, 'La cadena de custodia es el registro ininterrumpido de quién tuvo la evidencia, cuándo y qué le hizo, desde que se recolecta hasta que se presenta. Si hay un hueco en la cadena, la evidencia pierde credibilidad aunque sea auténtica.'],
+    [/causa ra[ií]z|\brca\b/i, 'La causa raíz es el problema real detrás de un incidente, no solo su síntoma. Un buen análisis de causa raíz correlaciona evidencia, reproduce el fallo si se puede, y descarta explicaciones alternativas antes de dar la causa por confirmada.'],
+    [/responsabilidad compartida/i, 'El modelo de responsabilidad compartida en la nube dice: el proveedor asegura la infraestructura (servidores, red física), pero tú eres responsable de cómo configuras IAM, permisos y monitoreo. La mayoría de los incidentes en la nube son de configuración, no del proveedor.'],
+    [/\bdfir\b/i, 'DFIR (Digital Forensics and Incident Response) une dos disciplinas: responder rápido a un incidente para contenerlo, y analizarlo con rigor forense para entender qué pasó y sostenerlo como evidencia si hace falta.'],
+    [/\bcve\b/i, 'Un CVE (Common Vulnerabilities and Exposures) es el identificador único de una vulnerabilidad conocida y públicamente documentada, para que todos hablen del mismo fallo sin ambigüedad.'],
+    [/\bcvss\b/i, 'CVSS es la escala (0 a 10) que mide qué tan grave es una vulnerabilidad, combinando qué tan fácil es explotarla y qué tanto daño causa. Más alto, más urgente el parche.'],
+    [/\bwaf\b/i, 'Un WAF (Web Application Firewall) filtra tráfico malicioso a nivel de aplicación web, antes de que llegue a tu servidor — una capa extra, no un reemplazo de código seguro.'],
+    [/rate limit/i, 'El rate limiting pone un tope a cuántas peticiones acepta un servicio en un tiempo dado. Es una de las defensas más efectivas contra DDoS y fuerza bruta: no evita el primer golpe, pero evita que te ahoguen.'],
+    [/phishing/i, 'El phishing es el engaño para que alguien entregue credenciales o información sensible haciéndose pasar por algo confiable. Sigue siendo la puerta de entrada más común a incidentes reales, por eso la concientización es un control tan importante como cualquier firewall.'],
+    [/m[ií]nimo privilegio|least privilege/i, 'El principio de mínimo privilegio dice: cada cuenta, rol o proceso debe tener solo los permisos estrictamente necesarios para su función, nada más. Reduce el daño posible si algo se compromete.'],
+    [/\bddos\b/i, 'Un DDoS (Denegación de Servicio Distribuida) satura un servicio con tráfico desde muchas fuentes para dejarlo inaccesible. Se defiende con capas: detección, bloqueo, límites de tasa y, sobre todo, no depender de un solo mecanismo.'],
+    [/pentest|prueba de penetraci[oó]n/i, 'Un pentest (prueba de penetración) es un ataque simulado, con autorización explícita por escrito, para encontrar vulnerabilidades reales antes que alguien sin permiso. Sin autorización, es simplemente un delito.'],
+    [/\bexploit\b/i, 'Un exploit es el código o técnica que aprovecha una vulnerabilidad específica para lograr un efecto (acceso, ejecución de código, etc). En este laboratorio siempre es ficticio y controlado — nunca se usa fuera de un entorno autorizado.'],
+    [/vulnerabilidad/i, 'Una vulnerabilidad es un fallo o debilidad que, si se explota, compromete la confidencialidad, integridad o disponibilidad de un sistema. Encontrarla no es el problema — no corregirla sí lo es.'],
+    [/\bhash\b/i, 'Un hash es una huella digital de tamaño fijo calculada a partir de un archivo o dato: si cambia un solo bit del original, el hash cambia por completo. Sirve para verificar integridad, nunca para "adivinar" el contenido original.'],
+    [/nist/i, 'NIST SP 800-61 es la guía de referencia para responder a incidentes de seguridad: preparación, detección y análisis, contención/erradicación/recuperación, y lecciones aprendidas — el ciclo que seguiste en los niveles de respuesta a incidentes.'],
+    [/malware/i, 'Malware es cualquier software diseñado para dañar, espiar o tomar control sin consentimiento. En este laboratorio todo malware es simulado y ficticio, [LAB-FICTICIO].'],
+    [/cadena de suministro|supply chain/i, 'El riesgo de cadena de suministro es depender de código o servicios de terceros que tú no controlas. Una sola dependencia abandonada, con un solo mantenedor, puede ser el eslabón más débil de todo un sistema.'],
+  ];
+  const HELP_TRIGGERS = /(no (se|sé)|no entiendo|no s[eé] qu[eé]|estoy (atascad|perdid|trabad)|ay[uú]dame|dame una pista|^pista$|^hint$|qu[eé] hago|c[oó]mo sigo|que sigue|estoy pillad)/i;
+  function tryLocalAnswer(question){
+    const q = question.trim();
+    if (HELP_TRIGGERS.test(q) && q.split(/\s+/).length <= 7){
+      giveHint();
+      return true;
+    }
+    for (const [name, desc] of CHEATSHEET){
+      const key = name.split(' ')[0].split('/')[0].split('(')[0].trim();
+      if (key.length > 2){
+        const re = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+        if (re.test(q)){ sayIngenioso(desc + ' (referencia: ' + name + ')'); return true; }
+      }
+    }
+    for (const [re, answer] of CONCEPT_GLOSSARY){
+      if (re.test(q)){ sayIngenioso(answer); return true; }
+    }
+    return false;
+  }
 
   // ---- Etapas secuenciales por nivel ----
   const STAGES = {
@@ -872,8 +977,12 @@
   function objectivesFor(level){
     return STAGES[level].map((st) => ({ id: st.id, label: st.label, done: stageDone(level, st.id) }));
   }
+  let lastDoneCount = null;
   function renderObjectives(){
     const objs = objectivesFor(state.level);
+    const doneCount0 = objs.filter((o) => o.done).length;
+    if (lastDoneCount !== null && doneCount0 > lastDoneCount) playSuccessChime();
+    lastDoneCount = doneCount0;
     const firstPending = objs.find((o) => !o.done);
     objList.innerHTML = '';
     objs.forEach((o) => {
@@ -3948,8 +4057,8 @@
     const result = await handler(cmd, args, trimmed);
     if (result === 'unknown'){
       if (parts.length > 1){
-        // Varias palabras sin coincidir con un comando conocido → tratamos como pregunta para INGenioso
-        await askIngenioso(trimmed);
+        // Varias palabras sin coincidir con un comando conocido → primero intentamos responder localmente (pista o glosario) sin gastar cuota de IA
+        if (!tryLocalAnswer(trimmed)) await askIngenioso(trimmed);
       } else {
         print('bash: ' + cmd + ': orden no encontrada', 'warn');
       }
@@ -4018,6 +4127,7 @@
     saveState();
     scrollback.innerHTML = '';
     renderBriefing();
+    lastDoneCount = objectivesFor(n).filter((o) => o.done).length;
     renderObjectives();
     const meta = LEVEL_META[n - 1];
     const objs = objectivesFor(n);
@@ -4036,6 +4146,7 @@
   function finishGame(){
     state.completed = true;
     saveState();
+    playVictoryJingle();
     document.getElementById('stat-time').textContent = fmtTime(elapsedMs());
     document.getElementById('stat-hints').textContent = String(state.hintsUsed);
     document.getElementById('stat-commands').textContent = String(learned.size) + ' / ' + CHEATSHEET.length;
@@ -4097,6 +4208,10 @@
   }
   input.addEventListener('focus', () => {
     setTimeout(() => input.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+  });
+  input.addEventListener('input', (e) => {
+    if (e.inputType && e.inputType.startsWith('delete')) return;
+    playTypeTick();
   });
 
   boot();

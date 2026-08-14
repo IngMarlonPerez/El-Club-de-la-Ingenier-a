@@ -1,8 +1,24 @@
 <div align="center">
 
-<img src="public/logo.jpg" alt="Logo del Club de Ingeniería" width="120" style="border-radius: 50%; border: 2px solid #2fd8c9;" />
+```
+ ██████╗██╗     ██╗   ██╗██████╗     ██████╗ ███████╗    ██╗      █████╗ 
+██╔════╝██║     ██║   ██║██╔══██╗    ██╔══██╗██╔════╝    ██║     ██╔══██╗
+██║     ██║     ██║   ██║██████╔╝    ██║  ██║█████╗      ██║     ███████║
+██║     ██║     ██║   ██║██╔══██╗    ██║  ██║██╔══╝      ██║     ██╔══██║
+╚██████╗███████╗╚██████╔╝██████╔╝    ██████╔╝███████╗    ███████╗██║  ██║
+ ╚═════╝╚══════╝ ╚═════╝ ╚═════╝     ╚═════╝ ╚══════╝    ╚══════╝╚═╝  ╚═╝
+
+██╗███╗   ██╗ ██████╗ ███████╗███╗   ██╗██╗███████╗██████╗ ██╗ █████╗ 
+██║████╗  ██║██╔════╝ ██╔════╝████╗  ██║██║██╔════╝██╔══██╗██║██╔══██╗
+██║██╔██╗ ██║██║  ███╗█████╗  ██╔██╗ ██║██║█████╗  ██████╔╝██║███████║
+██║██║╚██╗██║██║   ██║██╔══╝  ██║╚██╗██║██║██╔══╝  ██╔══██╗██║██╔══██║
+██║██║ ╚████║╚██████╔╝███████╗██║ ╚████║██║███████╗██║  ██║██║██║  ██║
+╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝
+```
 
 # El Club de la Ingeniería
+
+<img src="public/logo.jpg" alt="Logo del Club de Ingeniería" width="110" style="border-radius: 50%; border: 2px solid #2fd8c9;" />
 
 ### *Innovando el futuro desde Tecnologías de la Información, Ciencias e Investigación*
 
@@ -12,10 +28,11 @@
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 [![License](https://img.shields.io/badge/License-MIT-2fd8c9?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Estado-MVP%20activo-e8b23a?style=for-the-badge)](https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a)
+[![Reto Linux](https://img.shields.io/badge/Reto%20Terminal-31%20niveles-39ff6a?style=for-the-badge&logo=linux&logoColor=black)](public/linux-cli.html)
 
 **Comunidad universitaria · Proyectos reales · Aprendizaje colaborativo · IA integrada**
 
-[Explorar el código](#-inicio-rápido) · [Ver arquitectura](#-arquitectura) · [Roadmap](#-roadmap) · [Contribuir](#-contribuir)
+[Explorar el código](#-inicio-rápido) · [Ver arquitectura](#-arquitectura) · [Jugar el reto Linux](#-reto-terminal-linux-operación-laboratorio-b) · [Roadmap](#-roadmap) · [Contribuir](#-contribuir)
 
 <img src="public/hero-banner.jpg" alt="Banner del Club de Ingeniería" width="100%" style="border-radius: 12px; margin-top: 24px;" />
 
@@ -42,7 +59,6 @@
 - [Contribuir](#-contribuir)
 - [Contacto](#-contacto)
 - [Licencia](#-licencia)
-
 
 </details>
 
@@ -107,8 +123,8 @@ Landing estática preservada + API Routes. Sin reescribir el DOM manual en React
 </tr>
 <tr>
 <td align="center">
-<h3>📱 Responsive</h3>
-Diseño fluido de móvil a Smart TV/monitor grande, con tipografía IBM Plex y paleta teal/gold sobre dark mode.
+<h3>📱 Responsive de verdad</h3>
+De móvil a Smart TV: tipografía IBM Plex, paleta teal/gold sobre dark mode, y en el reto Linux la barra de instrucciones sigue al teclado táctil.
 </td>
 <td align="center">
 <h3>🛡️ Seguridad</h3>
@@ -121,8 +137,8 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 </tr>
 <tr>
 <td align="center" colspan="3">
-<h3>🎮 Reto Terminal Linux con INGenioso</h3>
-<strong>Operación Laboratorio-B</strong>: aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas secuenciales de dificultad creciente repartidas en 31 niveles —de reconocimiento a una auditoría de datacenter y nube que rescata a una universidad ficticia— (~13 horas), 100% simulado y ficticio.
+<h3>🎮 Reto Terminal Linux con INGenioso — 31 niveles</h3>
+<strong>Operación Laboratorio-B</strong>: aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas en 7 episodios, sonido retro sintetizado, respuestas locales que cuidan la cuota de IA, y un documento de teoría aplicada nivel por nivel. 100% simulado y ficticio.
 </td>
 </tr>
 </table>
@@ -158,7 +174,7 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 | **IA** | Groq API + NVIDIA NIM (Respaldo) | ✅ Activo |
 | **Base de datos** | Supabase (PostgreSQL + RLS) | ⚠️ En desarrollo (Migraciones creadas) |
 | **Animaciones** | GSAP (GreenSock) | ✅ Activo |
-| **Multimedia** | Web Speech API (Síntesis de voz) | ✅ Activo |
+| **Multimedia** | Web Speech API (voz) · Web Audio API (sonido retro sintetizado) | ✅ Activo |
 | **Auth** | OAuth — Google · GitHub · Facebook | 🔜 Planificado |
 | **Monorepo** | Turborepo + pnpm workspaces | 🔜 Planificado |
 | **CI/CD** | GitHub Actions + Vercel | 🔜 Planificado |
@@ -180,6 +196,7 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 flowchart TB
     subgraph Cliente["🌐 Navegador"]
         A["public/index.html<br/>Landing + Chat Widget"]
+        L["public/linux-cli.html<br/>Reto Terminal · 31 niveles"]
     end
 
     subgraph NextJS["⚡ Next.js Server"]
@@ -189,15 +206,20 @@ flowchart TB
 
     subgraph Externo["☁️ Servicios externos"]
         D["Groq API<br/>LLM"]
+        N["NVIDIA NIM<br/>LLM (respaldo)"]
     end
 
     A -->|"GET /"| B
     A -->|"POST /api/chat"| C
+    L -->|"POST /api/chat<br/>(solo si no hay respuesta local)"| C
     C -->|"API Key server-side"| D
+    C -.->|"si Groq falla/agota cuota"| N
 
     style A fill:#101a2c,stroke:#2fd8c9,color:#eef3f6
+    style L fill:#101a2c,stroke:#39ff6a,color:#eef3f6
     style C fill:#101a2c,stroke:#e8b23a,color:#eef3f6
     style D fill:#0d1626,stroke:#93a2b8,color:#eef3f6
+    style N fill:#0d1626,stroke:#93a2b8,color:#eef3f6
 ```
 
 ### Visión futura (roadmap)
@@ -282,7 +304,7 @@ Edita `.env.local` y agrega tu clave de Groq.
 npm run dev
 ```
 
-Abre **[http://localhost:3000](http://localhost:3000)** en tu navegador.
+Abre **[http://localhost:3000](http://localhost:3000)** en tu navegador — o directo **[http://localhost:3000/linux-cli.html](http://localhost:3000/linux-cli.html)** para el reto Linux.
 
 ### 5 · Build de producción
 
@@ -337,18 +359,24 @@ El-Club-de-la-Ingenier-a/
 │
 ├── 📂 public/                  # Assets estáticos servidos por Next.js
 │   ├── index.html              # Landing completa con holograma interactivo y widget de voz
-│   ├── linux-cli.html          # Reto educativo de terminal Linux interactivo
+│   ├── linux-cli.html          # Reto Terminal Linux — Operación Laboratorio-B (31 niveles)
+│   ├── privacidad.html         # Aviso de tratamiento de datos (LOPDP)
 │   ├── hero-banner.jpg         # Banner principal
 │   └── logo.jpg                # Logo del club
 │
 ├── 📂 pages/
 │   └── 📂 api/
-│       └── chat.js             # Proxy IA multianfitrión (Groq/NVIDIA) + cuota Supabase
+│       ├── chat.js             # Proxy IA multianfitrión (Groq/NVIDIA) + cuota Supabase
+│       ├── public-config.js    # Config pública de Supabase para el cliente sin bundler
+│       └── join.js             # Formulario de unión (service role, server-side)
 │
 ├── 📂 supabase/
 │   └── 📂 migrations/          # Migraciones de base de datos SQL
 │       ├── 0001_auth_and_members.sql
 │       └── 0002_ia_uso_diario.sql   # Tabla y función RPC para control de cuota de IA
+│
+├── 📂 docs/
+│   └── teoria-operacion-laboratorio-b.md   # Teoría aplicada del reto, nivel por nivel
 │
 ├── 📄 next.config.js           # Rewrite / → index.html
 ├── 📄 package.json             # Dependencias y scripts
@@ -362,7 +390,7 @@ El-Club-de-la-Ingenier-a/
 
 ## 🤖 API del asistente IA y Sistema Multiproveedor
 
-El endpoint `/api/chat` actúa como **proxy seguro** e inteligente entre el frontend y las APIs de LLM de Groq y NVIDIA NIM.
+El endpoint `/api/chat` actúa como **proxy seguro** e inteligente entre el frontend y las APIs de LLM de Groq y NVIDIA NIM. Lo usan tanto el chat principal del sitio como INGenioso dentro del reto Linux — y en el reto, la mayoría de las preguntas frecuentes se resuelven **antes** de llegar aquí (ver más abajo).
 
 | Aspecto | Detalle |
 |:--------|:--------|
@@ -382,44 +410,86 @@ curl -X POST http://localhost:3000/api/chat \
   -d '{"messages":[{"role":"user","content":"¿Cómo me uno al club?"}]}'
 ```
 
+---
+
 ## 🎮 Reto Terminal Linux (Operación Laboratorio-B)
 
-Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux-cli.html`](public/linux-cli.html), pensado para que cualquier persona —incluso sin experiencia previa— aprenda comandos reales de la mano de **INGenioso**, un oso cyborg asistente con IA.
+Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux-cli.html`](public/linux-cli.html), pensado para que cualquier persona —incluso sin experiencia previa— aprenda comandos reales de la mano de **INGenioso**, un oso cyborg asistente con IA. **31 niveles, 248 etapas, ~13 horas de contenido**, repartidos en 7 episodios de dificultad creciente:
+
+```mermaid
+flowchart LR
+    E1["🔍 Ep.1<br/>Reconocimiento<br/>Niv. 1-2"] --> E2["🛡️ Ep.2<br/>Defensa y Respuesta<br/>Niv. 3-6"]
+    E2 --> E3["🌊 Ep.3<br/>Defensa DDoS<br/>Niv. 7-10"]
+    E3 --> E4["🔬 Ep.4<br/>Forense Digital<br/>Niv. 11-13"]
+    E4 --> E5["🎯 Ep.5<br/>Pentesting Web<br/>Niv. 14-17"]
+    E5 --> E6["📋 Ep.6<br/>ISO 27001<br/>Niv. 18-21"]
+    E6 --> E7["🚑 Ep.7<br/>Rescate Datacenter+Nube<br/>Niv. 22-31"]
+
+    style E1 fill:#101a2c,stroke:#2fd8c9,color:#eef3f6
+    style E2 fill:#0d1626,stroke:#2fd8c9,color:#eef3f6
+    style E3 fill:#101a2c,stroke:#e8b23a,color:#eef3f6
+    style E4 fill:#0d1626,stroke:#e8b23a,color:#eef3f6
+    style E5 fill:#101a2c,stroke:#2fd8c9,color:#eef3f6
+    style E6 fill:#0d1626,stroke:#2fd8c9,color:#eef3f6
+    style E7 fill:#101a2c,stroke:#e8b23a,color:#eef3f6
+```
 
 **Cómo está armado:**
 
 - **La computadora es la pantalla del juego.** Reutiliza el mismo componente visual de la computadora retro "todo en uno" de la animación de arranque del sitio (`.mac-unit`): el mismo chasis, bisel y brillo de fósforo verde, ahora como el terminal donde corre la partida.
 - **Un solo input para todo.** No hay una caja de comandos y otra de chat separadas: escribes un comando real (se ejecuta contra el simulador) o le preguntas algo en lenguaje natural a INGenioso ("no sé qué hacer", "dame una pista") y él responde — el propio input decide a quién hablarle según lo que escribas.
-- **Progresión secuencial de dificultad**, 8 etapas por nivel con barra de progreso visible, en 31 niveles (248 etapas en total, ~13 horas de contenido):
-  - **Nivel 1 — Reconocimiento:** `pwd` → `ls` → `ls -a` → `cat readme.txt` → `cat briefing.txt` (revela el objetivo) → `ping` → `nmap` → `nmap -sV` (revela la vulnerabilidad).
-  - **Nivel 2 — Infiltración WiFi:** `iwconfig` → `airmon-ng start` → `airodump-ng` → captura dirigida → `aireplay-ng --deauth` (con recordatorio ético explícito) → confirmación del handshake → `cat wordlist.txt` → `aircrack-ng` (contraseña final, pista conectada al Nivel 1).
-  - **Nivel 3 — Comunicación Segura:** `ssh-keygen` → `ssh-copy-id` → `ssh` → `gpg --gen-key` → `gpg --encrypt` → `wg genkey` → `wg-quick up` → `wg show` — cifrado y autenticación reales, no "invisibilidad".
-  - **Nivel 4 — Detección:** `netstat`/`ss` → `ps aux` → `lsof -p` → `cat auth.log` → `tcpdump` → `sha256sum` → contraste con inteligencia de amenazas → informe de incidente — el sombrero defensor, encontrar lo que el Nivel 3 enseñó a proteger.
-  - **Nivel 5 — Respuesta a Incidentes:** aislar (`ip link down`) → `kill` → eliminar binario → revisar y limpiar persistencia (`crontab`) → parchar (`apt upgrade`) → reconectar → verificar — ciclo de contención/erradicación/recuperación (NIST SP 800-61).
-  - **Nivel 6 — Simulacro de Incidente:** escenario nuevo y cronometrado que combina las cinco fases anteriores de punta a punta, antes de que salte una alerta real.
-  - **Nivel 7 — Bajo Ataque:** el sitio del club sufre un DDoS volumétrico. `uptime` → `systemctl status` → `ss -s` → analizar `access.log` con `awk | sort | uniq -c` → `whois` → cuantificar con `grep | wc -l` → documentar la alerta.
-  - **Nivel 8 — Mitigación de Emergencia:** bloqueo manual con `iptables -A INPUT -s <ip> -j DROP` de las IPs identificadas, y baneo dinámico con `fail2ban-client` cuando el atacante rota de IP.
-  - **Nivel 9 — Endurecimiento:** rate limiting en `nginx` (`nginx -t` + `systemctl reload`), regla de límite de conexiones en `iptables`, y modo "bajo ataque" — una defensa que no depende de bloquear IPs a mano.
-  - **Nivel 10 — Recuperación:** reinicia los servicios apagados por precaución, verifica el sitio de punta a punta (`curl -I`), confirma que el contenido no fue alterado (`sha256sum`) y cierra el caso — mientras un archivo sospechoso, ajeno al DDoS, abre la siguiente fase.
-  - **Nivel 11 — Rastreo de Indicios:** triage forense real: `stat` → `file` (la extensión mentía) → `strings | grep` → `.bash_history` → `exiftool` → correlación con el log del ataque.
-  - **Nivel 12 — Captura Forense:** aislar, copiar el disco bit a bit con `dc3dd` (hash incluido), verificar integridad y documentar la cadena de custodia paso a paso, incluida la recepción en el laboratorio.
-  - **Nivel 13 — Peritaje Informático:** análisis con **Autopsy** (línea de tiempo, recuperación de archivos borrados, búsquedas, informe) y un informe pericial — cierre del arco forense, no del juego: un archivo ajeno al DDoS abre el siguiente reto.
-  - **Nivel 14 — Reconocimiento Web:** pentest autorizado al propio sitio del club: `whatweb` → `nmap -p-` → `gobuster` → `robots.txt` → versión expuesta → un `.git/` accesible en producción, descargado con `wget`.
-  - **Nivel 15 — Análisis de Dependencias:** revisar `package.json`, `npm audit`, investigar con `npm info` una librería con un solo mantenedor inactivo desde hace años y sin parche disponible — riesgo de cadena de suministro real.
-  - **Nivel 16 — Explotación Controlada:** confirmar la autorización por escrito, y con `msfconsole` (`use` → `set RHOST` → `exploit`) demostrar el riesgo con una PoC mínima, cerrando la sesión de inmediato (`sessions -K`) — nunca sin permiso, nunca más de lo necesario.
-  - **Nivel 17 — Remediación e Informe:** confirmar que la dependencia abandonada no tiene parche, reemplazarla por una alternativa mantenida, reauditar y entregar el informe de seguridad web.
-  - **Nivel 18 — Alcance y Activos (SGSI):** el club ya es grande — definir el alcance, inventariar y clasificar activos, asignar propietarios y mapear amenazas y requisitos legales (LOPDP) bajo ISO/IEC 27001.
-  - **Nivel 19 — Riesgos (SGSI):** metodología de riesgo, matriz de riesgos, tratamiento, catálogo de controles del Anexo A y la Declaración de Aplicabilidad — el documento central de ISO 27001.
-  - **Nivel 20 — Políticas y Controles (SGSI):** convertir los riesgos en políticas reales — seguridad de la información, acceso, respuesta a incidentes, desarrollo seguro, respaldo, concientización y proveedores.
-  - **Nivel 21 — Auditoría del SGSI:** auditoría interna, no conformidad, acción correctiva, revisión por la dirección, KPIs y cierre del SGSI completo — no es el final: llega una llamada urgente.
-  - **Niveles 22-24 — Rescate: Datacenter.** Una universidad ficticia (**Universidad Metropolitana de Tecnología**, [LAB-FICTICIO]) pierde calificaciones en su sistema académico. Triage y autorización → auditoría física/lógica del datacenter (bitácora de acceso, ambiente, RAID degradado, `smartctl`) → integridad de respaldos (`grep ERROR`, `sha256sum`, restauración de prueba en sandbox — nunca confíes en un backup sin probarlo).
-  - **Niveles 25-27 — Rescate: Nube.** IAM y accesos (rol de servicio con permisos totales, llaves sin rotar, huecos de logging, modelo de responsabilidad compartida) → almacenamiento (permisos, versionado desactivado, objetos eliminados) → el propio servicio de sincronización automatizado, con un bug de despliegue, resulta ser la causa.
-  - **Niveles 28-29 — Causa Raíz e Impacto:** correlacionar todos los hallazgos, reproducir el bug en un entorno aislado (`sandboxcli`) para confirmarlo, descartar teorías alternativas, y medir el impacto real (la base on-premise, fuente de la verdad, seguía en gran parte íntegra).
-  - **Nivel 30 — Remediación y Recuperación:** revertir el despliegue con el bug, aplicar mínimo privilegio, crear la alarma que faltaba, activar versionado, restaurar datos desde la fuente íntegra y reparar el RAID siguiendo el procedimiento.
-  - **Nivel 31 — Examen Final (Informe y Reconocimiento):** compilar la auditoría completa en un informe final — cierre de los 31 niveles con el certificado simbólico de **Héroe del Club de la Ingeniería**, un reconocimiento otorgado por el propio club, no una acreditación real ni una denuncia sobre ninguna institución real.
-- **IA contextual real:** las preguntas a INGenioso golpean el mismo endpoint `/api/chat` (Groq → NVIDIA con presupuesto diario), enviando el nivel y la etapa pendiente como contexto para que la pista sea específica, no genérica.
-- **Selector de niveles** con desbloqueo secuencial (cada nivel exige completar el anterior), objetivos clickeables (piden pista directamente), progreso guardado en `localStorage`, y una pantalla final con certificado simbólico y cheatsheet de todos los comandos practicados.
-- **Aviso ético no-saltable** al inicio: toda la red, IPs, credenciales, CVEs e instituciones son ficticias; se recuerda explícitamente que usar estas herramientas reales sin autorización es ilegal. Del Nivel 3 en adelante el juego está diseñado deliberadamente en clave defensiva, forense y de gobierno de la seguridad (comunicación cifrada legítima, detección, respuesta a incidentes, mitigación de DDoS, cadena de custodia, pentesting con autorización explícita por escrito y cierre inmediato de sesión, ISO/IEC 27001, auditoría de datacenter/nube) en lugar de técnicas de evasión/persistencia ofensivas. La universidad de los niveles 22-31 es ficticia por diseño: no hace ninguna afirmación sobre UNEMI ni sobre ninguna institución real. El certificado final aclara explícitamente que es un reconocimiento educativo y simbólico otorgado por el propio club, no una acreditación pericial, pentest profesional, auditoría o certificación real.
+- **📱 Responsive de verdad, hasta con el teclado abierto.** En móvil, la etapa pendiente queda siempre visible en una barra fija justo sobre el input, que sigue al teclado táctil (`visualViewport`) en vez de quedar tapada.
+- **🔊 Sonido retro sintetizado.** Tecleo estilo terminal antigua, un jingle corto al completar cada etapa y una fanfarria al terminar el juego — generado con Web Audio API, sin archivos de audio externos, silenciable con un botón.
+- **💬 Respuestas locales antes que IA.** Preguntas frecuentes ("no sé qué hacer", "qué es RAID/IAM/un exploit"...) se resuelven al instante con un sistema de pistas y un glosario local — solo las preguntas realmente nuevas gastan cuota de Groq/NVIDIA.
+- **📖 [Documento de teoría aplicada](docs/teoria-operacion-laboratorio-b.md)** que acompaña los 7 episodios nivel por nivel, para estudiar un tema puntual sin jugar ni gastar IA.
+- **Selector de niveles** con desbloqueo secuencial, objetivos clickeables (piden pista directamente), progreso guardado en `localStorage`, y una pantalla final con certificado simbólico y cheatsheet de todos los comandos practicados.
+
+<details>
+<summary><strong>🗂 Ver el detalle de los 31 niveles, episodio por episodio</strong></summary>
+
+**Episodio 1 — Fundamentos de Reconocimiento**
+- **Nivel 1 — Reconocimiento:** `pwd` → `ls` → `ls -a` → `cat readme.txt` → `cat briefing.txt` (revela el objetivo) → `ping` → `nmap` → `nmap -sV` (revela la vulnerabilidad).
+- **Nivel 2 — Infiltración WiFi:** `iwconfig` → `airmon-ng start` → `airodump-ng` → captura dirigida → `aireplay-ng --deauth` (con recordatorio ético explícito) → confirmación del handshake → `cat wordlist.txt` → `aircrack-ng` (contraseña final, pista conectada al Nivel 1).
+
+**Episodio 2 — Defensa y Respuesta**
+- **Nivel 3 — Comunicación Segura:** `ssh-keygen` → `ssh-copy-id` → `ssh` → `gpg --gen-key` → `gpg --encrypt` → `wg genkey` → `wg-quick up` → `wg show` — cifrado y autenticación reales, no "invisibilidad".
+- **Nivel 4 — Detección:** `netstat`/`ss` → `ps aux` → `lsof -p` → `cat auth.log` → `tcpdump` → `sha256sum` → contraste con inteligencia de amenazas → informe de incidente.
+- **Nivel 5 — Respuesta a Incidentes:** aislar (`ip link down`) → `kill` → eliminar binario → limpiar persistencia (`crontab`) → parchar (`apt upgrade`) → reconectar → verificar — ciclo de contención/erradicación/recuperación (NIST SP 800-61).
+- **Nivel 6 — Simulacro de Incidente:** escenario nuevo y cronometrado que combina las cinco fases anteriores de punta a punta, antes de que salte una alerta real.
+
+**Episodio 3 — Defensa contra DDoS**
+- **Nivel 7 — Bajo Ataque:** el sitio del club sufre un DDoS volumétrico. `uptime` → `systemctl status` → `ss -s` → analizar `access.log` con `awk | sort | uniq -c` → `whois` → cuantificar con `grep | wc -l` → documentar la alerta.
+- **Nivel 8 — Mitigación de Emergencia:** bloqueo manual con `iptables -A INPUT -s <ip> -j DROP`, y baneo dinámico con `fail2ban-client` cuando el atacante rota de IP.
+- **Nivel 9 — Endurecimiento:** rate limiting en `nginx` (`nginx -t` + `systemctl reload`), regla de límite en `iptables`, y modo "bajo ataque" — una defensa que no depende de bloquear IPs a mano.
+- **Nivel 10 — Recuperación:** reinicia servicios, verifica el sitio de punta a punta (`curl -I`), confirma integridad (`sha256sum`) y cierra el caso — mientras un archivo sospechoso, ajeno al DDoS, abre la siguiente fase.
+
+**Episodio 4 — Análisis Forense Digital**
+- **Nivel 11 — Rastreo de Indicios:** triage forense real: `stat` → `file` (la extensión mentía) → `strings | grep` → `.bash_history` → `exiftool` → correlación con el log del ataque.
+- **Nivel 12 — Captura Forense:** aislar, copiar el disco bit a bit con `dc3dd` (hash incluido), verificar integridad y documentar la cadena de custodia paso a paso.
+- **Nivel 13 — Peritaje Informático:** análisis con **Autopsy** (línea de tiempo, recuperación de archivos borrados, búsquedas, informe) y un informe pericial — cierre del arco forense, no del juego.
+
+**Episodio 5 — Pentesting Web Autorizado**
+- **Nivel 14 — Reconocimiento Web:** pentest autorizado al propio sitio del club: `whatweb` → `nmap -p-` → `gobuster` → `robots.txt` → versión expuesta → un `.git/` accesible en producción, descargado con `wget`.
+- **Nivel 15 — Análisis de Dependencias:** `package.json`, `npm audit`, `npm info` — una librería con un solo mantenedor inactivo desde hace años y sin parche disponible: riesgo de cadena de suministro real.
+- **Nivel 16 — Explotación Controlada:** autorización por escrito, y con `msfconsole` (`use` → `set RHOST` → `exploit`) una PoC mínima, cerrando la sesión de inmediato (`sessions -K`) — nunca sin permiso, nunca más de lo necesario.
+- **Nivel 17 — Remediación e Informe:** confirmar que la dependencia abandonada no tiene parche, reemplazarla, reauditar y entregar el informe de seguridad web.
+
+**Episodio 6 — Gobierno de la Seguridad (ISO/IEC 27001)**
+- **Nivel 18 — Alcance y Activos:** definir el alcance, inventariar y clasificar activos, asignar propietarios y mapear amenazas y requisitos legales (LOPDP).
+- **Nivel 19 — Riesgos:** metodología de riesgo, matriz de riesgos, tratamiento, catálogo de controles del Anexo A y la Declaración de Aplicabilidad.
+- **Nivel 20 — Políticas y Controles:** convertir los riesgos en políticas reales — acceso, respuesta a incidentes, desarrollo seguro, respaldo, concientización, proveedores.
+- **Nivel 21 — Auditoría del SGSI:** auditoría interna, no conformidad, acción correctiva, revisión por la dirección, KPIs — no es el final: llega una llamada urgente.
+
+**Episodio 7 — Rescate: Datacenter y Nube**
+- **Niveles 22-24 — Datacenter:** una universidad ficticia (**Universidad Metropolitana de Tecnología**, [LAB-FICTICIO]) pierde calificaciones. Triage y autorización → auditoría física/lógica (bitácora, ambiente, RAID degradado, `smartctl`) → integridad de respaldos (nunca confíes en un backup sin probarlo).
+- **Niveles 25-27 — Nube:** IAM y accesos (rol sobre-permisivo, llaves sin rotar, huecos de logging) → almacenamiento (permisos, versionado, objetos eliminados) → el propio servicio de sincronización, con un bug de despliegue, resulta ser la causa.
+- **Niveles 28-29 — Causa Raíz e Impacto:** correlacionar hallazgos, reproducir el bug en sandbox para confirmarlo, descartar teorías alternativas, y medir el impacto real.
+- **Nivel 30 — Remediación y Recuperación:** revertir el despliegue, aplicar mínimo privilegio, crear la alarma faltante, activar versionado, restaurar datos y reparar el RAID siguiendo el procedimiento.
+- **Nivel 31 — Examen Final:** informe completo — cierre de los 31 niveles con el certificado simbólico de **Héroe del Club de la Ingeniería**, otorgado por el propio club, no una acreditación real ni una denuncia sobre ninguna institución real.
+
+</details>
+
+> **Aviso ético no-saltable** al inicio del juego: toda la red, IPs, credenciales, CVEs e instituciones son ficticias; se recuerda explícitamente que usar estas herramientas reales sin autorización es ilegal. Del Nivel 3 en adelante el juego está diseñado deliberadamente en clave defensiva, forense y de gobierno de la seguridad (nunca técnicas de evasión/persistencia ofensivas). La universidad de los niveles 22-31 es ficticia por diseño: no hace ninguna afirmación sobre ninguna institución real. El certificado final aclara explícitamente que es un reconocimiento educativo y simbólico, no una acreditación pericial, pentest profesional, auditoría o certificación real.
 
 ---
 
@@ -430,6 +500,16 @@ Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux
 <th>Fase</th>
 <th>Entregable</th>
 <th>Estado</th>
+</tr>
+<tr>
+<td><strong>MVP actual</strong></td>
+<td>Landing retro + API chat IA + deploy Next.js</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><strong>Reto Linux</strong></td>
+<td>Operación Laboratorio-B — 31 niveles, sonido, respuestas locales, teoría</td>
+<td align="center">✅</td>
 </tr>
 <tr>
 <td><strong>Fase 0</strong></td>
@@ -450,11 +530,6 @@ Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux
 <td><strong>Fase 3</strong></td>
 <td>Template de noticias · subdominio <code>noticias.*</code></td>
 <td align="center">🔜</td>
-</tr>
-<tr>
-<td><strong>MVP actual</strong></td>
-<td>Landing retro + API chat IA + deploy Next.js</td>
-<td align="center">✅</td>
 </tr>
 </table>
 
