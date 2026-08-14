@@ -102,6 +102,56 @@
   #cheatsheet .cs-item b{color:var(--teal);flex-shrink:0;min-width:150px;}
   #cheatsheet .cs-item span{color:var(--ink-dim);}
 
+  header .menu-btn{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
+  header .menu-btn:hover{color:var(--teal);border-color:var(--teal-dim);}
+
+  /* ---- Objetivos clickeables ---- */
+  .obj-list li{padding:0;}
+  .obj-list li button{all:unset;display:flex;gap:.5rem;align-items:flex-start;cursor:pointer;width:100%;border-radius:5px;padding:.2rem;color:inherit;}
+  .obj-list li button:hover{background:rgba(47,216,201,.08);}
+  .obj-list li button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  /* ---- Selección de nivel ---- */
+  .level-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.4rem 0;}
+  @media (max-width:520px){.level-cards{grid-template-columns:1fr;}}
+  .level-card{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:1.2rem;cursor:pointer;transition:border-color .2s,transform .2s;color:var(--ink);font-family:inherit;}
+  .level-card:hover:not(:disabled){border-color:var(--teal);transform:translateY(-3px);}
+  .level-card:disabled{opacity:.5;cursor:not-allowed;}
+  .level-card .level-num{font-family:var(--mono);font-size:1.6rem;color:var(--teal-dim);margin-bottom:.4rem;}
+  .level-card h3{font-family:var(--mono);font-size:.94rem;margin-bottom:.5rem;}
+  .level-card p{font-size:.8rem;color:var(--ink-dim);line-height:1.5;margin-bottom:.6rem;}
+  .level-card .level-status{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--gold);}
+
+  /* ---- INGenioso: mascota/asistente del juego ---- */
+  #ingenioso-float{position:fixed;right:1.4rem;bottom:1.4rem;z-index:60;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 40% 35%, #14382e, #071510 75%);border:2px solid var(--teal-dim);box-shadow:0 8px 26px rgba(0,0,0,.55);cursor:pointer;padding:2px;overflow:visible;animation:ing-bob 3.2s ease-in-out infinite;}
+  #ingenioso-float svg{width:100%;height:100%;}
+  #ingenioso-float .ping{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);display:none;}
+  #ingenioso-float.has-msg .ping{display:block;animation:blink 1s steps(1) infinite;}
+  @keyframes ing-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+  .ing-eye{animation:ing-blink 4.5s ease-in-out infinite;transform-origin:65px 46px;}
+  @keyframes ing-blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.1);}}
+
+  #ingenioso-panel{position:fixed;right:1.4rem;bottom:6rem;z-index:65;width:min(320px,88vw);max-height:min(440px,68vh);background:var(--panel);border:1px solid var(--teal-dim);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;}
+  #ingenioso-panel.open{display:flex;}
+  .ing-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.72rem;color:var(--ink);flex-shrink:0;}
+  .ing-bar b{color:var(--teal);}
+  .ing-close{margin-left:auto;background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;}
+  .ing-close:hover{color:var(--ink);}
+  .ing-body{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;}
+  .ing-row{display:flex;gap:.7rem;align-items:flex-start;}
+  .ing-avatar-sm{width:44px;height:44px;flex-shrink:0;}
+  .ing-bubble{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:.6rem .8rem;font-size:.82rem;color:var(--ink);line-height:1.55;}
+  .ing-bubble.thinking{color:var(--ink-dim);font-style:italic;}
+  .ing-ask-row{display:flex;gap:.5rem;padding:.7rem;border-top:1px solid var(--line);background:var(--panel-2);flex-shrink:0;}
+  .ing-ask-row input{flex:1;background:#050c17;border:1px solid var(--line);border-radius:6px;padding:.6rem .7rem;color:var(--ink);font-family:var(--sans);font-size:.82rem;}
+  .ing-ask-row button{background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:0 .9rem;font-family:var(--mono);font-size:.76rem;font-weight:700;cursor:pointer;}
+  .ing-ask-row button:disabled{opacity:.5;cursor:not-allowed;}
+
+  @media (min-width:1600px){
+    aside{width:340px;}
+    #scrollback,#input-row{font-size:.94rem;}
+  }
+
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;}}
 </style>
 </head>
@@ -114,6 +164,7 @@
     <div class="meta">
       <span><span class="dot"></span> <span id="level-label">NIVEL 1</span></span>
       <span id="timer">00:00</span>
+      <button class="menu-btn" id="menu-btn" type="button">🎯 niveles</button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ briefing</button>
     </div>
   </header>
@@ -150,6 +201,27 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="level-select-modal" hidden>
+  <div class="modal">
+    <h1>Elige tu <span>misión</span></h1>
+    <p>Puedes volver aquí cuando quieras con el botón "🎯 niveles" del encabezado.</p>
+    <div class="level-cards">
+      <button class="level-card" id="select-l1" type="button" data-level="1">
+        <div class="level-num">01</div>
+        <h3>Reconocimiento</h3>
+        <p>Encuentra el objetivo asignado y escanéalo con nmap.</p>
+        <span class="level-status" id="l1-status">Disponible</span>
+      </button>
+      <button class="level-card" id="select-l2" type="button" data-level="2">
+        <div class="level-num">02</div>
+        <h3>Infiltración WiFi</h3>
+        <p>Captura el handshake de la red del laboratorio y crackea su contraseña.</p>
+        <span class="level-status" id="l2-status">🔒 Completa el Nivel 1 primero</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="complete-modal" hidden>
   <div class="modal">
     <h1>Misión <span>completada</span> 🎉</h1>
@@ -165,6 +237,27 @@
   </div>
 </div>
 
+<button id="ingenioso-float" type="button" aria-label="Abrir a INGenioso, tu asistente">
+  <span class="ping"></span>
+</button>
+
+<div id="ingenioso-panel">
+  <div class="ing-bar">
+    <span>🐻</span> <b>INGenioso</b> — asistente del juego
+    <button class="ing-close" id="ing-close" type="button" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="ing-body" id="ing-body">
+    <div class="ing-row">
+      <div class="ing-avatar-sm" id="ing-avatar-slot"></div>
+      <div class="ing-bubble" id="ing-bubble">¡Hola, agente! Soy INGenioso 🐻⚙️ Si te trabas, hazme clic en un objetivo del panel izquierdo o pregúntame lo que quieras aquí abajo.</div>
+    </div>
+  </div>
+  <form class="ing-ask-row" id="ing-ask-form">
+    <input id="ing-ask-input" type="text" placeholder="Pregúntale a INGenioso..." autocomplete="off" maxlength="300">
+    <button type="submit" id="ing-ask-send">Enviar</button>
+  </form>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -172,6 +265,26 @@
   const TARGET_IP = '192.168.56.10';
   const BSSID = 'AA:BB:CC:11:22:33';
   const STORAGE_KEY = 'linuxGameProgress_v2';
+
+  const INGENIOSO_SVG = '<svg viewBox="0 0 100 100" aria-hidden="true">'
+    + '<circle cx="22" cy="22" r="14" fill="#0d1f1a" stroke="#2fd8c9" stroke-width="2"/>'
+    + '<circle cx="78" cy="22" r="14" fill="#0d1f1a" stroke="#2fd8c9" stroke-width="2"/>'
+    + '<circle cx="22" cy="22" r="6" fill="#173229"/>'
+    + '<circle cx="78" cy="22" r="6" fill="#173229"/>'
+    + '<circle cx="50" cy="54" r="38" fill="#0f2620" stroke="#2fd8c9" stroke-width="2.5"/>'
+    + '<path d="M78 42 a10 10 0 0 1 0 20" fill="none" stroke="#e8b23a" stroke-width="2"/>'
+    + '<circle cx="80" cy="52" r="2" fill="#e8b23a"/>'
+    + '<ellipse cx="50" cy="68" rx="16" ry="12" fill="#173229" stroke="#2fd8c9" stroke-width="1.5"/>'
+    + '<circle cx="50" cy="64" r="3" fill="#eafffb"/>'
+    + '<path d="M50 67 v4 M44 73 q6 5 12 0" fill="none" stroke="#8fa89c" stroke-width="1.5" stroke-linecap="round"/>'
+    + '<circle cx="35" cy="48" r="6" fill="#eafffb" class="ing-eye" style="transform-origin:35px 48px;"/>'
+    + '<circle cx="35" cy="48" r="2.4" fill="#0f2620"/>'
+    + '<circle cx="65" cy="48" r="9" fill="#04140a" stroke="#2fd8c9" stroke-width="1.5"/>'
+    + '<circle cx="65" cy="48" r="5" fill="none" stroke="#2fd8c9" stroke-width="1"/>'
+    + '<circle cx="65" cy="48" r="2.2" fill="#39ff6a"/>'
+    + '<path d="M50 16 v-8" stroke="#2fd8c9" stroke-width="2" stroke-linecap="round"/>'
+    + '<circle cx="50" cy="6" r="3" fill="#e8b23a"/>'
+    + '</svg>';
 
   const scrollback = document.getElementById('scrollback');
   const input = document.getElementById('cmd-input');
@@ -183,6 +296,10 @@
   const introModal = document.getElementById('intro-modal');
   const completeModal = document.getElementById('complete-modal');
   const asideEl = document.getElementById('aside');
+  const levelSelectModal = document.getElementById('level-select-modal');
+  const ingeniosoFloat = document.getElementById('ingenioso-float');
+  const ingeniosoPanel = document.getElementById('ingenioso-panel');
+  const ingBubble = document.getElementById('ing-bubble');
 
   // ---- Catálogo de comandos aprendidos (para el cheatsheet final) ----
   const CHEATSHEET = [
@@ -280,7 +397,14 @@
     objs.forEach((o) => {
       const li = document.createElement('li');
       li.className = o.done ? 'done' : '';
-      li.innerHTML = '<span class="chk">' + (o.done ? '✓' : '') + '</span><span>' + o.label + '</span>';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.innerHTML = '<span class="chk">' + (o.done ? '✓' : '') + '</span><span>' + o.label + '</span>';
+      btn.addEventListener('click', () => {
+        if (o.done){ sayIngenioso('¡Ese objetivo ya lo tienes resuelto! 🎉'); return; }
+        hintForObjective(o.id);
+      });
+      li.appendChild(btn);
       objList.appendChild(li);
     });
   }
@@ -323,14 +447,53 @@
     const objs = objectivesFor(state.level);
     return objs.find((o) => !o.done);
   }
+  function hintForObjective(objId){
+    const bucket = (HINTS[state.level] && HINTS[state.level][objId]) || [];
+    const text = bucket.length ? bucket[Math.min(state.hintsUsed, bucket.length - 1)] : 'Sigue explorando con los comandos que ya conoces.';
+    print(text, 'tip');
+    sayIngenioso(text);
+    if (bucket.length){ state.hintsUsed++; saveState(); }
+  }
   function giveHint(){
     const unmet = currentUnmetObjective();
-    if (!unmet){ print('Ya completaste todos los objetivos de este nivel. Escribe "siguiente".', 'tip'); return; }
-    const bucket = HINTS[state.level][unmet.id] || [];
-    const idx = Math.min(state.hintsUsed, bucket.length - 1);
-    print(bucket[idx] || 'Sigue explorando con los comandos que ya conoces.', 'tip');
-    state.hintsUsed++;
-    saveState();
+    if (!unmet){ sayIngenioso('Ya completaste todos los objetivos de este nivel. Usa "🎯 niveles" arriba para elegir el siguiente.'); return; }
+    hintForObjective(unmet.id);
+  }
+
+  // ---- INGenioso: diálogo y panel flotante ----
+  function sayIngenioso(text, thinking){
+    ingBubble.textContent = text;
+    ingBubble.className = 'ing-bubble' + (thinking ? ' thinking' : '');
+    if (!ingeniosoPanel.classList.contains('open')){
+      ingeniosoFloat.classList.add('has-msg');
+    }
+  }
+  function toggleIngenioso(open){
+    const willOpen = open ?? !ingeniosoPanel.classList.contains('open');
+    ingeniosoPanel.classList.toggle('open', willOpen);
+    if (willOpen) ingeniosoFloat.classList.remove('has-msg');
+  }
+  async function askIngenioso(question){
+    const sendBtn = document.getElementById('ing-ask-send');
+    sendBtn.disabled = true;
+    sayIngenioso('Dejame pensar...', true);
+    const objs = objectivesFor(state.level);
+    const pending = objs.find((o) => !o.done);
+    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Objetivo pendiente: ' +
+      (pending ? pending.label : 'todos completos, listo para avanzar de nivel') + '. Pistas ya usadas en este nivel: ' + state.hintsUsed + '.';
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: context + '\n\nPregunta del jugador: ' + question }] }),
+      });
+      const data = await res.json();
+      sayIngenioso(res.ok ? data.reply : (data.error || 'No pude responder, intenta de nuevo.'));
+    } catch (err) {
+      sayIngenioso('No pude conectarme para pensar la respuesta. Revisa tu conexión.');
+    } finally {
+      sendBtn.disabled = false;
+    }
   }
 
   // ---- Ayuda contextual ----
@@ -495,7 +658,7 @@
       case 'siguiente':
       case 'next':
         if (!state.l1.scannedVersion){ print('Todavía te falta completar los objetivos del Nivel 1.', 'warn'); return; }
-        startLevel2();
+        goToLevel(2);
         return;
     }
     return 'unknown';
@@ -641,14 +804,42 @@
     }
   }
 
-  function startLevel2(){
-    state.level = 2;
+  // ---- Selección / navegación de niveles ----
+  function updateLevelSelectStatuses(){
+    const l1Status = document.getElementById('l1-status');
+    const l2Btn = document.getElementById('select-l2');
+    const l2Status = document.getElementById('l2-status');
+    l1Status.textContent = state.l1.scannedVersion ? 'Completo ✓' : 'Disponible';
+    if (state.l1.scannedVersion){
+      l2Btn.disabled = false;
+      l2Status.textContent = state.l2.crack ? 'Completo ✓' : 'Disponible';
+    } else {
+      l2Btn.disabled = true;
+      l2Status.textContent = '🔒 Completa el Nivel 1 primero';
+    }
+  }
+  function showLevelSelect(){
+    updateLevelSelectStatuses();
+    levelSelectModal.hidden = false;
+  }
+  function goToLevel(n){
+    levelSelectModal.hidden = true;
+    state.level = n;
+    state.inHidden = false;
     saveState();
     scrollback.innerHTML = '';
     renderBriefing();
     renderObjectives();
-    print('=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
-    print('Escribe "ayuda" para ver los comandos disponibles.', 'tip');
+    const fresh = n === 1 ? !state.l1.findIp : !state.l2.monitor;
+    print(n === 1 ? '=== FASE 1: RECONOCIMIENTO ===' : '=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
+    if (fresh){
+      print(n === 1 ? 'Escribe "ls" para ver qué archivos tienes en tu carpeta de inicio.' : 'Escribe "ayuda" para ver los comandos disponibles.', 'tip');
+      sayIngenioso(n === 1 ? '¡Vamos, agente! Empieza escribiendo "ls" para ver qué hay en tu carpeta de inicio.' : '¡Fase 2! Activa el modo monitor con "airmon-ng start wlan0" para arrancar.');
+    } else {
+      print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
+      sayIngenioso('¡Seguimos donde lo dejamos! Si quieres repasar, hazme clic en cualquier objetivo del panel izquierdo.');
+    }
+    input.focus();
   }
 
   function finishGame(){
@@ -665,6 +856,7 @@
       div.innerHTML = '<b>' + name + '</b><span>' + desc + '</span>';
       cs.appendChild(div);
     });
+    sayIngenioso('¡LO LOGRASTE! 🎉🐻⚙️ Completaste Operación Laboratorio-B. Estoy orgulloso, agente.');
     completeModal.hidden = false;
   }
 
@@ -672,22 +864,28 @@
   function boot(){
     renderBriefing();
     renderObjectives();
-    if (state.level === 1){
-      print('=== FASE 1: RECONOCIMIENTO ===', 'success');
-      print('Escribe "ls" para ver qué archivos tienes en tu carpeta de inicio.', 'tip');
-    } else {
-      print('=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
-      print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
-    }
-    if (state.completed){
-      print('(Ya completaste esta operación antes — puedes seguir explorando o reiniciar desde el botón al final.)', 'info');
-    }
+    ingeniosoFloat.insertAdjacentHTML('afterbegin', INGENIOSO_SVG);
+    document.getElementById('ing-avatar-slot').innerHTML = INGENIOSO_SVG;
   }
 
   document.getElementById('intro-start').addEventListener('click', () => {
     introModal.hidden = true;
-    input.focus();
+    showLevelSelect();
   });
+  document.getElementById('menu-btn').addEventListener('click', showLevelSelect);
+  document.getElementById('select-l1').addEventListener('click', () => goToLevel(1));
+  document.getElementById('select-l2').addEventListener('click', (e) => { if (!e.currentTarget.disabled) goToLevel(2); });
+  ingeniosoFloat.addEventListener('click', () => toggleIngenioso());
+  document.getElementById('ing-close').addEventListener('click', () => toggleIngenioso(false));
+  document.getElementById('ing-ask-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = document.getElementById('ing-ask-input');
+    const text = q.value.trim();
+    if (!text) return;
+    q.value = '';
+    askIngenioso(text);
+  });
+
   document.getElementById('restart-btn').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
     location.reload();
@@ -704,7 +902,9 @@
     input.focus();
   });
 
-  document.addEventListener('click', () => { if (introModal.hidden) input.focus(); });
+  document.getElementById('terminal-col').addEventListener('click', () => {
+    if (introModal.hidden && levelSelectModal.hidden) input.focus();
+  });
 
   boot();
 })();
