@@ -18,9 +18,11 @@
 
 # El Club de la Ingeniería
 
-<img src="public/logo.jpg" alt="Logo del Club de Ingeniería" width="110" style="border-radius: 50%; border: 2px solid #2fd8c9;" />
+<img src="public/logo.png" alt="Logo del Club de Ingeniería" width="110" style="border-radius: 50%; border: 2px solid #2fd8c9;" />
 
 ### *Innovando el futuro desde Tecnologías de la Información, Ciencias e Investigación*
+
+🌐 **Sitio Web Oficial:** **[elclubdelaingenieria.dpdns.org](https://elclubdelaingenieria.dpdns.org/)**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)

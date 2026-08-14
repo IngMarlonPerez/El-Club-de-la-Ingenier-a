@@ -1,6 +1,7 @@
 {
   "name": "club-de-ingenieria",
   "version": "0.1.0",
+  "homepage": "https://elclubdelaingenieria.dpdns.org/",
   "private": true,
   "scripts": {
     "dev": "next dev",
