@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -10,18 +11,30 @@ const BodySchema = z.object({
 });
 
 const SYSTEM_PROMPT = `Eres el asistente virtual del Club de Ingeniería en Tecnologías de la Información, Ciencias e Investigación.
-Respondes en español, con tono cercano y directo, como un miembro más del club (no corporativo, sin relleno).
+Respondes en español, con tono cercano, entusiasta y con humor ligero de ingeniero — nada corporativo, sin relleno.
 
-Contexto del club:
+Si alguien te pide un chiste, o está frustrado con algo técnico, puedes soltar UNO de estos (nunca los dos seguidos):
+- "¿Por qué los ingenieros de software nunca se pierden? Porque siempre tienen un 'path' de regreso."
+- "Un ingeniero civil y uno de software discuten cuál carrera es más dura. El de software dice: 'al menos si tu puente se cae, a ti no te toca hacer rollback en producción a las 3am'."
+
+Quiénes somos: una comunidad universitaria en Ecuador donde se comparte conocimiento científico-técnico entre quienes recién empiezan y quienes ya tienen experiencia — charlas técnicas, mentorías, podcasts, proyectos reales y colaboración en código abierto.
+
+Misión: formar una comunidad donde estudiantes de ingeniería, ciencia y tecnología compartan conocimiento de forma abierta —charlas, mentorías, proyectos reales, podcasts y contribuciones de código— para que cualquier persona, desde quien recién empieza hasta quien quiere liderar, tenga un lugar donde aprender y aportar.
+
+Visión: ser una comunidad de ingeniería referente en Ecuador y un modelo para Latinoamérica, reconocida por su cultura de aprendizaje colaborativo y código abierto, impulsando el talento técnico ecuatoriano hacia el mundo con certificaciones, mentorías y concursos.
+
+Contexto adicional:
 - Áreas: desarrollo de software, ciencia de datos e IA, ciberseguridad, redes y cloud, sistemas de información, investigación aplicada.
-- Fundado en 2016, sede: Taller-B, Facultad de Ingeniería. Abierto a toda carrera.
-- Cómo unirse: 1) completar el formulario en la sección "unirse" de la web, 2) asistir a la tarde abierta de los jueves, 3) elegir o proponer un proyecto.
-- Contacto: WhatsApp +593 98 602 3149, página de Facebook y canal de YouTube "El Club de la Ingeniería".
-- No se necesita experiencia previa para unirse.
+- Fundado en 2016, sede: Taller-B, Facultad de Ingeniería. Abierto a toda carrera, sin experiencia previa.
+- Cómo unirse: formulario en la sección "unirse" de la web, o registro/login con Google o GitHub. También hay tarde abierta todos los jueves.
+- Cómo colaborar activamente (dar una charla, hacer un podcast, aportar código): invita a escribir por WhatsApp, unirse al grupo de Facebook de la comunidad, o contribuir directo en el repositorio de GitHub del club — los enlaces están en la sección de contacto de la misma página.
+- Sitio web: elclubdelaingenieria.dpdns.org
+- Contacto: WhatsApp +593 98 602 3149.
 
-Si te preguntan algo fuera de este contexto (tarea de otra materia, temas ajenos al club), respóndelo brevemente si es razonable, pero redirige la conversación hacia el club cuando tenga sentido.
-Mantén las respuestas breves (máximo un par de párrafos cortos), no inventes datos de contacto ni proyectos que no estén en este contexto.`;
+Si te preguntan algo fuera de este contexto, respóndelo brevemente si es razonable, pero redirige la conversación hacia el club cuando tenga sentido.
+Mantén las respuestas breves (máximo un par de párrafos cortos). No inventes datos de contacto ni proyectos que no estén en este contexto.`;
 
+// ---- Guardia anti-abuso de corto plazo (por IP, en memoria, best-effort) ----
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 12;
 const hits = new Map();
@@ -32,6 +45,87 @@ function isRateLimited(ip) {
   recent.push(now);
   hits.set(ip, recent);
   return recent.length > RATE_LIMIT_MAX;
+}
+
+// ---- Presupuesto diario compartido entre Groq y NVIDIA (vía Supabase) ----
+const GROQ_DAILY_LIMIT = Number(process.env.GROQ_DAILY_LIMIT) || 500;
+const NVIDIA_DAILY_LIMIT = Number(process.env.NVIDIA_DAILY_LIMIT) || 300;
+
+function todayInEcuador() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guayaquil' });
+}
+
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+async function getTodayUsage(supabaseAdmin, today) {
+  const usage = { groq: 0, nvidia: 0 };
+  if (!supabaseAdmin) return usage;
+
+  const { data, error } = await supabaseAdmin
+    .from('ia_uso_diario')
+    .select('proveedor, mensajes')
+    .eq('fecha', today);
+
+  if (error) {
+    console.error('No se pudo leer el uso diario de IA', error);
+    return usage;
+  }
+  for (const row of data || []) usage[row.proveedor] = row.mensajes;
+  return usage;
+}
+
+async function bumpUsage(supabaseAdmin, today, proveedor) {
+  if (!supabaseAdmin) return;
+  const { error } = await supabaseAdmin.rpc('increment_ia_uso', { p_fecha: today, p_proveedor: proveedor });
+  if (error) console.error('No se pudo registrar el uso de IA', error);
+}
+
+// ---- Proveedores (ambos exponen una API estilo OpenAI chat completions) ----
+async function callGroq(messages) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'llama-3.1-8b-instant',
+      messages,
+      temperature: 0.6,
+      max_tokens: 400,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content?.trim();
+}
+
+async function callNvidia(messages) {
+  const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'nvidia/llama-3.1-nemotron-70b-instruct',
+      messages,
+      temperature: 0.6,
+      max_tokens: 400,
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`NVIDIA ${res.status}: ${await res.text()}`);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content?.trim();
 }
 
 export default async function handler(req, res) {
@@ -54,39 +148,46 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Solicitud inválida.' });
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    console.error('GROQ_API_KEY no está configurada en el entorno.');
-    return res.status(500).json({ error: 'El asistente no está configurado todavía. Vuelve pronto.' });
+  const supabaseAdmin = getSupabaseAdmin();
+  const today = todayInEcuador();
+  const usage = await getTodayUsage(supabaseAdmin, today);
+
+  const groqAvailable = Boolean(process.env.GROQ_API_KEY) && usage.groq < GROQ_DAILY_LIMIT;
+  const nvidiaAvailable = Boolean(process.env.NVIDIA_API_KEY) && usage.nvidia < NVIDIA_DAILY_LIMIT;
+
+  if (!groqAvailable && !nvidiaAvailable) {
+    return res.status(429).json({
+      error: 'Hoy ya usamos toda la cuota gratuita del asistente 🙏 Vuelve mañana, o escríbenos por WhatsApp mientras tanto.',
+    });
   }
 
-  try {
-    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...parsed.data.messages],
-        temperature: 0.6,
-        max_tokens: 400,
-      }),
-    });
+  const fullMessages = [{ role: 'system', content: SYSTEM_PROMPT }, ...parsed.data.messages];
+  let reply;
+  let usedProvider;
 
-    if (!groqRes.ok) {
-      const errText = await groqRes.text();
-      console.error('Groq respondió con error', groqRes.status, errText);
-      return res.status(502).json({ error: 'El asistente no está disponible en este momento.' });
+  if (groqAvailable) {
+    try {
+      reply = await callGroq(fullMessages);
+      usedProvider = 'groq';
+    } catch (err) {
+      console.error('Groq falló, se intentará con NVIDIA si está disponible', err);
     }
+  }
 
-    const data = await groqRes.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
+  if (!reply && nvidiaAvailable) {
+    try {
+      reply = await callNvidia(fullMessages);
+      usedProvider = 'nvidia';
+    } catch (err) {
+      console.error('NVIDIA también falló', err);
+    }
+  }
 
-    return res.status(200).json({ reply: reply || 'No tengo una respuesta para eso todavía.' });
-  } catch (err) {
-    console.error('Fallo al contactar a Groq', err);
+  if (!reply) {
     return res.status(502).json({ error: 'El asistente no está disponible en este momento.' });
   }
+
+  if (usedProvider) await bumpUsage(supabaseAdmin, today, usedProvider);
+
+  return res.status(200).json({ reply });
 }

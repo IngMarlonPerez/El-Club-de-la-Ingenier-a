@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operación Laboratorio-B — Reto de Terminal Linux | Club de Ingeniería</title>
+<meta name="description" content="Aprende comandos de Linux jugando: escaneo de red y auditoría WiFi en un laboratorio 100% ficticio y educativo. Dos niveles, ~1 hora.">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#050a08;
+    --panel:#0c1a14;
+    --panel-2:#081310;
+    --teal:#2fd8c9;
+    --teal-dim:#186a63;
+    --gold:#e8b23a;
+    --ink:#eef3f6;
+    --ink-dim:#8fa89c;
+    --line:#173229;
+    --term-green:#39ff6a;
+    --term-green-dim:#1c8a3d;
+    --danger:#ff5f5f;
+    --mono:'IBM Plex Mono','Courier New',monospace;
+    --sans:'IBM Plex Sans',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased;}
+  button{font-family:inherit;}
+  a{color:var(--teal);}
+  a:focus-visible, button:focus-visible, input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  #app{display:flex;flex-direction:column;height:100vh;}
+
+  header{flex-shrink:0;display:flex;align-items:center;gap:1rem;padding:.8rem 1.4rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
+  header a.back{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);text-decoration:none;flex-shrink:0;}
+  header a.back:hover{color:var(--teal);}
+  header .title{font-family:var(--mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink);}
+  header .title span{color:var(--gold);}
+  header .meta{margin-left:auto;display:flex;align-items:center;gap:1.2rem;font-family:var(--mono);font-size:.7rem;color:var(--ink-dim);flex-shrink:0;}
+  header .dot{width:7px;height:7px;border-radius:50%;background:var(--term-green);box-shadow:0 0 6px var(--term-green);animation:blink 1.6s steps(1) infinite;}
+  @keyframes blink{50%{opacity:.3;}}
+
+  main{flex:1;display:flex;min-height:0;}
+  aside{width:290px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
+  aside h2{font-size:.66rem;letter-spacing:.12em;color:var(--gold);margin-bottom:.6rem;}
+  aside .briefing{color:var(--ink-dim);line-height:1.6;white-space:pre-wrap;margin-bottom:1.4rem;padding-bottom:1.2rem;border-bottom:1px dashed var(--line);}
+  .obj-list{list-style:none;margin-bottom:1.4rem;}
+  .obj-list li{display:flex;gap:.5rem;align-items:flex-start;color:var(--ink-dim);margin-bottom:.7rem;line-height:1.4;}
+  .obj-list li .chk{flex-shrink:0;width:16px;height:16px;border:1px solid var(--teal-dim);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--term-green);margin-top:.1rem;}
+  .obj-list li.done{color:var(--ink);}
+  .obj-list li.done .chk{background:var(--teal-dim);border-color:var(--teal);}
+  .help-box{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:.8rem;color:var(--ink-dim);line-height:1.7;}
+  .help-box b{color:var(--teal);}
+
+  #terminal-col{flex:1;display:flex;flex-direction:column;min-width:0;}
+  #scrollback{flex:1;overflow-y:auto;padding:1.2rem 1.4rem;font-family:var(--mono);font-size:.86rem;line-height:1.65;}
+  .line{white-space:pre-wrap;word-break:break-word;margin-bottom:.15rem;}
+  .line.echo{color:var(--ink);}
+  .line.echo .prompt{color:var(--gold);}
+  .line.out{color:var(--term-green);}
+  .line.info{color:var(--ink-dim);}
+  .line.tip{color:var(--teal);}
+  .line.tip::before{content:'💡 ';}
+  .line.warn{color:var(--danger);}
+  .line.ethic{display:block;background:rgba(232,178,58,.08);border:1px solid var(--gold);border-radius:6px;padding:.6rem .8rem;color:var(--gold);margin:.5rem 0;}
+  .line.success{color:var(--term-green);font-weight:700;}
+
+  #input-row{flex-shrink:0;display:flex;align-items:center;gap:.5rem;padding:.8rem 1.4rem;background:var(--panel-2);border-top:1px solid var(--line);font-family:var(--mono);font-size:.86rem;}
+  #input-row .prompt{color:var(--gold);white-space:nowrap;}
+  #cmd-input{flex:1;background:transparent;border:none;color:var(--ink);font-family:var(--mono);font-size:.86rem;}
+  #cmd-input:focus{outline:none;}
+  .cursor{display:inline-block;width:8px;height:1em;background:var(--term-green);vertical-align:text-bottom;animation:blink .8s steps(1) infinite;}
+
+  @media (max-width:760px){
+    aside{position:fixed;inset:0 0 0 auto;width:min(280px,80vw);transform:translateX(100%);transition:transform .25s ease;z-index:40;height:100%;}
+    aside.open{transform:translateX(0);}
+    #aside-toggle{display:inline-flex;}
+  }
+  #aside-toggle{display:none;background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .6rem;font-family:var(--mono);font-size:.7rem;cursor:pointer;}
+
+  /* ---- Modales ---- */
+  .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(2,6,4,.92);display:flex;align-items:center;justify-content:center;padding:2rem;}
+  .modal-overlay[hidden]{display:none;}
+  .modal{width:min(560px,100%);max-height:86vh;overflow-y:auto;background:var(--panel);border:1px solid var(--teal-dim);border-radius:10px;padding:2rem;box-shadow:0 30px 80px rgba(0,0,0,.6);}
+  .modal h1{font-family:var(--mono);font-size:1.3rem;color:var(--ink);margin-bottom:1rem;}
+  .modal h1 span{color:var(--gold);}
+  .modal p{color:var(--ink-dim);line-height:1.7;margin-bottom:1rem;font-size:.92rem;}
+  .modal .warn-box{background:rgba(255,95,95,.08);border:1px solid var(--danger);border-radius:6px;padding:1rem;margin-bottom:1.2rem;color:#ffb3b3;font-size:.86rem;line-height:1.6;}
+  .modal .warn-box b{color:#fff;}
+  .modal .btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:.8rem 1.4rem;font-family:var(--mono);font-weight:700;font-size:.85rem;cursor:pointer;}
+  .modal .btn:hover{background:#5cf0e0;}
+  .modal .btn-secondary{background:none;border:1px solid var(--line);color:var(--ink-dim);margin-left:.7rem;}
+
+  #complete-modal .stats{display:flex;gap:1.2rem;margin:1.4rem 0;flex-wrap:wrap;}
+  #complete-modal .stat{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:.9rem 1.2rem;font-family:var(--mono);}
+  #complete-modal .stat b{display:block;font-size:1.4rem;color:var(--teal);}
+  #complete-modal .stat span{font-size:.62rem;color:var(--ink-dim);letter-spacing:.08em;}
+  #cheatsheet{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:1rem;margin-bottom:1.4rem;max-height:220px;overflow-y:auto;}
+  #cheatsheet .cs-item{display:flex;gap:.6rem;font-family:var(--mono);font-size:.76rem;padding:.35rem 0;border-bottom:1px solid var(--line);}
+  #cheatsheet .cs-item:last-child{border-bottom:none;}
+  #cheatsheet .cs-item b{color:var(--teal);flex-shrink:0;min-width:150px;}
+  #cheatsheet .cs-item span{color:var(--ink-dim);}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <a class="back" href="/">← volver al club</a>
+    <div class="title">// OPERACIÓN <span>LABORATORIO-B</span> — reto de terminal Linux</div>
+    <div class="meta">
+      <span><span class="dot"></span> <span id="level-label">NIVEL 1</span></span>
+      <span id="timer">00:00</span>
+      <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ briefing</button>
+    </div>
+  </header>
+
+  <main>
+    <aside id="aside">
+      <h2>// BRIEFING</h2>
+      <div class="briefing" id="briefing-text">Cargando misión...</div>
+      <h2>// OBJETIVOS</h2>
+      <ul class="obj-list" id="obj-list"></ul>
+      <div class="help-box">Escribe <b>ayuda</b> para ver los comandos disponibles, o <b>pista</b> si te trabas. <b>limpiar</b> borra la pantalla.</div>
+    </aside>
+
+    <div id="terminal-col">
+      <div id="scrollback"></div>
+      <div id="input-row">
+        <span class="prompt" id="prompt-label">agente@labclub:~$</span>
+        <input id="cmd-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Línea de comandos">
+        <span class="cursor"></span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="intro-modal">
+  <div class="modal">
+    <h1>Operación <span>Laboratorio-B</span></h1>
+    <p>Vas a practicar comandos reales de Linux dentro de una <b>simulación 100% ficticia</b>: ninguna red, dirección IP o dato aquí corresponde a algo real. Todo corre dentro de esta página, en tu navegador.</p>
+    <div class="warn-box">
+      <b>⚠️ Antes de empezar:</b> los comandos que vas a escribir (nmap, airmon-ng, aircrack-ng, etc.) existen de verdad y son herramientas profesionales de auditoría. Usarlas contra una red o dispositivo que no sea tuyo, o sin autorización explícita por escrito, <b>es ilegal</b>. Esta práctica es solo para que aprendas la sintaxis y el propósito de cada comando en un entorno seguro.
+    </div>
+    <p>Tu mentor de ciberseguridad del club armó una red de laboratorio para que la audites paso a paso. Dos niveles, ~1 hora en total. Cada comando trae una explicación pensada para quien recién empieza.</p>
+    <button class="btn" id="intro-start" type="button">Entendido, comenzar misión →</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="complete-modal" hidden>
+  <div class="modal">
+    <h1>Misión <span>completada</span> 🎉</h1>
+    <p>Terminaste los dos niveles de Operación Laboratorio-B. Esto es lo que practicaste:</p>
+    <div class="stats">
+      <div class="stat"><b id="stat-time">00:00</b><span>TIEMPO TOTAL</span></div>
+      <div class="stat"><b id="stat-hints">0</b><span>PISTAS USADAS</span></div>
+      <div class="stat"><b id="stat-commands">0</b><span>COMANDOS APRENDIDOS</span></div>
+    </div>
+    <div id="cheatsheet"></div>
+    <a class="btn" href="/#join">Únete al club →</a>
+    <button class="btn btn-secondary" id="restart-btn" type="button">Reiniciar reto</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const TARGET_IP = '192.168.56.10';
+  const BSSID = 'AA:BB:CC:11:22:33';
+  const STORAGE_KEY = 'linuxGameProgress_v2';
+
+  const scrollback = document.getElementById('scrollback');
+  const input = document.getElementById('cmd-input');
+  const objList = document.getElementById('obj-list');
+  const briefingText = document.getElementById('briefing-text');
+  const levelLabel = document.getElementById('level-label');
+  const timerEl = document.getElementById('timer');
+  const promptLabel = document.getElementById('prompt-label');
+  const introModal = document.getElementById('intro-modal');
+  const completeModal = document.getElementById('complete-modal');
+  const asideEl = document.getElementById('aside');
+
+  // ---- Catálogo de comandos aprendidos (para el cheatsheet final) ----
+  const CHEATSHEET = [
+    ['pwd', 'Muestra en qué carpeta estás parado.'],
+    ['ls / ls -la', 'Lista archivos, incluidos los ocultos con -a.'],
+    ['cd', 'Cambia de carpeta.'],
+    ['cat archivo', 'Muestra el contenido de un archivo.'],
+    ['whoami', 'Muestra tu usuario actual.'],
+    ['ping <ip>', 'Verifica si un host está activo.'],
+    ['ip a / ifconfig', 'Muestra tus interfaces de red.'],
+    ['nmap -sV <ip>', 'Escanea puertos abiertos y sus versiones.'],
+    ['iwconfig', 'Muestra interfaces WiFi.'],
+    ['airmon-ng start', 'Activa el modo monitor en un adaptador WiFi.'],
+    ['airodump-ng', 'Escanea redes WiFi cercanas.'],
+    ['aireplay-ng --deauth', 'Fuerza una reconexión (¡solo con autorización!).'],
+    ['aircrack-ng -w wordlist', 'Intenta obtener una contraseña con un diccionario.'],
+  ];
+  const learned = new Set();
+
+  // ---- Estado persistente ----
+  let state = loadState() || {
+    level: 1,
+    startedAt: Date.now(),
+    elapsedBefore: 0,
+    hintsUsed: 0,
+    inHidden: false,
+    l1: { findIp: false, scanned: false, scannedVersion: false },
+    l2: { monitor: false, findAp: false, deauth: false, handshake: false, crack: false },
+    completed: false,
+  };
+
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function saveState(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  // ---- Reloj ----
+  function elapsedMs(){ return state.elapsedBefore + (Date.now() - state.startedAt); }
+  function fmtTime(ms){
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  }
+  setInterval(() => { timerEl.textContent = fmtTime(elapsedMs()); }, 1000);
+
+  // ---- Salida de terminal ----
+  function print(text, cls){
+    const div = document.createElement('div');
+    div.className = 'line ' + (cls || 'out');
+    div.textContent = text;
+    scrollback.appendChild(div);
+    scrollback.scrollTop = scrollback.scrollHeight;
+  }
+  function printHTML(html, cls){
+    const div = document.createElement('div');
+    div.className = 'line ' + (cls || 'out');
+    div.innerHTML = html;
+    scrollback.appendChild(div);
+    scrollback.scrollTop = scrollback.scrollHeight;
+  }
+  function printBlock(lines, cls){ lines.forEach((l) => print(l, cls)); }
+  function echo(raw){
+    printHTML('<span class="prompt">' + promptLabel.textContent + '</span> ' + escapeHtml(raw), 'echo');
+  }
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+  async function sleep(ms){ return new Promise((r) => setTimeout(r, ms)); }
+
+  // ---- Objetivos (sidebar) ----
+  function objectivesFor(level){
+    if (level === 1){
+      return [
+        { id: 'findIp', label: 'Encuentra la IP objetivo en el briefing', done: state.l1.findIp },
+        { id: 'scan', label: 'Escanea la IP y descubre el servicio vulnerable (nmap -sV)', done: state.l1.scannedVersion },
+      ];
+    }
+    return [
+      { id: 'monitor', label: 'Activa el modo monitor en tu adaptador WiFi', done: state.l2.monitor },
+      { id: 'findAp', label: 'Encuentra la red del laboratorio (LAB-WIFI-CLUBING)', done: state.l2.findAp },
+      { id: 'handshake', label: 'Captura el handshake WPA', done: state.l2.handshake },
+      { id: 'crack', label: 'Crackea la contraseña con el wordlist', done: state.l2.crack },
+    ];
+  }
+  function renderObjectives(){
+    const objs = objectivesFor(state.level);
+    objList.innerHTML = '';
+    objs.forEach((o) => {
+      const li = document.createElement('li');
+      li.className = o.done ? 'done' : '';
+      li.innerHTML = '<span class="chk">' + (o.done ? '✓' : '') + '</span><span>' + o.label + '</span>';
+      objList.appendChild(li);
+    });
+  }
+  function renderBriefing(){
+    briefingText.textContent = state.level === 1
+      ? 'OPERACIÓN LABORATORIO-B [LAB-FICTICIO]\n\nUn equipo de la red de práctica del club necesita auditoría. Todavía no sabes cuál es. Explora tu carpeta de inicio para encontrar instrucciones.'
+      : 'FASE 2 [LAB-FICTICIO]\n\nEl servicio vulnerable que encontraste apunta a un panel administrado por WiFi. El mentor te dio acceso a un adaptador en modo monitor. Encuentra la red del laboratorio y consigue su contraseña.';
+    levelLabel.textContent = 'NIVEL ' + state.level;
+    promptLabel.textContent = state.level === 1
+      ? 'agente@labclub:' + (state.inHidden ? '~/.oculto' : '~') + '$'
+      : 'agente@labclub:~$';
+  }
+
+  // ---- Sistema de pistas progresivas ----
+  const HINTS = {
+    1: {
+      findIp: [
+        'Empieza mirando qué archivos tienes con "ls".',
+        'Usa "cat" seguido del nombre de un archivo para leer su contenido, por ejemplo: cat readme.txt',
+        'El archivo que buscas se llama briefing.txt — pruébalo con: cat briefing.txt',
+      ],
+      scan: [
+        'Con la IP en mano, intenta "nmap" seguido de la IP.',
+        'nmap por sí solo no muestra las versiones de los servicios. Agrega el flag -sV.',
+        'Comando completo: nmap -sV ' + TARGET_IP,
+      ],
+    },
+    2: {
+      monitor: ['Primero activa el modo monitor con airmon-ng.', 'La sintaxis es: airmon-ng start wlan0'],
+      findAp: ['Con el modo monitor activo, escanea redes cercanas con airodump-ng.', 'Comando: airodump-ng wlan0mon'],
+      handshake: [
+        'Necesitas apuntar la captura a la red del laboratorio con --bssid, -c (canal) y -w (archivo de salida).',
+        'Revisa el canal y BSSID que te mostró airodump-ng.',
+        'Si tarda mucho, puedes acelerar la captura forzando una reconexión con aireplay-ng --deauth (solo en este laboratorio ficticio).',
+      ],
+      crack: ['Usa aircrack-ng con el diccionario que ya está en tu carpeta: aircrack-ng -w wordlist.txt captura-01.cap'],
+    },
+  };
+  function currentUnmetObjective(){
+    const objs = objectivesFor(state.level);
+    return objs.find((o) => !o.done);
+  }
+  function giveHint(){
+    const unmet = currentUnmetObjective();
+    if (!unmet){ print('Ya completaste todos los objetivos de este nivel. Escribe "siguiente".', 'tip'); return; }
+    const bucket = HINTS[state.level][unmet.id] || [];
+    const idx = Math.min(state.hintsUsed, bucket.length - 1);
+    print(bucket[idx] || 'Sigue explorando con los comandos que ya conoces.', 'tip');
+    state.hintsUsed++;
+    saveState();
+  }
+
+  // ---- Ayuda contextual ----
+  function printHelp(){
+    if (state.level === 1){
+      printBlock([
+        'Comandos disponibles ahora mismo:',
+        '  pwd            — muestra tu ubicación actual',
+        '  ls [-la]       — lista archivos (usa -la para ver los ocultos)',
+        '  cd <carpeta>   — cambia de carpeta',
+        '  cat <archivo>  — muestra el contenido de un archivo',
+        '  whoami         — muestra tu usuario',
+        '  ping <ip>      — verifica si un host está activo',
+        '  ip a           — muestra tus interfaces de red',
+        '  nmap [-sV] <ip> — escanea puertos de una IP',
+        '  ayuda / pista / limpiar / objetivo',
+      ], 'info');
+    } else {
+      printBlock([
+        'Comandos disponibles ahora mismo:',
+        '  iwconfig                                — muestra interfaces WiFi',
+        '  airmon-ng start wlan0                    — activa modo monitor',
+        '  airodump-ng wlan0mon                     — escanea redes cercanas',
+        '  airodump-ng --bssid <bssid> -c <canal> -w captura wlan0mon  — captura dirigida',
+        '  aireplay-ng --deauth 5 -a <bssid> wlan0mon  — fuerza reconexión (¡con ética!)',
+        '  aircrack-ng -w wordlist.txt captura-01.cap  — intenta crackear la clave',
+        '  ls / cat <archivo>',
+        '  ayuda / pista / limpiar / objetivo',
+      ], 'info');
+    }
+  }
+
+  // ---- Sistema de archivos ficticio (nivel 1) ----
+  const FILES = {
+    'readme.txt': 'Bienvenido, agente.\nRevisa "briefing.txt" para conocer tu misión.\nComandos útiles: ls, cat, pwd, cd\nEscribe "ayuda" en cualquier momento si te pierdes.',
+    'briefing.txt': 'OPERACIÓN LABORATORIO-B [LAB-FICTICIO]\n\nObjetivo asignado: ' + TARGET_IP + '\nEste equipo pertenece a la red de práctica del club.\nTu tarea: identificar los servicios activos y su versión con nmap.\n\n— Mentor de Ciberseguridad del Club',
+    'notas.txt': 'Nota personal: recuerda que "nmap -sV" muestra la versión de cada servicio, no solo si está abierto o cerrado.',
+  };
+  const HIDDEN_FILE = { name: 'pista_extra.txt', content: 'Los archivos que empiezan con "." están ocultos por defecto. Usa "ls -a" (o "ls -la") para verlos. Buen ojo, agente.' };
+  const WORDLIST = ['clubdeingenieria', 'laboratorio2024', 'ingenieria123', 'clubpanel2024', 'wifi12345'];
+
+  // ---- Comandos: Nivel 1 ----
+  async function handleLevel1(cmd, args, raw){
+    switch (cmd){
+      case 'pwd':
+        print(state.inHidden ? '/home/agente/.oculto' : '/home/agente');
+        return;
+      case 'whoami':
+        print('agente');
+        print('Grupo: club-ingenieria-lab (sin privilegios root)', 'info');
+        return;
+      case 'ls': {
+        const showHidden = /-.*a/.test(args.join(' ')) || args.includes('-a') || args.includes('-la') || args.includes('-al');
+        if (state.inHidden){
+          print(HIDDEN_FILE.name);
+        } else {
+          print(Object.keys(FILES).join('   ') + (showHidden ? '   .oculto/' : ''));
+          if (!showHidden) print('tip: los directorios que empiezan con "." no se muestran a menos que uses -a', 'tip');
+        }
+        return;
+      }
+      case 'cd': {
+        const target = (args[0] || '').replace(/\/$/, '');
+        if (!state.inHidden && (target === '.oculto' || target === './.oculto')){
+          state.inHidden = true;
+          renderBriefing();
+          print('Entraste a /home/agente/.oculto');
+        } else if (state.inHidden && (target === '..' || target === '~' || target === '/home/agente')){
+          state.inHidden = false;
+          renderBriefing();
+          print('Entraste a /home/agente');
+        } else if (!target || target === '~' || target === '/home/agente'){
+          state.inHidden = false;
+          renderBriefing();
+        } else {
+          print('bash: cd: ' + target + ': No existe el archivo o el directorio', 'warn');
+        }
+        return;
+      }
+      case 'cat': {
+        const file = args[0];
+        if (!file){ print('cat: falta un nombre de archivo', 'warn'); return; }
+        if (state.inHidden && file === HIDDEN_FILE.name){
+          print(HIDDEN_FILE.content);
+          return;
+        }
+        if (!state.inHidden && FILES[file] !== undefined){
+          print(FILES[file]);
+          if (file === 'briefing.txt' && !state.l1.findIp){
+            state.l1.findIp = true;
+            saveState();
+            renderObjectives();
+            await sleep(200);
+            print('✅ Objetivo completado: encontraste la IP objetivo (' + TARGET_IP + ').', 'success');
+            print('Ahora escanéala con nmap.', 'tip');
+          }
+          return;
+        }
+        print('cat: ' + file + ': No existe el archivo o el directorio', 'warn');
+        return;
+      }
+      case 'ping': {
+        const ip = args[0];
+        if (ip !== TARGET_IP){ print('ping: no se pudo resolver ' + (ip || '') + ' (en este laboratorio solo existe ' + TARGET_IP + ')', 'warn'); return; }
+        printBlock([
+          'PING ' + TARGET_IP + ' 56(84) bytes de datos.',
+          '64 bytes desde ' + TARGET_IP + ': icmp_seq=1 ttl=64 time=0.41 ms',
+          '64 bytes desde ' + TARGET_IP + ': icmp_seq=2 ttl=64 time=0.38 ms',
+          '--- estadísticas de ping ---',
+          '2 paquetes transmitidos, 2 recibidos, 0% packet loss',
+        ]);
+        print('ping confirma que el host está activo antes de escanearlo a fondo.', 'tip');
+        return;
+      }
+      case 'ip':
+      case 'ifconfig':
+        printBlock([
+          'wlan0: flags=4163  mtu 1500',
+          '        inet 192.168.56.5  netmask 255.255.255.0',
+          '        ether 02:1a:3f:aa:bb:cc',
+        ]);
+        return;
+      case 'nmap': {
+        const ip = args.find((a) => !a.startsWith('-'));
+        const versioned = args.includes('-sV') || /-sv\b/i.test(raw);
+        if (!state.l1.findIp){ print('nmap: aún no tienes un objetivo confirmado. Revisa "briefing.txt" primero.', 'warn'); return; }
+        if (ip !== TARGET_IP){ print('nmap: no se pudo resolver el host (en este laboratorio solo existe ' + TARGET_IP + ')', 'warn'); return; }
+        print('Iniciando Nmap en ' + TARGET_IP + ' [LAB-FICTICIO]...', 'info');
+        await sleep(500);
+        if (!versioned){
+          printBlock([
+            'PUERTO    ESTADO  SERVICIO',
+            '22/tcp    open    ssh',
+            '80/tcp    open    http',
+            '8080/tcp  open    http-proxy',
+          ]);
+          print('Nmap listo: 1 dirección IP escaneada.', 'info');
+          if (!state.l1.scanned){ state.l1.scanned = true; saveState(); }
+          print('Para ver la versión de cada servicio (y encontrar la vulnerabilidad), agrega el flag -sV.', 'tip');
+          return;
+        }
+        printBlock([
+          'PUERTO    ESTADO  SERVICIO      VERSIÓN',
+          '22/tcp    open    ssh           OpenSSH 7.2 (protocol 2.0)',
+          '80/tcp    open    http          Apache httpd 2.4.18',
+          '8080/tcp  open    http-proxy    ClubPanel-Ficticio 0.9',
+        ]);
+        print('⚠ ClubPanel-Ficticio 0.9 es una versión desactualizada de práctica (CVE-FICT-2024-001) — ese es el servicio vulnerable.', 'warn');
+        print('Nmap listo: 1 dirección IP escaneada.', 'info');
+        if (!state.l1.scannedVersion){
+          state.l1.scannedVersion = true;
+          saveState();
+          renderObjectives();
+          await sleep(300);
+          print('🎉 Nivel 1 completado. Escribe "siguiente" para pasar a la Fase 2.', 'success');
+        }
+        return;
+      }
+      case 'man':
+        print(args[0] ? ('No hay manual disponible para "' + args[0] + '" en este laboratorio — usa "ayuda".') : 'Uso: man <comando>', 'info');
+        return;
+      case 'siguiente':
+      case 'next':
+        if (!state.l1.scannedVersion){ print('Todavía te falta completar los objetivos del Nivel 1.', 'warn'); return; }
+        startLevel2();
+        return;
+    }
+    return 'unknown';
+  }
+
+  // ---- Comandos: Nivel 2 ----
+  async function handleLevel2(cmd, args, raw){
+    switch (cmd){
+      case 'ls':
+        print('wordlist.txt' + (state.l2.handshake ? '   captura-01.cap' : ''));
+        return;
+      case 'cat':
+        if (args[0] === 'wordlist.txt'){ print(WORDLIST.join('\n')); return; }
+        print('cat: ' + (args[0] || '') + ': No existe el archivo o el directorio', 'warn');
+        return;
+      case 'iwconfig':
+        printBlock(['wlan0     IEEE 802.11  ESSID:off/any', '          Mode:Managed  Access Point: Not-Associated']);
+        print('Necesitas activar el modo monitor antes de escanear redes: airmon-ng start wlan0', 'tip');
+        return;
+      case 'airmon-ng':
+        if (args[0] !== 'start'){ print('Uso: airmon-ng start wlan0', 'info'); return; }
+        printBlock(['Encontrados 1 proceso que podría causar interferencia.', 'wlan0mon habilitado en modo monitor sobre wlan0.']);
+        if (!state.l2.monitor){ state.l2.monitor = true; saveState(); renderObjectives(); }
+        return;
+      case 'airodump-ng': {
+        if (!state.l2.monitor){ print('airodump-ng: wlan0mon no existe todavía. Activa el modo monitor primero.', 'warn'); return; }
+        const targeted = args.includes('--bssid') && (args.includes('-w') || raw.includes('-w '));
+        if (!targeted){
+          printBlock([
+            'BSSID              CH   SEÑAL   ESSID',
+            '11:22:33:AA:BB:01   1    -70    Cafeteria-Guest',
+            BSSID + '   6    -42    LAB-WIFI-CLUBING   [LAB-FICTICIO]',
+            '99:88:77:CC:DD:02  11    -81    Facultad-Ing-5G',
+          ]);
+          if (!state.l2.findAp){ state.l2.findAp = true; saveState(); renderObjectives(); }
+          print('Encontraste la red del laboratorio. Ahora captura su handshake apuntando con --bssid, -c (canal) y -w (archivo).', 'tip');
+          return;
+        }
+        if (!raw.includes(BSSID)){ print('airodump-ng: BSSID no reconocido en este laboratorio.', 'warn'); return; }
+        if (state.l2.deauth){
+          await sleep(400);
+          print('WPA handshake: ' + BSSID, 'success');
+          if (!state.l2.handshake){ state.l2.handshake = true; saveState(); renderObjectives(); }
+          print('Handshake capturado en captura-01.cap. Ya puedes intentar crackear la contraseña.', 'tip');
+        } else {
+          print('CH  6 ][ Esperando handshake ][ Elapsed: 1 min', 'info');
+          print('En una auditoría real esto puede tardar horas. Para acelerarlo en este laboratorio puedes forzar una reconexión con aireplay-ng --deauth.', 'tip');
+        }
+        return;
+      }
+      case 'aireplay-ng': {
+        if (!raw.toLowerCase().includes('deauth')){ print('Uso: aireplay-ng --deauth 5 -a ' + BSSID + ' wlan0mon', 'info'); return; }
+        printHTML('<b>⚠️ Recordatorio ético:</b> un ataque de deauth desconecta dispositivos reales de una red real. Fuera de este laboratorio ficticio, hacer esto sin autorización explícita es ilegal y puede tener consecuencias legales serias.', 'ethic');
+        await sleep(300);
+        printBlock(['Enviando 5 paquetes deauth a ' + BSSID + '...', 'Cliente reconectado — handshake interceptado.']);
+        state.l2.deauth = true;
+        saveState();
+        print('Vuelve a correr tu captura dirigida (airodump-ng --bssid ...) para registrar el handshake.', 'tip');
+        return;
+      }
+      case 'aircrack-ng': {
+        if (!state.l2.handshake){ print('aircrack-ng: no se encontró ningún handshake capturado todavía (captura-01.cap).', 'warn'); return; }
+        if (!raw.toLowerCase().includes('wordlist')){ print('Necesitas indicar un diccionario con -w wordlist.txt', 'tip'); return; }
+        print('Abriendo captura-01.cap...', 'info');
+        for (const guess of WORDLIST.slice(0, -1)){
+          await sleep(180);
+          print('Probando clave: ' + guess + '  ✗', 'info');
+        }
+        await sleep(250);
+        print('¡CLAVE ENCONTRADA! [ ' + WORDLIST[WORDLIST.length - 1] + ' ]', 'success');
+        print('(Pista: el nombre viene del servicio vulnerable que encontraste en el Nivel 1 — ClubPanel)', 'tip');
+        if (!state.l2.crack){
+          state.l2.crack = true;
+          saveState();
+          renderObjectives();
+          await sleep(400);
+          finishGame();
+        }
+        return;
+      }
+    }
+    return 'unknown';
+  }
+
+  // ---- Comandos universales ----
+  const OFF_TOPIC = ['sudo', 'apt', 'apt-get', 'grep', 'top', 'htop', 'ssh', 'vim', 'nano', 'python3', 'curl', 'wget'];
+  async function handleUniversal(cmd, raw){
+    switch (cmd){
+      case 'ayuda':
+      case 'help':
+        printHelp();
+        return true;
+      case 'pista':
+      case 'hint':
+        giveHint();
+        return true;
+      case 'limpiar':
+      case 'clear':
+        scrollback.innerHTML = '';
+        return true;
+      case 'objetivo':
+      case 'mision':
+      case 'misión':
+      case 'mission':
+        print(state.level === 1 ? briefingText.textContent : briefingText.textContent, 'info');
+        return true;
+      case 'salir':
+      case 'exit':
+        print('Cierra esta pestaña para salir, o escribe "ayuda" para seguir.', 'info');
+        return true;
+      case '':
+        return true;
+    }
+    if (OFF_TOPIC.includes(cmd)){
+      print(cmd + ': existe de verdad, pero no lo necesitas para esta misión.', 'info');
+      return true;
+    }
+    return false;
+  }
+
+  function markLearned(cmd){
+    const found = CHEATSHEET.find(([name]) => name.split(' ')[0].split('/')[0] === cmd || name.startsWith(cmd));
+    if (found) learned.add(found[0]);
+  }
+
+  async function runCommand(raw){
+    echo(raw);
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    const parts = trimmed.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1);
+
+    markLearned(cmd);
+
+    const handledUniversal = await handleUniversal(cmd, trimmed);
+    if (handledUniversal) return;
+
+    const handler = state.level === 1 ? handleLevel1 : handleLevel2;
+    const result = await handler(cmd, args, trimmed);
+    if (result === 'unknown'){
+      print('bash: ' + cmd + ': orden no encontrada', 'warn');
+    }
+  }
+
+  function startLevel2(){
+    state.level = 2;
+    saveState();
+    scrollback.innerHTML = '';
+    renderBriefing();
+    renderObjectives();
+    print('=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
+    print('Escribe "ayuda" para ver los comandos disponibles.', 'tip');
+  }
+
+  function finishGame(){
+    state.completed = true;
+    saveState();
+    document.getElementById('stat-time').textContent = fmtTime(elapsedMs());
+    document.getElementById('stat-hints').textContent = String(state.hintsUsed);
+    document.getElementById('stat-commands').textContent = String(learned.size) + ' / ' + CHEATSHEET.length;
+    const cs = document.getElementById('cheatsheet');
+    cs.innerHTML = '';
+    CHEATSHEET.forEach(([name, desc]) => {
+      const div = document.createElement('div');
+      div.className = 'cs-item';
+      div.innerHTML = '<b>' + name + '</b><span>' + desc + '</span>';
+      cs.appendChild(div);
+    });
+    completeModal.hidden = false;
+  }
+
+  // ---- Arranque ----
+  function boot(){
+    renderBriefing();
+    renderObjectives();
+    if (state.level === 1){
+      print('=== FASE 1: RECONOCIMIENTO ===', 'success');
+      print('Escribe "ls" para ver qué archivos tienes en tu carpeta de inicio.', 'tip');
+    } else {
+      print('=== FASE 2: INFILTRACIÓN WIFI DE LABORATORIO ===', 'success');
+      print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
+    }
+    if (state.completed){
+      print('(Ya completaste esta operación antes — puedes seguir explorando o reiniciar desde el botón al final.)', 'info');
+    }
+  }
+
+  document.getElementById('intro-start').addEventListener('click', () => {
+    introModal.hidden = true;
+    input.focus();
+  });
+  document.getElementById('restart-btn').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+  document.getElementById('aside-toggle').addEventListener('click', () => asideEl.classList.toggle('open'));
+
+  input.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter') return;
+    const raw = input.value;
+    input.value = '';
+    input.disabled = true;
+    await runCommand(raw);
+    input.disabled = false;
+    input.focus();
+  });
+
+  document.addEventListener('click', () => { if (introModal.hidden) input.focus(); });
+
+  boot();
+})();
+</script>
+
+</body>
+</html>

@@ -9,7 +9,7 @@
 <meta property="og:description" content="Comunidad estudiantil de Tecnologías de la Información, Ciencias e Investigación: software, ciencia de datos e IA, ciberseguridad, redes e investigación aplicada.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="/logo.jpg">
-<link rel="canonical" href="https://elclubdelaingenieria.com/">
+<link rel="canonical" href="https://elclubdelaingenieria.dpdns.org/">
 
 <style>
   :root{
@@ -165,11 +165,18 @@
   .terminal-card .body .k{color:var(--teal);}
   .terminal-card .body .v{color:var(--ink);}
 
+  .mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;margin-top:3rem;}
+  @media (max-width:860px){.mv-grid{grid-template-columns:1fr;}}
+  .mv-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:1.8rem;}
+  .mv-card h3{font-family:var(--mono);font-size:1.15rem;color:var(--ink);margin:.6rem 0 .9rem;}
+  .mv-card p{color:var(--ink-dim);line-height:1.7;font-size:.92rem;}
+
   #projects{border-top:1px solid var(--line);}
   .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
   @media (max-width:900px){.proj-grid{grid-template-columns:1fr 1fr;}}
   @media (max-width:600px){.proj-grid{grid-template-columns:1fr;}}
   .proj-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:1.6rem;transition:border-color .2s, transform .2s;}
+  a.proj-card{display:block;text-decoration:none;}
   .proj-card:hover{border-color:var(--teal-dim);transform:translateY(-4px);}
   .proj-tag{font-family:var(--mono);font-size:.66rem;color:var(--gold);letter-spacing:.1em;}
   .proj-card h3{font-family:var(--mono);font-size:1.02rem;margin:.7rem 0 .6rem;color:var(--ink);}
@@ -270,18 +277,32 @@
   #wa-float svg{width:28px;height:28px;fill:#04140a;}
   @keyframes float-pulse{0%,100%{box-shadow:0 6px 20px rgba(37,211,102,.35);}50%{box-shadow:0 6px 28px rgba(37,211,102,.65);}}
 
-  /* ---- Asistente de IA ---- */
-  #ai-float{position:fixed;bottom:1.6rem;left:1.6rem;z-index:90;width:58px;height:58px;border-radius:50%;background:linear-gradient(155deg,var(--teal),var(--teal-dim));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(0,0,0,.4);border:none;cursor:pointer;animation:float-pulse-ai 2.4s ease-in-out infinite;}
-  #ai-float svg{width:26px;height:26px;stroke:#04140a;}
-  @keyframes float-pulse-ai{0%,100%{box-shadow:0 6px 20px rgba(47,216,201,.35);}50%{box-shadow:0 6px 28px rgba(47,216,201,.65);}}
+  /* ---- Asistente de IA — holograma ---- */
+  #ai-float{position:fixed;bottom:1.6rem;left:1.6rem;z-index:90;width:66px;height:66px;border-radius:50%;background:radial-gradient(circle at 50% 50%, rgba(47,216,201,.14), rgba(4,10,18,.4) 70%);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(0,0,0,.5);border:1px solid rgba(47,216,201,.3);cursor:pointer;padding:0;overflow:visible;}
+  #ai-float .holo-wrap, #holo-main .holo-wrap{width:100%;height:100%;}
+  #ai-float svg, #holo-main svg{width:100%;height:100%;overflow:visible;}
 
-  #ai-panel{position:fixed;bottom:6.4rem;left:1.6rem;z-index:95;width:min(340px,88vw);max-height:min(480px,70vh);background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.55);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);}
+  #ai-panel{position:fixed;bottom:6.4rem;left:1.6rem;z-index:95;width:min(360px,90vw);max-height:min(560px,74vh);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);}
   #ai-panel.open{display:flex;}
   .ai-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
   .ai-bar .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);}
   .ai-bar .ai-title{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--ink);}
-  .ai-bar .ai-close{margin-left:auto;background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;line-height:1;padding:.2rem;}
+  .ai-bar .ai-voice{margin-left:auto;background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-dim);cursor:pointer;font-size:.85rem;line-height:1;padding:.3rem .5rem;}
+  .ai-bar .ai-voice.on{color:var(--teal);border-color:var(--teal-dim);}
+  .ai-bar .ai-close{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;line-height:1;padding:.2rem;}
   .ai-bar .ai-close:hover{color:var(--ink);}
+
+  #holo-stage{position:relative;height:150px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%, rgba(47,216,201,.09), transparent 70%);border-bottom:1px solid var(--line);}
+  #holo-main{width:150px;height:150px;}
+  #holo-status{position:absolute;bottom:.6rem;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.62rem;letter-spacing:.15em;color:var(--teal-dim);}
+
+  .holo-ring{fill:none;stroke:var(--teal);}
+  .holo-ring.gold{stroke:var(--gold);}
+  .holo-core-glow{fill:url(#holoGlow);}
+  .holo-core-dot{fill:#eafffb;filter:drop-shadow(0 0 6px var(--teal));}
+  .holo-tick{stroke:var(--ink-dim);opacity:.5;}
+  .holo-sat{fill:var(--gold);filter:drop-shadow(0 0 3px var(--gold));}
+
   #ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;font-size:.84rem;line-height:1.5;}
   .ai-msg{max-width:88%;padding:.55rem .75rem;border-radius:8px;white-space:pre-wrap;word-break:break-word;}
   .ai-msg.bot{align-self:flex-start;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);font-family:var(--mono);font-size:.8rem;}
@@ -293,6 +314,10 @@
   .ai-input-row input:focus{outline:none;border-color:var(--teal-dim);}
   .ai-input-row button{background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:0 .9rem;font-family:var(--mono);font-size:.78rem;font-weight:600;cursor:pointer;}
   .ai-input-row button:disabled{opacity:.5;cursor:not-allowed;}
+
+  @keyframes holo-fallback-spin{to{transform:rotate(360deg);}}
+  .holo-wrap.css-fallback .holo-ring{animation:holo-fallback-spin 14s linear infinite;transform-origin:50% 50%;}
+  .holo-wrap.css-fallback .holo-ring.gold{animation-duration:20s;animation-direction:reverse;}
 
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
 </style>
@@ -395,6 +420,19 @@
         </div>
       </div>
     </div>
+
+    <div class="mv-grid">
+      <div class="mv-card">
+        <div class="sec-tag">// MISIÓN</div>
+        <h3>Por qué existimos</h3>
+        <p>Formar una comunidad donde estudiantes de ingeniería, ciencia y tecnología comparten conocimiento de forma abierta — charlas técnicas, mentorías, proyectos reales, podcasts y contribuciones de código — para que cualquier persona, desde quien recién empieza la universidad hasta quien quiere liderar, tenga un lugar donde aprender y aportar.</p>
+      </div>
+      <div class="mv-card">
+        <div class="sec-tag">// VISIÓN</div>
+        <h3>Hacia dónde vamos</h3>
+        <p>Ser una comunidad de ingeniería referente en Ecuador — y un modelo para Latinoamérica — reconocida por su cultura de aprendizaje colaborativo y código abierto, impulsando el talento técnico ecuatoriano hacia el mundo a través de certificaciones, mentorías y concursos.</p>
+      </div>
+    </div>
   </section>
 
   <section id="projects">
@@ -410,6 +448,7 @@
       <div class="proj-card"><div class="proj-tag">REDES &amp; CLOUD</div><h3>Laboratorio de contenedores</h3><p>Infraestructura Docker/Kubernetes para practicar despliegues y CI/CD como en la industria.</p><div class="proj-status">Instalación en curso</div></div>
       <div class="proj-card"><div class="proj-tag">SISTEMAS DE INFORMACIÓN</div><h3>Gestión académica del club</h3><p>Base de datos y dashboard para llevar el control de miembros, proyectos y horas de práctica.</p><div class="proj-status">Diseño de esquema</div></div>
       <div class="proj-card"><div class="proj-tag">INVESTIGACIÓN</div><h3>Semillero de IA aplicada</h3><p>Grupo de estudiantes documentando y publicando hallazgos de inteligencia artificial y ciencia de datos.</p><div class="proj-status">Recolectando datos</div></div>
+      <a class="proj-card" href="/linux-cli.html"><div class="proj-tag">CIBERSEGURIDAD</div><h3>Reto: Terminal Linux 🎮</h3><p>Aprende comandos reales de Linux jugando: escaneo de red e infiltración WiFi en un laboratorio 100% ficticio. Dos niveles, ~1 hora.</p><div class="proj-status">Jugar ahora →</div></a>
     </div>
   </section>
 
@@ -485,6 +524,14 @@
       <a class="media-link" href="https://wa.me/593986023149?text=Hola%2C%20tengo%20una%20consulta%20para%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.47 15.5 3.34 17L2 22L7.15 20.68C8.61 21.49 10.27 21.92 12 21.92H12.01C17.51 21.92 22 17.42 22 11.92C22 9.26 20.95 6.76 19.05 4.87C17.15 2.98 14.66 2 12 2ZM12 20.15C10.46 20.15 8.96 19.73 7.65 18.94L7.34 18.75L4.32 19.54L5.12 16.61L4.9 16.28C4.03 14.92 3.57 13.35 3.57 11.72C3.57 7.07 7.35 3.28 12 3.28C14.25 3.28 16.36 4.16 17.94 5.75C19.53 7.34 20.43 9.46 20.43 11.72C20.42 16.38 16.65 20.15 12 20.15Z"/></svg>
         WhatsApp — +593 98 602 3149
+      </a>
+      <a class="media-link" href="https://www.facebook.com/share/g/18zVNx9Epp/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.84 3.44 8.87 8 9.8v-6.93H7.9v-2.87H10V9.41c0-2.07 1.23-3.21 3.11-3.21.9 0 1.84.16 1.84.16v2.02h-1.04c-1.02 0-1.34.64-1.34 1.3v1.56h2.28l-.36 2.87h-1.92V21.8c4.56-.93 8-4.96 8-9.8 0-5.52-4.48-10-10-10z"/></svg>
+        Grupo de Facebook de la comunidad
+      </a>
+      <a class="media-link" href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.58 2 12.2C2 16.68 4.87 20.47 8.84 21.8C9.34 21.9 9.52 21.58 9.52 21.31C9.52 21.07 9.51 20.24 9.51 19.36C7 19.9 6.35 18.72 6.15 18.1C6.04 17.79 5.52 16.85 5.06 16.6C4.68 16.4 4.14 15.87 5.05 15.86C5.91 15.85 6.52 16.66 6.72 16.98C7.69 18.63 9.24 18.16 9.86 17.89C9.96 17.17 10.24 16.68 10.55 16.4C8.12 16.12 5.58 15.16 5.58 10.94C5.58 9.74 5.99 8.75 6.7 7.98C6.59 7.7 6.22 6.57 6.8 5.05C6.8 5.05 7.7 4.75 9.52 5.98C10.29 5.76 11.11 5.65 11.93 5.65C12.75 5.65 13.57 5.76 14.34 5.98C16.16 4.74 17.06 5.05 17.06 5.05C17.64 6.57 17.27 7.7 17.16 7.98C17.87 8.75 18.28 9.73 18.28 10.94C18.28 15.18 15.73 16.12 13.3 16.39C13.69 16.72 14.03 17.36 14.03 18.35C14.03 19.76 14.02 20.96 14.02 21.31C14.02 21.58 14.2 21.91 14.7 21.8C18.65 20.46 21.52 16.68 21.52 12.2C21.52 6.58 17.04 2 12 2Z"/></svg>
+        Contribuye en GitHub
       </a>
     </div>
   </section>
@@ -598,15 +645,18 @@
   <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12C2 13.8 2.47 15.5 3.34 17L2 22L7.15 20.68C8.61 21.49 10.27 21.92 12 21.92H12.01C17.51 21.92 22 17.42 22 11.92C22 9.26 20.95 6.76 19.05 4.87C17.15 2.98 14.66 2 12 2ZM12 20.15C10.46 20.15 8.96 19.73 7.65 18.94L7.34 18.75L4.32 19.54L5.12 16.61L4.9 16.28C4.03 14.92 3.57 13.35 3.57 11.72C3.57 7.07 7.35 3.28 12 3.28C14.25 3.28 16.36 4.16 17.94 5.75C19.53 7.34 20.43 9.46 20.43 11.72C20.42 16.38 16.65 20.15 12 20.15ZM16.6 13.85C16.35 13.72 15.11 13.11 14.88 13.02C14.65 12.94 14.48 12.9 14.32 13.16C14.15 13.41 13.67 13.98 13.52 14.15C13.38 14.32 13.23 14.34 12.98 14.21C12.73 14.08 11.92 13.81 10.96 12.95C10.21 12.28 9.7 11.46 9.56 11.2C9.42 10.95 9.55 10.81 9.68 10.68C9.79 10.57 9.93 10.39 10.06 10.25C10.19 10.1 10.23 10 10.31 9.84C10.4 9.67 10.35 9.53 10.29 9.4C10.23 9.28 9.72 8.03 9.5 7.53C9.29 7.03 9.08 7.1 8.92 7.09C8.77 7.08 8.6 7.08 8.44 7.08C8.28 7.08 8.02 7.14 7.79 7.39C7.57 7.64 6.95 8.22 6.95 9.47C6.95 10.72 7.81 11.93 7.94 12.1C8.07 12.27 9.71 14.8 12.23 15.9C13.79 16.58 14.4 16.64 15.18 16.52C15.65 16.45 16.63 15.92 16.85 15.34C17.06 14.76 17.06 14.27 17 14.15C16.94 14.03 16.85 13.98 16.6 13.85Z"/></svg>
 </a>
 
-<button id="ai-float" type="button" aria-label="Abrir asistente de IA del club">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M8 3v4M16 3v4"/><circle cx="8.5" cy="13" r="1"/><circle cx="15.5" cy="13" r="1"/><path d="M9 16.5c.9.8 2 1.2 3 1.2s2.1-.4 3-1.2"/></svg>
-</button>
+<button id="ai-float" type="button" aria-label="Abrir asistente de IA del club"></button>
 
 <div id="ai-panel">
   <div class="ai-bar">
     <span class="ai-dot"></span>
     <span class="ai-title">asistente-ia.sh</span>
+    <button class="ai-voice" id="ai-voice" type="button" aria-label="Activar voz" aria-pressed="false" title="Activar voz">🔇</button>
     <button class="ai-close" id="ai-close" type="button" aria-label="Cerrar asistente">✕</button>
+  </div>
+  <div id="holo-stage">
+    <div id="holo-main"></div>
+    <div id="holo-status">EN ESPERA</div>
   </div>
   <div id="ai-messages">
     <div class="ai-msg bot">Hola 👋 soy el asistente del Club de Ingeniería. Pregúntame sobre las áreas técnicas, los proyectos o cómo unirte.</div>
@@ -762,15 +812,146 @@
 })();
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
 (function(){
+  // ---- Generador del SVG del holograma (se usa para la versión mini del botón y la grande del panel) ----
+  let holoUid = 0;
+  function holoSVGMarkup(){
+    holoUid++;
+    const gradId = 'holoGlow' + holoUid;
+    let ticks = '';
+    for (let i = 0; i < 24; i++){
+      const angle = (i * 15) * Math.PI / 180;
+      const x1 = 100 + Math.cos(angle) * 59, y1 = 100 + Math.sin(angle) * 59;
+      const x2 = 100 + Math.cos(angle) * 64, y2 = 100 + Math.sin(angle) * 64;
+      ticks += `<line class="holo-tick" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    }
+    return `<svg viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <radialGradient id="${gradId}" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#2fd8c9" stop-opacity=".95"/>
+          <stop offset="100%" stop-color="#2fd8c9" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <g class="holo-wrap">
+        <g class="holo-rotor r1"><circle class="holo-ring" cx="100" cy="100" r="94" stroke-width="1" stroke-dasharray="2 7" opacity=".5"/></g>
+        <g class="holo-rotor r2"><circle class="holo-ring gold" cx="100" cy="100" r="82" stroke-width="1" stroke-dasharray="12 5" opacity=".45"/><circle class="holo-sat" cx="182" cy="100" r="2.6"/></g>
+        <g class="holo-ticks">${ticks}</g>
+        <g class="holo-rotor r3"><circle class="holo-ring" cx="100" cy="100" r="68" stroke-width="1.6" opacity=".6"/></g>
+        <g class="holo-rotor r4"><circle class="holo-ring gold" cx="100" cy="100" r="50" stroke-width="1" stroke-dasharray="1 6" opacity=".55"/><circle class="holo-sat" cx="50" cy="100" r="1.8"/></g>
+        <circle class="holo-core-glow" cx="100" cy="100" r="36" fill="url(#${gradId})"/>
+        <circle class="holo-core-dot" cx="100" cy="100" r="7"/>
+      </g>
+    </svg>`;
+  }
+
+  function initHolo(container){
+    container.innerHTML = holoSVGMarkup();
+    const wrap = container.querySelector('.holo-wrap');
+    const rotors = container.querySelectorAll('.holo-rotor');
+    const core = container.querySelector('.holo-core-dot');
+    const glow = container.querySelector('.holo-core-glow');
+    const tweens = [];
+    const useGsap = typeof gsap !== 'undefined';
+
+    if (!useGsap){
+      wrap.classList.add('css-fallback');
+    } else {
+      rotors.forEach((rotor, i) => {
+        tweens.push(gsap.to(rotor, {
+          rotation: i % 2 === 0 ? 360 : -360,
+          transformOrigin: '50% 50%',
+          duration: 16 + i * 5,
+          repeat: -1,
+          ease: 'none',
+        }));
+      });
+      tweens.push(gsap.to(core, {
+        scale: 1.15, transformOrigin: '50% 50%', duration: 1.3, yoyo: true, repeat: -1, ease: 'sine.inOut',
+      }));
+      tweens.push(gsap.to(glow, {
+        opacity: .6, transformOrigin: '50% 50%', duration: 1.3, yoyo: true, repeat: -1, ease: 'sine.inOut',
+      }));
+    }
+
+    function setState(state){
+      container.dataset.state = state;
+      if (!useGsap) return;
+      const speed = state === 'idle' ? 1 : state === 'thinking' ? 2.4 : 1.6;
+      tweens.forEach((t) => t.timeScale(speed));
+      gsap.to(glow, { opacity: state === 'idle' ? .45 : .8, duration: .4 });
+    }
+
+    function pulse(){
+      if (!useGsap) return;
+      gsap.fromTo(core, { scale: 1.05 }, { scale: 1.4, duration: .1, yoyo: true, repeat: 1, ease: 'power1.out' });
+    }
+
+    return { setState, pulse };
+  }
+
   const floatBtn = document.getElementById('ai-float');
   const panel = document.getElementById('ai-panel');
   const closeBtn = document.getElementById('ai-close');
+  const voiceBtn = document.getElementById('ai-voice');
   const messagesEl = document.getElementById('ai-messages');
   const form = document.getElementById('ai-form');
   const input = document.getElementById('ai-input');
   const sendBtn = document.getElementById('ai-send');
+  const holoStatus = document.getElementById('holo-status');
+
+  const holoMini = initHolo(floatBtn);
+  const holoMain = initHolo(document.getElementById('holo-main'));
+
+  const STATUS_LABEL = { idle: 'EN ESPERA', thinking: 'PROCESANDO...', speaking: 'RESPONDIENDO...' };
+  function setHoloState(state){
+    holoMini.setState(state);
+    holoMain.setState(state);
+    holoStatus.textContent = STATUS_LABEL[state] || '';
+  }
+
+  // ---- Voz (Web Speech API) — apagada por defecto, el usuario la activa ----
+  const synth = window.speechSynthesis;
+  let voiceOn = false;
+
+  function pickVoice(){
+    if (!synth) return null;
+    const voices = synth.getVoices();
+    return voices.find((v) => /es/i.test(v.lang) && /google|neural|premium/i.test(v.name))
+        || voices.find((v) => /es/i.test(v.lang))
+        || voices[0]
+        || null;
+  }
+
+  function speak(text){
+    if (!voiceOn || !synth) return;
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const voice = pickVoice();
+    if (voice) utter.voice = voice;
+    utter.lang = (voice && voice.lang) || 'es-ES';
+    utter.pitch = .85;
+    utter.rate = .98;
+    utter.onstart = () => setHoloState('speaking');
+    utter.onboundary = () => { holoMini.pulse(); holoMain.pulse(); };
+    utter.onend = () => setHoloState('idle');
+    utter.onerror = () => setHoloState('idle');
+    synth.speak(utter);
+  }
+
+  if (voiceBtn && synth){
+    voiceBtn.addEventListener('click', () => {
+      voiceOn = !voiceOn;
+      voiceBtn.classList.toggle('on', voiceOn);
+      voiceBtn.setAttribute('aria-pressed', String(voiceOn));
+      voiceBtn.textContent = voiceOn ? '🔊' : '🔇';
+      voiceBtn.title = voiceOn ? 'Desactivar voz' : 'Activar voz';
+      if (!voiceOn){ synth.cancel(); setHoloState('idle'); }
+    });
+  } else if (voiceBtn) {
+    voiceBtn.style.display = 'none';
+  }
 
   const history = [];
   let sending = false;
@@ -803,6 +984,7 @@
     input.value = '';
     sending = true;
     sendBtn.disabled = true;
+    setHoloState('thinking');
     const typingEl = addMessage('escribiendo...', 'typing');
 
     try {
@@ -819,6 +1001,7 @@
       } else {
         addMessage(data.reply, 'bot');
         history.push({ role: 'assistant', content: data.reply });
+        speak(data.reply);
       }
     } catch (err) {
       typingEl.remove();
@@ -827,6 +1010,7 @@
       sending = false;
       sendBtn.disabled = false;
       input.focus();
+      if (!voiceOn) setHoloState('idle');
     }
   });
 })();

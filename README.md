@@ -35,12 +35,14 @@
 - [Inicio rápido](#-inicio-rápido)
 - [Variables de entorno](#-variables-de-entorno)
 - [Estructura del repositorio](#-estructura-del-repositorio)
-- [API del asistente IA](#-api-del-asistente-ia)
+- [API del asistente IA y Sistema Multiproveedor](#-api-del-asistente-ia-y-sistema-multiproveedor)
+- [Reto Terminal Linux](#-reto-terminal-linux-operación-laboratorio-b)
 - [Roadmap](#-roadmap)
 - [Seguridad](#-seguridad)
 - [Contribuir](#-contribuir)
 - [Contacto](#-contacto)
 - [Licencia](#-licencia)
+
 
 </details>
 
@@ -95,8 +97,8 @@ Ser la plataforma de referencia del club: identidad digital, contenido especiali
 Boot animado estilo Macintosh en <strong>CSS puro</strong>, efecto Matrix y experiencia inmersiva al entrar al sitio.
 </td>
 <td align="center" width="33%">
-<h3>🤖 Asistente IA</h3>
-Chat integrado con <strong>Groq</strong>, proxy server-side seguro, validación Zod y rate limiting.
+<h3>🤖 Asistente IA y Voz</h3>
+Chat con <strong>Groq/NVIDIA</strong> (respaldo automático), síntesis de voz (Web Speech API) y holograma reactivo (GSAP).
 </td>
 <td align="center" width="33%">
 <h3>⚡ Next.js híbrido</h3>
@@ -147,8 +149,10 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 | **Framework** | Next.js 16 (Pages Router) | ✅ Activo |
 | **UI Runtime** | React 19 | ✅ Activo |
 | **Validación** | Zod | ✅ Activo |
-| **IA** | Groq API (LLM) | ✅ Activo |
-| **Base de datos** | Supabase (PostgreSQL + RLS) | 🔜 Planificado |
+| **IA** | Groq API + NVIDIA NIM (Respaldo) | ✅ Activo |
+| **Base de datos** | Supabase (PostgreSQL + RLS) | ⚠️ En desarrollo (Migraciones creadas) |
+| **Animaciones** | GSAP (GreenSock) | ✅ Activo |
+| **Multimedia** | Web Speech API (Síntesis de voz) | ✅ Activo |
 | **Auth** | OAuth — Google · GitHub · Facebook | 🔜 Planificado |
 | **Monorepo** | Turborepo + pnpm workspaces | 🔜 Planificado |
 | **CI/CD** | GitHub Actions + Vercel | 🔜 Planificado |
@@ -299,11 +303,23 @@ npm start
 
 | Variable | Requerida | Descripción |
 |:---------|:---------:|:------------|
-| `GROQ_API_KEY` | ✅ | Clave de API de Groq para el asistente de chat |
+| `GROQ_API_KEY` | ✅ | Clave de API de Groq para el asistente de chat (Proveedor Principal) |
+| `NVIDIA_API_KEY` | ❌ | Clave de API de NVIDIA NIM (Proveedor de Respaldo) |
+| `GROQ_DAILY_LIMIT` | ❌ | Límite diario de mensajes para Groq (Por defecto: 500) |
+| `NVIDIA_DAILY_LIMIT` | ❌ | Límite diario de mensajes para NVIDIA (Por defecto: 300) |
+| `SUPABASE_URL` | ⚠️ | URL del proyecto Supabase (para tracking de cuotas e integrantes) |
+| `SUPABASE_ANON_KEY` | ⚠️ | Clave pública Anon de Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | ⚠️ | Clave de rol de servicio (privada) para bypass RLS en backend |
 
 ```env
 # .env.local
 GROQ_API_KEY=tu_clave_de_groq_aqui
+NVIDIA_API_KEY=tu_clave_de_nvidia_aqui
+GROQ_DAILY_LIMIT=500
+NVIDIA_DAILY_LIMIT=300
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_xxxxxxxx
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
 ```
 
 ---
@@ -314,13 +330,19 @@ GROQ_API_KEY=tu_clave_de_groq_aqui
 El-Club-de-la-Ingenier-a/
 │
 ├── 📂 public/                  # Assets estáticos servidos por Next.js
-│   ├── index.html              # Landing completa (boot retro + secciones)
+│   ├── index.html              # Landing completa con holograma interactivo y widget de voz
+│   ├── linux-cli.html          # Reto educativo de terminal Linux interactivo
 │   ├── hero-banner.jpg         # Banner principal
 │   └── logo.jpg                # Logo del club
 │
 ├── 📂 pages/
 │   └── 📂 api/
-│       └── chat.js             # Proxy IA · Zod · rate limiting
+│       └── chat.js             # Proxy IA multianfitrión (Groq/NVIDIA) + cuota Supabase
+│
+├── 📂 supabase/
+│   └── 📂 migrations/          # Migraciones de base de datos SQL
+│       ├── 0001_auth_and_members.sql
+│       └── 0002_ia_uso_diario.sql   # Tabla y función RPC para control de cuota de IA
 │
 ├── 📄 next.config.js           # Rewrite / → index.html
 ├── 📄 package.json             # Dependencias y scripts
@@ -332,17 +354,20 @@ El-Club-de-la-Ingenier-a/
 
 ---
 
-## 🤖 API del asistente IA
+## 🤖 API del asistente IA y Sistema Multiproveedor
 
-El endpoint `/api/chat` actúa como **proxy seguro** entre el widget del frontend y la API de Groq.
+El endpoint `/api/chat` actúa como **proxy seguro** e inteligente entre el frontend y las APIs de LLM de Groq y NVIDIA NIM.
 
 | Aspecto | Detalle |
 |:--------|:--------|
 | **Método** | `POST` |
+| **Modelos de IA** | Primario: Groq (`llama-3.1-8b-instant`) <br> Respaldo: NVIDIA NIM (`llama-3.1-nemotron-70b-instruct`) |
+| **Control de Cuota** | Registro diario de mensajes en Supabase (`ia_uso_diario`) para control estricto de cuota gratuita. |
+| **Voz & UI** | Síntesis de voz interactiva mediante Web Speech API y visualización holográfica reactiva por GSAP. |
 | **Validación** | Zod — roles `user`/`assistant`, máx. 20 mensajes, 1000 chars c/u |
-| **Rate limit** | 12 solicitudes / minuto / IP |
-| **Seguridad** | `GROQ_API_KEY` nunca expuesta al cliente |
-| **Contexto** | System prompt con misión, áreas y contacto del club |
+| **Rate limit** | 12 solicitudes / minuto / IP (en memoria) |
+| **Seguridad** | API Keys y Service Role Key nunca expuestas al cliente |
+| **Contexto** | System prompt optimizado con misión, visión y enlaces oficiales del club |
 
 ```bash
 # Ejemplo de solicitud
@@ -350,6 +375,14 @@ curl -X POST http://localhost:3000/api/chat \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","content":"¿Cómo me uno al club?"}]}'
 ```
+
+## 🎮 Reto Terminal Linux (Operación Laboratorio-B)
+
+El proyecto incluye un entorno simulado de terminal Linux interactiva, accesible desde `/linux-cli.html`, pensado para que los nuevos miembros aprendan comandos básicos mediante la gamificación.
+
+- **Nivel 1:** Navegación por directorios, lectura de archivos y decodificación de mensajes.
+- **Nivel 2:** Simulación educativa de escaneo de red local (`nmap`) y auditoría de redes WiFi (`aircrack-ng`).
+- **Características:** Registro de objetivos completados, sistema de ayuda integrado y diseño retro futurista.
 
 ---
 
