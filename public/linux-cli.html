@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Operación Laboratorio-B — Reto de Terminal Linux | Club de Ingeniería</title>
+<title>Kernel Cero — Reto de Terminal Linux | Club de Ingeniería</title>
 <meta name="description" content="Aprende comandos de Linux jugando: escaneo de red y auditoría WiFi en un laboratorio 100% ficticio y educativo. Dos niveles, ~1 hora, con INGenioso como guía.">
 <meta name="robots" content="noindex">
 <style>
@@ -180,6 +180,26 @@
   .modal .btn:hover{background:#5cf0e0;}
   .modal .btn-secondary{background:none;border:1px solid var(--line);color:var(--ink-dim);margin-left:.7rem;}
 
+  .intro-modal-card{width:min(620px,100%);}
+  .intro-hero{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.4rem;}
+  .intro-avatar-ring{position:relative;flex-shrink:0;width:88px;height:88px;display:flex;align-items:center;justify-content:center;}
+  .intro-avatar-ring::before, .intro-avatar-ring::after{content:'';position:absolute;inset:0;border-radius:50%;border:1px dashed var(--teal-dim);}
+  .intro-avatar-ring::before{animation:intro-spin 14s linear infinite;}
+  .intro-avatar-ring::after{inset:-8px;border-color:rgba(232,178,58,.35);animation:intro-spin 20s linear infinite reverse;}
+  @keyframes intro-spin{to{transform:rotate(360deg);}}
+  .intro-avatar{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,rgba(47,216,201,.18),transparent 70%);filter:drop-shadow(0 0 10px rgba(47,216,201,.55));}
+  .intro-avatar svg{width:100%;height:100%;}
+  .intro-hero-text{min-width:0;}
+  .intro-kicker{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--teal);opacity:.85;}
+  .intro-hero-text h1{font-family:var(--mono);font-size:1.6rem;color:var(--ink);margin:.25rem 0 .3rem;text-shadow:0 0 18px rgba(47,216,201,.35);}
+  .intro-codename{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);}
+  .intro-codename span{color:var(--gold);}
+  .modal .warn-box{position:relative;overflow:hidden;}
+  .modal .warn-box::before{content:'';position:absolute;inset:0;border-radius:6px;box-shadow:0 0 0 1px var(--danger);animation:intro-warn-pulse 2.4s ease-in-out infinite;pointer-events:none;}
+  @keyframes intro-warn-pulse{0%,100%{opacity:.25;}50%{opacity:.8;}}
+  .intro-tracks{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.4rem;}
+  .intro-track{font-family:var(--mono);font-size:.66rem;letter-spacing:.03em;color:var(--teal);background:rgba(47,216,201,.08);border:1px solid var(--teal-dim);border-radius:20px;padding:.35rem .7rem;white-space:nowrap;}
+
   .certificate{background:linear-gradient(155deg,rgba(232,178,58,.1),rgba(47,216,201,.06));border:1px solid var(--gold);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.4rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;color:var(--gold);text-align:center;line-height:1.8;}
   #complete-modal .stats{display:flex;gap:1.2rem;margin:1.4rem 0;flex-wrap:wrap;}
   #complete-modal .stat{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:.9rem 1.2rem;font-family:var(--mono);}
@@ -209,7 +229,7 @@
 <div id="app">
   <header>
     <a class="back" href="/">← <span class="back-label">volver al club</span></a>
-    <div class="title"><span class="title-prefix">// OPERACIÓN </span><span>LABORATORIO-B</span><span class="title-full"> — reto de terminal Linux</span></div>
+    <div class="title"><span class="title-prefix">// </span><span>KERNEL CERO</span><span class="title-full"> — reto de terminal Linux</span></div>
     <div class="meta">
       <span><span class="dot"></span> <span id="level-label">NIVEL 1</span></span>
       <span id="timer">00:00</span>
@@ -273,13 +293,29 @@
 </div>
 
 <div class="modal-overlay" id="intro-modal">
-  <div class="modal">
-    <h1>Operación <span>Laboratorio-B</span></h1>
+  <div class="modal intro-modal-card">
+    <div class="intro-hero">
+      <div class="intro-avatar-ring"><div class="intro-avatar" id="intro-avatar-slot"></div></div>
+      <div class="intro-hero-text">
+        <div class="intro-kicker">CLUB DE INGENIERÍA // NODO CIE_84</div>
+        <h1>Kernel Cero</h1>
+        <div class="intro-codename">Nombre en clave: <span>Operación Laboratorio-B</span></div>
+      </div>
+    </div>
     <p>Vas a practicar comandos reales de Linux dentro de una <b>simulación 100% ficticia</b>: ninguna red, dirección IP o dato aquí corresponde a algo real. Todo corre dentro de esta página, en tu navegador.</p>
     <div class="warn-box">
       <b>⚠️ Antes de empezar:</b> los comandos que vas a escribir (nmap, airmon-ng, aircrack-ng, etc.) existen de verdad y son herramientas profesionales de auditoría. Usarlas contra una red o dispositivo que no sea tuyo, o sin autorización explícita por escrito, <b>es ilegal</b>. Esta práctica es solo para que aprendas la sintaxis y el propósito de cada comando en un entorno seguro.
     </div>
-    <p>Tu mentor de ciberseguridad del club armó una red de laboratorio para que la recorras paso a paso, con INGenioso guiándote: desde el reconocimiento hasta la respuesta a incidentes. 5 niveles + examen final, 8 etapas cada uno.</p>
+    <p>Tu mentora de ciberseguridad del club armó esta red de laboratorio para que la recorras paso a paso, con INGenioso guiándote: 31 niveles, 8 etapas cada uno, de reconocimiento a héroe del club.</p>
+    <div class="intro-tracks">
+      <span class="intro-track">🔍 Reconocimiento</span>
+      <span class="intro-track">🛰️ Comunicación segura</span>
+      <span class="intro-track">🚨 Respuesta a incidentes</span>
+      <span class="intro-track">🧬 Forense digital</span>
+      <span class="intro-track">🕸️ Pentesting web</span>
+      <span class="intro-track">📋 ISO/IEC 27001</span>
+      <span class="intro-track">☁️ Datacenter y nube</span>
+    </div>
     <button class="btn" id="intro-start" type="button">Entendido, comenzar misión →</button>
   </div>
 </div>
@@ -296,11 +332,11 @@
   <div class="modal">
     <div class="certificate">
       🎓 CERTIFICADO SIMBÓLICO — HÉROE DEL CLUB DE LA INGENIERÍA<br>
-      OPERACIÓN LABORATORIO-B — CLUB DE INGENIERÍA
+      KERNEL CERO — CLUB DE INGENIERÍA
     </div>
     <p style="text-align:center;font-size:.68rem;color:var(--ink-dim);margin-top:-1rem;">Reconocimiento educativo y simbólico otorgado por el Club de la Ingeniería — no sustituye una certificación, acreditación pericial o auditoría profesional real, ni implica un incidente real en ninguna institución.</p>
     <h1>Misión <span>completada</span> 🎉</h1>
-    <p>Recorriste los 31 niveles de Operación Laboratorio-B: reconocimiento, comunicación segura, detección, respuesta a incidentes, defensa contra DDoS, análisis forense digital, pentesting web autorizado, un SGSI completo bajo ISO/IEC 27001, y una auditoría de datacenter y nube que rescató a una universidad ficticia. Esto es lo que practicaste:</p>
+    <p>Recorriste los 31 niveles de Kernel Cero (Operación Laboratorio-B): reconocimiento, comunicación segura, detección, respuesta a incidentes, defensa contra DDoS, análisis forense digital, pentesting web autorizado, un SGSI completo bajo ISO/IEC 27001, y una auditoría de datacenter y nube que rescató a una universidad ficticia. Esto es lo que practicaste:</p>
     <div class="stats">
       <div class="stat"><b id="stat-time">00:00</b><span>TIEMPO TOTAL</span></div>
       <div class="stat"><b id="stat-hints">0</b><span>PISTAS USADAS</span></div>
@@ -977,7 +1013,7 @@
       { id: 'finalReport', label: 'Entrega el informe final' },
       { id: 'thankYouLetter', label: 'Lee el agradecimiento de la universidad' },
       { id: 'clubRecognition', label: 'Recibe el reconocimiento del club' },
-      { id: 'closeGame', label: 'Cierra Operación Laboratorio-B' },
+      { id: 'closeGame', label: 'Cierra Kernel Cero' },
     ],
   };
   const STAGE_FLAG = {
@@ -1175,7 +1211,7 @@
     28: 'FASE 28 — CAUSA RAÍZ [LAB-FICTICIO]\n\nTienes varios hallazgos sueltos. Correlaciónalos, confirma cuál es la causa raíz real y descarta lo que no lo es. No siempre hay un villano — a veces el enemigo es un bug sin nombre, y eso también hay que probarlo.',
     29: 'FASE 29 — EVALUACIÓN DE IMPACTO [LAB-FICTICIO]\n\nAntes de arreglar nada, entiende qué tan grave es: cuántos registros, qué tan recuperables, y a quién avisar. Los números que traigas hoy son los que ' + UNIV_ABBR + ' va a recordar de este día.',
     30: 'FASE 30 — REMEDIACIÓN Y RECUPERACIÓN [LAB-FICTICIO]\n\nCon la causa raíz confirmada, corrígela de verdad: revierte, repara, recupera y verifica. Cada paso de este nivel es algo que ya hiciste antes, en otro nombre, en otro nivel. Esta vez lo haces sola, y lo haces bien.',
-    31: 'EXAMEN FINAL — INFORME Y RECONOCIMIENTO [LAB-FICTICIO]\n\nCompila todo en un informe final. Este es el cierre de Operación Laboratorio-B — desde la agente que no sabía qué buscar en el Nivel 1, hasta quien ' + MENTOR + ' envió a representar al club fuera de casa. Escribe el último comando, agente. Te lo ganaste.',
+    31: 'EXAMEN FINAL — INFORME Y RECONOCIMIENTO [LAB-FICTICIO]\n\nCompila todo en un informe final. Este es el cierre de Kernel Cero (Operación Laboratorio-B) — desde la agente que no sabía qué buscar en el Nivel 1, hasta quien ' + MENTOR + ' envió a representar al club fuera de casa. Escribe el último comando, agente. Te lo ganaste.',
   };
   const RANKS = [
     { max: 2, title: 'Recluta' },
@@ -4267,7 +4303,7 @@
     { n: 28, title: 'Causa Raíz', desc: '8 etapas: correlaciona todos los hallazgos, confirma la causa raíz y descarta lo que no lo es.', banner: '=== FASE 28: CAUSA RAÍZ ===', firstCmd: 'cat hallazgo-datacenter-1.txt hallazgo-datacenter-2.txt hallazgo-iam.txt hallazgo-storage.txt hallazgo-monitoreo.txt', startMsg: 'Reúne todos los hallazgos: cat hallazgo-datacenter-1.txt hallazgo-datacenter-2.txt hallazgo-iam.txt hallazgo-storage.txt hallazgo-monitoreo.txt' },
     { n: 29, title: 'Evaluación de Impacto', desc: '8 etapas: entiende qué tan grave fue el incidente antes de corregirlo.', banner: '=== FASE 29: EVALUACIÓN DE IMPACTO ===', firstCmd: 'cloudcli storage list-deleted --bucket ' + SYNC_BUCKET + ' --count', startMsg: 'Cuenta los registros afectados: cloudcli storage list-deleted --bucket ' + SYNC_BUCKET + ' --count' },
     { n: 30, title: 'Remediación y Recuperación', desc: '8 etapas: corrige la causa raíz de verdad y recupera los datos.', banner: '=== FASE 30: REMEDIACIÓN ===', firstCmd: 'cloudcli deploy rollback --service ' + SYNC_ROLE + ' --to ' + GOOD_DEPLOY, startMsg: 'Revierte el despliegue con el bug: cloudcli deploy rollback --service ' + SYNC_ROLE + ' --to ' + GOOD_DEPLOY },
-    { n: 31, title: 'Informe Final y Reconocimiento', desc: '8 etapas: compila el informe final y cierra Operación Laboratorio-B como héroe del club.', banner: '=== EXAMEN FINAL: INFORME Y RECONOCIMIENTO ===', firstCmd: 'cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt', startMsg: 'El cierre, agente. Compila toda la auditoría: cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt' },
+    { n: 31, title: 'Informe Final y Reconocimiento', desc: '8 etapas: compila el informe final y cierra Kernel Cero como héroe del club.', banner: '=== EXAMEN FINAL: INFORME Y RECONOCIMIENTO ===', firstCmd: 'cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt', startMsg: 'El cierre, agente. Compila toda la auditoría: cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt' },
   ];
   function levelDone(n){ return objectivesFor(n).every((o) => o.done); }
   function renderLevelCards(){
@@ -4330,7 +4366,7 @@
       div.innerHTML = '<b>' + name + '</b><span>' + desc + '</span>';
       cs.appendChild(div);
     });
-    sayIngenioso('¡LO LOGRASTE! 🎉🐻⚙️ De reconocimiento a héroe del club, pasando por peritaje, pentesting, ISO 27001 y el rescate de ' + UNIV_ABBR + '. Completaste Operación Laboratorio-B. Estoy orgulloso, agente.');
+    sayIngenioso('¡LO LOGRASTE! 🎉🐻⚙️ De reconocimiento a héroe del club, pasando por peritaje, pentesting, ISO 27001 y el rescate de ' + UNIV_ABBR + '. Completaste Kernel Cero. Estoy orgulloso, agente.');
     completeModal.hidden = false;
   }
 
@@ -4339,6 +4375,7 @@
     renderBriefing();
     renderObjectives();
     document.getElementById('ing-avatar-slot').innerHTML = INGENIOSO_SVG;
+    document.getElementById('intro-avatar-slot').innerHTML = INGENIOSO_SVG;
   }
 
   document.getElementById('intro-start').addEventListener('click', () => {

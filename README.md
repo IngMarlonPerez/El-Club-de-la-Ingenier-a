@@ -140,7 +140,7 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 <tr>
 <td align="center" colspan="3">
 <h3>🎮 Reto Terminal Linux con INGenioso — 31 niveles</h3>
-<strong>Operación Laboratorio-B</strong>: aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas en 7 episodios, sonido retro sintetizado, respuestas locales que cuidan la cuota de IA, y un documento de teoría aplicada nivel por nivel. 100% simulado y ficticio.
+<strong>Kernel Cero</strong> (Operación Laboratorio-B): aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas en 7 episodios, sonido retro sintetizado, respuestas locales que cuidan la cuota de IA, y un documento de teoría aplicada nivel por nivel. 100% simulado y ficticio.
 </td>
 </tr>
 </table>
@@ -361,7 +361,7 @@ El-Club-de-la-Ingenier-a/
 │
 ├── 📂 public/                  # Assets estáticos servidos por Next.js
 │   ├── index.html              # Landing completa con holograma interactivo y widget de voz
-│   ├── linux-cli.html          # Reto Terminal Linux — Operación Laboratorio-B (31 niveles)
+│   ├── linux-cli.html          # Kernel Cero — Reto Terminal Linux (31 niveles)
 │   ├── privacidad.html         # Aviso de tratamiento de datos (LOPDP)
 │   ├── hero-banner.jpg         # Banner principal
 │   └── logo.jpg                # Logo del club
@@ -414,7 +414,7 @@ curl -X POST http://localhost:3000/api/chat \
 
 ---
 
-## 🎮 Reto Terminal Linux (Operación Laboratorio-B)
+## 🎮 Kernel Cero — Reto Terminal Linux (Operación Laboratorio-B)
 
 Un entorno de terminal Linux 100% simulado y educativo, accesible desde [`/linux-cli.html`](public/linux-cli.html), pensado para que cualquier persona —incluso sin experiencia previa— aprenda comandos reales de la mano de **INGenioso**, un oso cyborg asistente con IA. **31 niveles, 248 etapas, ~13 horas de contenido**, repartidos en 7 episodios de dificultad creciente:
 
@@ -510,7 +510,7 @@ flowchart LR
 </tr>
 <tr>
 <td><strong>Reto Linux</strong></td>
-<td>Operación Laboratorio-B — 31 niveles, sonido, respuestas locales, teoría</td>
+<td>Kernel Cero (Operación Laboratorio-B) — 31 niveles, sonido, respuestas locales, teoría</td>
 <td align="center">✅</td>
 </tr>
 <tr>

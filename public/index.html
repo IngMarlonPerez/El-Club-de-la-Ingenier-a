@@ -147,6 +147,17 @@
   .btn-whatsapp{background:#25D366;color:#04140a;font-weight:600;}
   .btn-whatsapp:hover{background:#3ee07a;}
 
+  .hero-game-promo{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.8rem;padding:.6rem .7rem .6rem 1rem;border:1px solid var(--term-green-dim);border-radius:30px;background:rgba(57,255,106,.06);text-decoration:none;font-family:var(--mono);font-size:.78rem;color:var(--ink);transition:all .2s ease;position:relative;}
+  .hero-game-promo:hover{border-color:var(--term-green);background:rgba(57,255,106,.12);transform:translateY(-2px);}
+  .hero-game-promo::before{content:'';position:absolute;inset:-1px;border-radius:30px;box-shadow:0 0 0 1px var(--term-green-dim);animation:hero-promo-pulse 2.6s ease-in-out infinite;pointer-events:none;}
+  @keyframes hero-promo-pulse{0%,100%{opacity:0;transform:scale(1);}50%{opacity:.7;transform:scale(1.03);}}
+  .hero-game-promo .badge{background:var(--term-green);color:#04140a;font-weight:700;padding:.2rem .55rem;border-radius:20px;font-size:.68rem;letter-spacing:.04em;flex-shrink:0;}
+  .hero-game-promo .txt{color:var(--ink-dim);}
+  .hero-game-promo .txt strong{color:var(--term-green);}
+  .hero-game-promo .arrow{color:var(--term-green);flex-shrink:0;animation:hero-promo-arrow 1.6s ease-in-out infinite;}
+  @keyframes hero-promo-arrow{0%,100%{transform:translateY(0);}50%{transform:translateY(3px);}}
+  @media (max-width:860px){.hero-game-promo{white-space:normal;}}
+
   .hero-stats{display:flex;gap:2.2rem;margin-top:3.2rem;flex-wrap:wrap;font-family:var(--mono);}
   .stat b{display:block;font-size:1.8rem;color:var(--teal);}
   .stat span{font-size:.66rem;color:var(--ink-dim);letter-spacing:.08em;}
@@ -199,10 +210,11 @@
   .events-cta p{font-family:var(--mono);font-size:.9rem;color:var(--ink);}
   .events-cta .btn{flex-shrink:0;}
 
-  #game-hero{border-top:1px solid var(--term-green-dim);background:radial-gradient(ellipse at 20% 30%, rgba(57,255,106,.08), transparent 60%), #03110a;position:relative;overflow:hidden;}
-  #game-hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(57,255,106,0.025) 0px, transparent 2px, transparent 4px);}
+  .proj-featured{border:1px solid var(--term-green-dim);border-radius:14px;background:radial-gradient(ellipse at 20% 30%, rgba(57,255,106,.1), transparent 60%), #03110a;position:relative;overflow:hidden;padding:2.6rem clamp(1.4rem,4vw,3.2rem);box-shadow:0 0 0 1px rgba(57,255,106,.05), 0 30px 70px rgba(0,0,0,.4);}
+  .proj-featured::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(57,255,106,0.025) 0px, transparent 2px, transparent 4px);}
   .game-hero-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:3rem;align-items:center;position:relative;}
   @media (max-width:860px){.game-hero-inner{grid-template-columns:1fr;text-align:center;}}
+  .game-hero-copy .sec-tag{color:var(--term-green);}
   .game-hero-copy h2{font-family:var(--mono);font-size:clamp(1.6rem,3.4vw,2.5rem);color:var(--ink);margin:.8rem 0 1.2rem;line-height:1.2;}
   .game-hero-copy p{color:var(--ink-dim);line-height:1.7;max-width:52ch;margin-bottom:1.8rem;}
   @media (max-width:860px){.game-hero-copy p{margin-left:auto;margin-right:auto;}}
@@ -300,30 +312,38 @@
   #ai-float .holo-wrap, #holo-main .holo-wrap{width:100%;height:100%;}
   #ai-float svg, #holo-main svg{width:100%;height:100%;overflow:visible;}
 
-  #ai-panel{position:fixed;bottom:6.4rem;left:1.6rem;z-index:95;width:min(360px,90vw);max-height:min(560px,74vh);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);}
+  #ai-panel{position:fixed;bottom:6rem;left:1.2rem;z-index:95;width:min(320px,88vw);max-height:min(440px,62vh);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);transition:all .3s cubic-bezier(.3,.9,.4,1);}
   #ai-panel.open{display:flex;}
-  .ai-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
-  .ai-bar .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);}
+  #ai-backdrop{position:fixed;inset:0;z-index:94;background:rgba(2,6,4,.72);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s ease;}
+  #ai-backdrop.show{opacity:1;pointer-events:auto;}
+  #ai-panel.maximized{inset:3vh 3vw;bottom:auto;left:auto;width:auto;height:auto;max-height:none;z-index:200;border-radius:16px;box-shadow:0 30px 100px rgba(0,0,0,.75);}
+  .ai-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);flex-shrink:0;}
+  .ai-bar .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);flex-shrink:0;}
   .ai-bar .ai-title{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--ink);}
   .ai-bar .ai-voice{margin-left:auto;background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-dim);cursor:pointer;font-size:.85rem;line-height:1;padding:.3rem .5rem;}
   .ai-bar .ai-voice.on{color:var(--teal);border-color:var(--teal-dim);}
-  .ai-bar .ai-close{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:1rem;line-height:1;padding:.2rem;}
-  .ai-bar .ai-close:hover{color:var(--ink);}
+  .ai-bar .ai-max, .ai-bar .ai-close{background:none;border:1px solid var(--line);border-radius:5px;color:var(--ink-dim);cursor:pointer;font-size:.85rem;line-height:1;padding:.3rem .5rem;}
+  .ai-bar .ai-max:hover, .ai-bar .ai-close:hover{color:var(--teal);border-color:var(--teal-dim);}
 
-  #holo-stage{position:relative;height:150px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%, rgba(47,216,201,.09), transparent 70%);border-bottom:1px solid var(--line);}
-  #holo-main{width:150px;height:150px;}
-  #holo-status{position:absolute;bottom:.6rem;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.62rem;letter-spacing:.15em;color:var(--teal-dim);}
+  #holo-stage{position:relative;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;padding:.9rem 0 .7rem;background:radial-gradient(ellipse at 50% 35%, rgba(47,216,201,.1), transparent 70%);border-bottom:1px solid var(--line);}
+  #holo-main{width:104px;height:104px;}
+  #holo-status{text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;color:var(--teal-dim);}
 
   @media (min-width:1024px){
     #ai-float{width:84px;height:84px;bottom:2.2rem;left:2.2rem;}
-    #ai-panel{width:460px;max-height:min(700px,78vh);bottom:8.4rem;left:2.2rem;}
-    #holo-stage{height:280px;}
-    #holo-main{width:280px;height:280px;}
-    #holo-status{font-size:.72rem;bottom:1rem;}
+    #ai-panel{width:400px;max-height:min(600px,68vh);bottom:8rem;left:2.2rem;}
+    #holo-stage{padding:1.4rem 0 1rem;}
+    #holo-main{width:170px;height:170px;}
+    #holo-status{font-size:.68rem;}
     .ai-bar{padding:1rem 1.2rem;}
     .ai-bar .ai-title{font-size:.84rem;}
     #ai-messages{padding:1.4rem 1.6rem;font-size:.92rem;}
     .ai-input-row{padding:1rem 1.2rem;}
+    #ai-panel.maximized #holo-main{width:min(38vh,260px);height:min(38vh,260px);}
+    #ai-panel.maximized #holo-stage{padding:2.2rem 0 1.4rem;}
+    #ai-panel.maximized #ai-messages{padding:2rem min(10vw,3rem);font-size:1rem;max-width:900px;margin:0 auto;width:100%;}
+    #ai-panel.maximized .ai-msg{font-size:1rem;}
+    #ai-panel.maximized .ai-input-row{padding:1.2rem min(10vw,3rem) 1.6rem;max-width:900px;margin:0 auto;width:100%;}
   }
 
   .holo-ring{fill:none;stroke:var(--teal);}
@@ -332,6 +352,10 @@
   .holo-core-dot{fill:#eafffb;filter:drop-shadow(0 0 6px var(--teal));}
   .holo-tick{stroke:var(--ink-dim);opacity:.5;}
   .holo-sat{fill:var(--gold);filter:drop-shadow(0 0 3px var(--gold));}
+  .holo-ing-eye{animation:holo-ing-blink 4.6s ease-in-out infinite;transform-origin:center;}
+  @keyframes holo-ing-blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.12);}}
+  [data-state="thinking"] .holo-ing-cybereye, [data-state="speaking"] .holo-ing-cybereye{animation:holo-cybereye-pulse 1s ease-in-out infinite;}
+  @keyframes holo-cybereye-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
   #ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;font-size:.84rem;line-height:1.5;}
   .ai-msg{max-width:88%;padding:.55rem .75rem;border-radius:8px;white-space:pre-wrap;word-break:break-word;}
@@ -420,6 +444,11 @@
         <a href="#join" class="btn btn-primary">Únete al club →</a>
         <a href="https://wa.me/593986023149?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener" class="btn btn-whatsapp">Escríbenos por WhatsApp</a>
       </div>
+      <a href="#projects" class="hero-game-promo">
+        <span class="badge">🎮 NUEVO</span>
+        <span class="txt"><strong>Kernel Cero</strong> — el reto de terminal Linux de 31 niveles. Juega con INGenioso</span>
+        <span class="arrow">↓</span>
+      </a>
       <div class="hero-stats">
         <div class="stat"><b>120+</b><span>MIEMBROS ACTIVOS</span></div>
         <div class="stat"><b>18</b><span>PROYECTOS EN CURSO</span></div>
@@ -469,7 +498,45 @@
     <div class="sec-head">
       <div class="sec-tag">// PROYECTOS</div>
       <h2>Lo que se está armando en el taller</h2>
-      <p>Cada proyecto va desde el primer boceto hasta una demo pública. Estos son los que están en construcción activa este semestre.</p>
+      <p>Cada proyecto va desde el primer boceto hasta una demo pública. Empezamos por el más grande de todos.</p>
+    </div>
+
+    <div id="game-hero" class="proj-featured">
+      <div class="game-hero-inner">
+        <div class="game-hero-copy">
+          <div class="sec-tag">⭐ PROYECTO PRINCIPAL — RETO INTERACTIVO, 31 NIVELES</div>
+          <h2>¿Te atreves a convertirte en héroe del club?</h2>
+          <p>Aprende comandos reales de Linux jugando <strong>Kernel Cero</strong> (nombre en clave: Operación Laboratorio-B): reconocimiento, WiFi, criptografía, detección de amenazas, defensa contra DDoS, análisis forense digital, pentesting web autorizado, ISO/IEC 27001 y una auditoría de datacenter y nube — 7 episodios, 31 niveles, 100% simulado y ficticio, guiado paso a paso por <strong>INGenioso</strong>, nuestro oso cyborg asistente con IA (con sonido retro, respuestas locales y un documento de teoría propio).</p>
+          <a href="/linux-cli.html" class="btn btn-primary">Jugar Kernel Cero →</a>
+        </div>
+        <div class="game-hero-art" aria-hidden="true">
+          <div class="game-hero-glow"></div>
+          <svg viewBox="0 0 100 100" class="game-hero-mascot">
+            <circle cx="22" cy="22" r="14" fill="#0d1f1a" stroke="#39ff6a" stroke-width="2"/>
+            <circle cx="78" cy="22" r="14" fill="#0d1f1a" stroke="#39ff6a" stroke-width="2"/>
+            <circle cx="22" cy="22" r="6" fill="#173229"/>
+            <circle cx="78" cy="22" r="6" fill="#173229"/>
+            <circle cx="50" cy="54" r="38" fill="#0f2620" stroke="#39ff6a" stroke-width="2.5"/>
+            <path d="M78 42 a10 10 0 0 1 0 20" fill="none" stroke="#e8b23a" stroke-width="2"/>
+            <circle cx="80" cy="52" r="2" fill="#e8b23a"/>
+            <ellipse cx="50" cy="68" rx="16" ry="12" fill="#173229" stroke="#39ff6a" stroke-width="1.5"/>
+            <circle cx="50" cy="64" r="3" fill="#eafffb"/>
+            <path d="M50 67 v4 M44 73 q6 5 12 0" fill="none" stroke="#8fa89c" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="35" cy="48" r="6" fill="#eafffb"/>
+            <circle cx="35" cy="48" r="2.4" fill="#0f2620"/>
+            <circle cx="65" cy="48" r="9" fill="#04140a" stroke="#39ff6a" stroke-width="1.5"/>
+            <circle cx="65" cy="48" r="5" fill="none" stroke="#39ff6a" stroke-width="1"/>
+            <circle cx="65" cy="48" r="2.2" fill="#39ff6a"/>
+            <path d="M50 16 v-8" stroke="#39ff6a" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="50" cy="6" r="3" fill="#e8b23a"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-head" style="margin-top:3.4rem;">
+      <div class="sec-tag">// Y ADEMÁS</div>
+      <h2 style="font-size:clamp(1.3rem,2.6vw,1.9rem);">Más proyectos en construcción activa</h2>
     </div>
     <div class="proj-grid">
       <div class="proj-card"><div class="proj-tag">SOFTWARE</div><h3>Portal web del club</h3><p>Plataforma construida en Next.js y Supabase: landing retro, membresía y login social en un solo lugar.</p><div class="proj-status">En producción</div></div>
@@ -478,39 +545,6 @@
       <div class="proj-card"><div class="proj-tag">REDES &amp; CLOUD</div><h3>Laboratorio de contenedores</h3><p>Infraestructura Docker/Kubernetes para practicar despliegues y CI/CD como en la industria.</p><div class="proj-status">Instalación en curso</div></div>
       <div class="proj-card"><div class="proj-tag">SISTEMAS DE INFORMACIÓN</div><h3>Gestión académica del club</h3><p>Base de datos y dashboard para llevar el control de miembros, proyectos y horas de práctica.</p><div class="proj-status">Diseño de esquema</div></div>
       <div class="proj-card"><div class="proj-tag">INVESTIGACIÓN</div><h3>Semillero de IA aplicada</h3><p>Grupo de estudiantes documentando y publicando hallazgos de inteligencia artificial y ciencia de datos.</p><div class="proj-status">Recolectando datos</div></div>
-    </div>
-  </section>
-
-  <section id="game-hero">
-    <div class="game-hero-inner">
-      <div class="game-hero-copy">
-        <div class="sec-tag">// RETO INTERACTIVO — 31 NIVELES</div>
-        <h2>¿Te atreves a convertirte en héroe del club?</h2>
-        <p>Aprende comandos reales de Linux jugando <strong>Operación Laboratorio-B</strong>: reconocimiento, WiFi, criptografía, detección de amenazas, defensa contra DDoS, análisis forense digital, pentesting web autorizado, ISO/IEC 27001 y una auditoría de datacenter y nube — 7 episodios, 31 niveles, 100% simulado y ficticio, guiado paso a paso por <strong>INGenioso</strong>, nuestro oso cyborg asistente con IA (con sonido retro, respuestas locales y un documento de teoría propio).</p>
-        <a href="/linux-cli.html" class="btn btn-primary">Jugar Operación Laboratorio-B →</a>
-      </div>
-      <div class="game-hero-art" aria-hidden="true">
-        <div class="game-hero-glow"></div>
-        <svg viewBox="0 0 100 100" class="game-hero-mascot">
-          <circle cx="22" cy="22" r="14" fill="#0d1f1a" stroke="#39ff6a" stroke-width="2"/>
-          <circle cx="78" cy="22" r="14" fill="#0d1f1a" stroke="#39ff6a" stroke-width="2"/>
-          <circle cx="22" cy="22" r="6" fill="#173229"/>
-          <circle cx="78" cy="22" r="6" fill="#173229"/>
-          <circle cx="50" cy="54" r="38" fill="#0f2620" stroke="#39ff6a" stroke-width="2.5"/>
-          <path d="M78 42 a10 10 0 0 1 0 20" fill="none" stroke="#e8b23a" stroke-width="2"/>
-          <circle cx="80" cy="52" r="2" fill="#e8b23a"/>
-          <ellipse cx="50" cy="68" rx="16" ry="12" fill="#173229" stroke="#39ff6a" stroke-width="1.5"/>
-          <circle cx="50" cy="64" r="3" fill="#eafffb"/>
-          <path d="M50 67 v4 M44 73 q6 5 12 0" fill="none" stroke="#8fa89c" stroke-width="1.5" stroke-linecap="round"/>
-          <circle cx="35" cy="48" r="6" fill="#eafffb"/>
-          <circle cx="35" cy="48" r="2.4" fill="#0f2620"/>
-          <circle cx="65" cy="48" r="9" fill="#04140a" stroke="#39ff6a" stroke-width="1.5"/>
-          <circle cx="65" cy="48" r="5" fill="none" stroke="#39ff6a" stroke-width="1"/>
-          <circle cx="65" cy="48" r="2.2" fill="#39ff6a"/>
-          <path d="M50 16 v-8" stroke="#39ff6a" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="50" cy="6" r="3" fill="#e8b23a"/>
-        </svg>
-      </div>
     </div>
   </section>
 
@@ -709,11 +743,13 @@
 
 <button id="ai-float" type="button" aria-label="Abrir asistente de IA del club"></button>
 
+<div id="ai-backdrop"></div>
 <div id="ai-panel">
   <div class="ai-bar">
     <span class="ai-dot"></span>
-    <span class="ai-title">asistente-ia.sh</span>
+    <span class="ai-title">INGenioso.sh</span>
     <button class="ai-voice" id="ai-voice" type="button" aria-label="Activar voz" aria-pressed="false" title="Activar voz">🔇</button>
+    <button class="ai-max" id="ai-max" type="button" aria-label="Pantalla completa" title="Pantalla completa">⛶</button>
     <button class="ai-close" id="ai-close" type="button" aria-label="Cerrar asistente">✕</button>
   </div>
   <div id="holo-stage">
@@ -902,8 +938,22 @@
         <g class="holo-ticks">${ticks}</g>
         <g class="holo-rotor r3"><circle class="holo-ring" cx="100" cy="100" r="68" stroke-width="1.6" opacity=".6"/></g>
         <g class="holo-rotor r4"><circle class="holo-ring gold" cx="100" cy="100" r="50" stroke-width="1" stroke-dasharray="1 6" opacity=".55"/><circle class="holo-sat" cx="50" cy="100" r="1.8"/></g>
-        <circle class="holo-core-glow" cx="100" cy="100" r="36" fill="url(#${gradId})"/>
-        <circle class="holo-core-dot" cx="100" cy="100" r="7"/>
+        <circle class="holo-core-glow" cx="100" cy="100" r="40" fill="url(#${gradId})"/>
+        <g class="holo-core-dot" style="transform-origin:100px 100px;">
+          <circle cx="76" cy="76" r="15" fill="#0d1f1a" stroke="#2fd8c9" stroke-width="2"/>
+          <circle cx="124" cy="76" r="15" fill="#0d1f1a" stroke="#2fd8c9" stroke-width="2"/>
+          <circle cx="76" cy="76" r="6" fill="#173229"/>
+          <circle cx="124" cy="76" r="6" fill="#173229"/>
+          <circle cx="100" cy="104" r="34" fill="#0f2620" stroke="#2fd8c9" stroke-width="2.5"/>
+          <ellipse cx="100" cy="116" rx="14" ry="10" fill="#173229" stroke="#2fd8c9" stroke-width="1.5"/>
+          <circle cx="100" cy="113" r="2.6" fill="#eafffb"/>
+          <circle cx="87" cy="100" r="5.5" fill="#eafffb" class="holo-ing-eye"/>
+          <circle cx="87" cy="100" r="2.2" fill="#0f2620"/>
+          <circle cx="113" cy="100" r="8" fill="#04140a" stroke="#2fd8c9" stroke-width="1.4"/>
+          <circle cx="113" cy="100" r="2" fill="#39ff6a" class="holo-ing-cybereye"/>
+          <path d="M100 70 v-7" stroke="#2fd8c9" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="100" cy="61" r="2.6" fill="#e8b23a"/>
+        </g>
       </g>
     </svg>`;
   }
@@ -973,16 +1023,31 @@
     holoStatus.textContent = STATUS_LABEL[state] || '';
   }
 
-  // ---- Voz (Web Speech API) — apagada por defecto, el usuario la activa ----
+  // ---- Voz (Web Speech API nativa del navegador — sin costo ni cuota) — apagada por defecto, el usuario la activa ----
   const synth = window.speechSynthesis;
   let voiceOn = false;
+  let cachedVoices = [];
+  const MALE_VOICE_HINTS = /jorge|diego|carlos|pablo|juan|male|hombre|varón|masculin/i;
+  const FEMALE_VOICE_HINTS = /mónica|monica|paulina|helena|sabina|laura|elena|female|mujer|femenin/i;
 
+  function refreshVoices(){ cachedVoices = synth ? synth.getVoices() : []; }
+  if (synth){
+    refreshVoices();
+    synth.addEventListener('voiceschanged', refreshVoices);
+  }
+
+  // Tono "Jarvis": voz masculina, en español, grave y estable — evita caer en una voz femenina al azar
   function pickVoice(){
     if (!synth) return null;
-    const voices = synth.getVoices();
-    return voices.find((v) => /es/i.test(v.lang) && /google|neural|premium/i.test(v.name))
-        || voices.find((v) => /es/i.test(v.lang))
-        || voices[0]
+    const voices = cachedVoices.length ? cachedVoices : synth.getVoices();
+    if (!voices.length) return null;
+    const esVoices = voices.filter((v) => /^es/i.test(v.lang));
+    const pool = esVoices.length ? esVoices : voices;
+    return pool.find((v) => MALE_VOICE_HINTS.test(v.name) && /google|neural|premium|natural/i.test(v.name))
+        || pool.find((v) => MALE_VOICE_HINTS.test(v.name))
+        || pool.find((v) => /google|neural|premium|natural/i.test(v.name) && !FEMALE_VOICE_HINTS.test(v.name))
+        || pool.find((v) => !FEMALE_VOICE_HINTS.test(v.name))
+        || pool[0]
         || null;
   }
 
@@ -993,8 +1058,8 @@
     const voice = pickVoice();
     if (voice) utter.voice = voice;
     utter.lang = (voice && voice.lang) || 'es-ES';
-    utter.pitch = .85;
-    utter.rate = .98;
+    utter.pitch = .78;
+    utter.rate = .95;
     utter.onstart = () => setHoloState('speaking');
     utter.onboundary = () => { holoMini.pulse(); holoMain.pulse(); };
     utter.onend = () => setHoloState('idle');
@@ -1027,14 +1092,32 @@
     return div;
   }
 
+  const maxBtn = document.getElementById('ai-max');
+  const backdrop = document.getElementById('ai-backdrop');
+
   function togglePanel(open){
     const willOpen = open ?? !panel.classList.contains('open');
     panel.classList.toggle('open', willOpen);
+    if (!willOpen) setMaximized(false);
     if (willOpen) setTimeout(() => input.focus(), 50);
+  }
+
+  function setMaximized(on){
+    const willMax = on ?? !panel.classList.contains('maximized');
+    panel.classList.toggle('maximized', willMax);
+    backdrop.classList.toggle('show', willMax);
+    maxBtn.textContent = willMax ? '⤡' : '⛶';
+    maxBtn.title = willMax ? 'Restaurar tamaño' : 'Pantalla completa';
+    maxBtn.setAttribute('aria-label', maxBtn.title);
   }
 
   floatBtn.addEventListener('click', () => togglePanel());
   closeBtn.addEventListener('click', () => togglePanel(false));
+  maxBtn.addEventListener('click', () => setMaximized());
+  backdrop.addEventListener('click', () => setMaximized(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panel.classList.contains('maximized')) setMaximized(false);
+  });
 
   form.addEventListener('submit', async function(e){
     e.preventDefault();
