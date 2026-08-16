@@ -1,0 +1,5 @@
+cyberpunk-moonlight-sonata.mp3
+Autor: Joth
+Fuente: https://opengameart.org/content/cyberpunk-moonlight-sonata
+Licencia: CC0 1.0 Universal (dominio público — atribución no obligatoria, se da igual por cortesía)
+Uso: loop ambiental de fondo del marco HUD v2.0 del juego Kernel Cero

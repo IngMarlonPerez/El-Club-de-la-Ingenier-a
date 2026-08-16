@@ -26,6 +26,8 @@
     --term-green-dim:#1c8a3d;
     --neon-cyan:#00f3ff;
     --neon-magenta:#ff0055;
+    --hud-line: rgba(0,243,255,.32);
+    --hud-bg: #0a0e18;
     --mono:'IBM Plex Mono', 'Courier New', monospace;
     --sans:'IBM Plex Sans', -apple-system, sans-serif;
   }
@@ -34,6 +36,23 @@
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
   ::selection{background:var(--teal);color:#04140a;}
   img{max-width:100%;display:block;}
+
+  /* ---- Sistema v2.0: marco HUD futurista (compartido con el juego) ---- */
+  .hud-frame{position:relative;border:1px solid var(--hud-line);border-radius:8px;background:linear-gradient(180deg, rgba(0,243,255,.04), transparent 45%), var(--hud-bg);box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 20px 55px rgba(0,0,0,.5);overflow:hidden;}
+  .hud-corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3;}
+  .hud-corner.tl{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:8px 0 0 0;}
+  .hud-corner.tr{top:-1px;right:-1px;border-top:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 8px 0 0;}
+  .hud-corner.bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:0 0 0 8px;}
+  .hud-corner.br{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 8px 0;}
+  .hud-frame::after{content:'';position:absolute;left:0;right:0;height:40%;background:linear-gradient(180deg, transparent, rgba(0,243,255,.08), transparent);transform:translateY(-100%);animation:hud-scan 6s linear infinite;pointer-events:none;z-index:2;}
+  @keyframes hud-scan{0%{transform:translateY(-100%);}100%{transform:translateY(250%);}}
+  .hud-ticker{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;color:var(--neon-cyan);opacity:.5;white-space:nowrap;overflow:hidden;border-bottom:1px solid rgba(0,243,255,.15);padding:.35rem .7rem;position:relative;z-index:1;}
+  .hud-ticker span{display:inline-block;padding-right:3rem;animation:hud-ticker 20s linear infinite;}
+  @keyframes hud-ticker{to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){
+    .hud-frame::after{animation:none;display:none;}
+    .hud-ticker span{animation:none;}
+  }
 
   #boot{position:fixed;inset:0;z-index:1000;background:radial-gradient(ellipse at 50% 30%, #14100a 0%, #060402 60%, #000 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);cursor:pointer;transition:opacity .6s ease;padding:2rem;}
   #boot::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);mix-blend-mode:overlay;}
@@ -147,7 +166,10 @@
   .btn-whatsapp{background:#25D366;color:#04140a;font-weight:600;}
   .btn-whatsapp:hover{background:#3ee07a;}
 
-  .hero-game-promo{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.8rem;padding:.6rem .7rem .6rem 1rem;border:1px solid var(--term-green-dim);border-radius:30px;background:rgba(57,255,106,.06);text-decoration:none;font-family:var(--mono);font-size:.78rem;color:var(--ink);transition:all .2s ease;position:relative;}
+  .hero-game-promo{display:inline-flex;align-items:center;gap:.7rem;margin-top:1.8rem;padding:.6rem .7rem .6rem 1rem;border:1px solid var(--term-green-dim);border-radius:30px;background:rgba(57,255,106,.06);text-decoration:none;font-family:var(--mono);font-size:.78rem;color:var(--ink);transition:all .2s ease;position:relative;overflow:hidden;}
+  .hero-game-promo::after{content:'';position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(100deg, transparent, rgba(0,243,255,.12), transparent);transform:translateX(-220%);animation:hero-promo-shimmer 4.5s ease-in-out infinite;pointer-events:none;}
+  @keyframes hero-promo-shimmer{0%,60%,100%{transform:translateX(-220%);}80%{transform:translateX(220%);}}
+  @media (prefers-reduced-motion: reduce){.hero-game-promo::after{animation:none;display:none;}}
   .hero-game-promo:hover{border-color:var(--term-green);background:rgba(57,255,106,.12);transform:translateY(-2px);}
   .hero-game-promo::before{content:'';position:absolute;inset:-1px;border-radius:30px;box-shadow:0 0 0 1px var(--term-green-dim);animation:hero-promo-pulse 2.6s ease-in-out infinite;pointer-events:none;}
   @keyframes hero-promo-pulse{0%,100%{opacity:0;transform:scale(1);}50%{opacity:.7;transform:scale(1.03);}}
@@ -210,8 +232,10 @@
   .events-cta p{font-family:var(--mono);font-size:.9rem;color:var(--ink);}
   .events-cta .btn{flex-shrink:0;}
 
-  .proj-featured{border:1px solid var(--term-green-dim);border-radius:14px;background:radial-gradient(ellipse at 20% 30%, rgba(57,255,106,.1), transparent 60%), #03110a;position:relative;overflow:hidden;padding:2.6rem clamp(1.4rem,4vw,3.2rem);box-shadow:0 0 0 1px rgba(57,255,106,.05), 0 30px 70px rgba(0,0,0,.4);}
-  .proj-featured::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(57,255,106,0.025) 0px, transparent 2px, transparent 4px);}
+  .proj-featured{border:1px solid var(--term-green-dim);border-radius:14px;background:repeating-linear-gradient(to bottom, rgba(57,255,106,0.025) 0px, transparent 2px, transparent 4px), radial-gradient(ellipse at 20% 30%, rgba(57,255,106,.1), transparent 60%), #03110a;position:relative;overflow:hidden;padding:2.6rem clamp(1.4rem,4vw,3.2rem);box-shadow:0 0 0 1px rgba(57,255,106,.05), 0 30px 70px rgba(0,0,0,.4);}
+  .proj-featured::before,.proj-featured::after{content:'';position:absolute;width:20px;height:20px;pointer-events:none;z-index:2;}
+  .proj-featured::before{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:14px 0 0 0;}
+  .proj-featured::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 14px 0;}
   .game-hero-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:3rem;align-items:center;position:relative;}
   @media (max-width:860px){.game-hero-inner{grid-template-columns:1fr;text-align:center;}}
   .game-hero-copy .sec-tag{color:var(--term-green);}
@@ -219,6 +243,9 @@
   .game-hero-copy p{color:var(--ink-dim);line-height:1.7;max-width:52ch;margin-bottom:1.8rem;}
   @media (max-width:860px){.game-hero-copy p{margin-left:auto;margin-right:auto;}}
   .game-hero-copy strong{color:var(--term-green);}
+  .game-roadmap{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;}
+  .game-roadmap::before{content:'RUTA:';font-family:var(--mono);font-size:.62rem;color:var(--ink-dim);letter-spacing:.08em;margin-right:.2rem;}
+  .rm-step{width:26px;height:26px;border-radius:50%;background:rgba(57,255,106,.08);border:1px solid var(--term-green-dim);display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;line-height:1;}
   .game-hero-art{position:relative;display:flex;align-items:center;justify-content:center;}
   .game-hero-mascot{width:min(280px,70%);filter:drop-shadow(0 0 30px rgba(57,255,106,.35));animation:game-hero-bob 3.6s ease-in-out infinite;}
   .game-hero-glow{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, rgba(57,255,106,.18), transparent 70%);filter:blur(10px);}
@@ -312,7 +339,10 @@
   #ai-float .holo-wrap, #holo-main .holo-wrap{width:100%;height:100%;}
   #ai-float svg, #holo-main svg{width:100%;height:100%;overflow:visible;}
 
-  #ai-panel{position:fixed;bottom:6rem;left:1.2rem;z-index:95;width:min(320px,88vw);max-height:min(440px,62vh);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);transition:all .3s cubic-bezier(.3,.9,.4,1);}
+  #ai-panel{position:fixed;bottom:6rem;left:1.2rem;z-index:95;width:min(320px,88vw);max-height:min(440px,62vh);background:var(--panel);border:1px solid var(--hud-line);border-radius:12px;box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 20px 60px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden;font-family:var(--sans);transition:all .3s cubic-bezier(.3,.9,.4,1);}
+  #ai-panel::before,#ai-panel::after{content:'';position:absolute;width:16px;height:16px;pointer-events:none;z-index:2;}
+  #ai-panel::before{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:12px 0 0 0;}
+  #ai-panel::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 12px 0;}
   #ai-panel.open{display:flex;}
   #ai-backdrop{position:fixed;inset:0;z-index:94;background:rgba(2,6,4,.72);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s ease;}
   #ai-backdrop.show{opacity:1;pointer-events:auto;}
@@ -508,6 +538,15 @@
           <h2>¿Te atreves a convertirte en héroe del club?</h2>
           <p>Aprende comandos reales de Linux jugando <strong>Kernel Cero</strong> (nombre en clave: Operación Laboratorio-B): reconocimiento, WiFi, criptografía, detección de amenazas, defensa contra DDoS, análisis forense digital, pentesting web autorizado, ISO/IEC 27001 y una auditoría de datacenter y nube — 7 episodios, 31 niveles, 100% simulado y ficticio, guiado paso a paso por <strong>INGenioso</strong>, nuestro oso cyborg asistente con IA (con sonido retro, respuestas locales y un documento de teoría propio).</p>
           <a href="/linux-cli.html" class="btn btn-primary">Jugar Kernel Cero →</a>
+          <div class="game-roadmap" aria-hidden="true">
+            <span class="rm-step" title="Reconocimiento">🔰</span>
+            <span class="rm-step" title="Infiltración WiFi">🔰</span>
+            <span class="rm-step" title="Comunicación Segura">🛰️</span>
+            <span class="rm-step" title="Detección y Respuesta">🛡️</span>
+            <span class="rm-step" title="Forense — nullshadow77">🔍</span>
+            <span class="rm-step" title="Pentesting y SGSI">📋</span>
+            <span class="rm-step" title="Rescate de la universidad">🦸</span>
+          </div>
         </div>
         <div class="game-hero-art" aria-hidden="true">
           <div class="game-hero-glow"></div>

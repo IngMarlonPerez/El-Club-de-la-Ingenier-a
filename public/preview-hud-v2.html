@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kernel Cero — Prototipo de dirección de arte v2.0</title>
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --void:#03040a;
+    --void-2:#080b14;
+    --panel:#0a0e18;
+    --neon-cyan:#00f3ff;
+    --neon-magenta:#ff2079;
+    --gold:#e8b23a;
+    --term-green:#39ff6a;
+    --term-green-dim:#1c8a3d;
+    --ink:#eef3f6;
+    --ink-dim:#8fa9c0;
+    --hud-line: rgba(0,243,255,.35);
+    --mono:'IBM Plex Mono','Courier New',monospace;
+    --sans:'IBM Plex Sans',-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--void);color:var(--ink);font-family:var(--sans);min-height:100vh;padding:3rem 4vw 6rem;-webkit-font-smoothing:antialiased;}
+  h1{font-family:var(--mono);font-size:clamp(1.4rem,3vw,2rem);color:var(--ink);}
+  h1 span{color:var(--neon-cyan);text-shadow:0 0 18px rgba(0,243,255,.5);}
+  .page-sub{font-family:var(--mono);font-size:.78rem;color:var(--ink-dim);margin-top:.5rem;max-width:70ch;line-height:1.6;}
+  .page-head{margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid rgba(0,243,255,.15);}
+  section{max-width:1180px;margin:0 auto 5rem;}
+  .sec-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;color:var(--neon-magenta);margin-bottom:.6rem;}
+  .sec-title{font-family:var(--mono);font-size:1.3rem;color:var(--ink);margin-bottom:.5rem;}
+  .sec-desc{color:var(--ink-dim);font-size:.85rem;line-height:1.6;max-width:70ch;margin-bottom:1.6rem;}
+  .grid2{display:grid;grid-template-columns:1.3fr .9fr;gap:1.6rem;align-items:start;}
+  @media (max-width:860px){.grid2{grid-template-columns:1fr;}}
+
+  /* ---- HUD FRAME: componente central del sistema v2.0 ---- */
+  .hud-frame{position:relative;border:1px solid var(--hud-line);border-radius:6px;background:linear-gradient(180deg, rgba(0,243,255,.05), transparent 45%), var(--panel);box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 25px 70px rgba(0,0,0,.55);overflow:hidden;}
+  .hud-corner{position:absolute;width:20px;height:20px;pointer-events:none;z-index:3;}
+  .hud-corner.tl{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);}
+  .hud-corner.tr{top:-1px;right:-1px;border-top:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);}
+  .hud-corner.bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);}
+  .hud-corner.br{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);}
+  .hud-frame::after{content:'';position:absolute;left:0;right:0;height:40%;background:linear-gradient(180deg, transparent, rgba(0,243,255,.09), transparent);transform:translateY(-100%);animation:hud-scan 5s linear infinite;pointer-events:none;z-index:2;}
+  @keyframes hud-scan{0%{transform:translateY(-100%);}100%{transform:translateY(250%);}}
+  .hud-frame-pad{position:relative;z-index:1;padding:1.6rem;}
+  @media (prefers-reduced-motion: reduce){.hud-frame::after{animation:none;display:none;}}
+  body.simulate-reduced-motion .hud-frame::after{animation:none;display:none;}
+
+  .hud-ticker{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;color:var(--neon-cyan);opacity:.55;white-space:nowrap;overflow:hidden;border-bottom:1px solid rgba(0,243,255,.15);padding:.4rem .8rem;}
+  .hud-ticker span{display:inline-block;padding-right:3rem;animation:hud-ticker 18s linear infinite;}
+  @keyframes hud-ticker{to{transform:translateX(-50%);}}
+  body.simulate-reduced-motion .hud-ticker span{animation:none;}
+
+  /* ---- Núcleo CRT retro: NO se toca, solo se re-enmarca ---- */
+  .crt-core{background:#03110a;border:1px solid var(--term-green-dim);border-radius:4px;padding:1rem 1.2rem;font-family:var(--mono);font-size:.82rem;line-height:1.7;color:var(--term-green);position:relative;overflow:hidden;min-height:200px;}
+  .crt-core::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom, rgba(57,255,106,.04) 0px, transparent 2px, transparent 4px);}
+  .crt-core .prompt{color:var(--gold);}
+  .crt-core .dim{color:var(--term-green-dim);}
+  .crt-core .cursor{display:inline-block;width:7px;height:1em;background:var(--term-green);vertical-align:text-bottom;animation:blink .8s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+
+  .caption{font-family:var(--mono);font-size:.66rem;color:var(--ink-dim);text-align:center;margin-top:.8rem;letter-spacing:.04em;}
+
+  /* ---- Panel núcleo de IA — INGenioso ---- */
+  .ai-core-panel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;}
+  .ai-core-ring{position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center;}
+  .ai-core-ring::before,.ai-core-ring::after{content:'';position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(0,243,255,.4);}
+  .ai-core-ring::before{animation:spin 16s linear infinite;}
+  .ai-core-ring::after{inset:-10px;border-color:rgba(232,178,58,.3);animation:spin 22s linear infinite reverse;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  body.simulate-reduced-motion .ai-core-ring::before,body.simulate-reduced-motion .ai-core-ring::after{animation:none;}
+  .ai-core-avatar{width:84px;height:84px;filter:drop-shadow(0 0 14px rgba(0,243,255,.5));}
+  .ai-eye{animation:eye-blink 4.2s ease-in-out infinite;transform-origin:center;}
+  @keyframes eye-blink{0%,92%,100%{transform:scaleY(1);}95%{transform:scaleY(.12);}}
+  .ai-cybereye{animation:cybereye-pulse 2.4s ease-in-out infinite;}
+  @keyframes cybereye-pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+  body.simulate-reduced-motion .ai-eye,body.simulate-reduced-motion .ai-cybereye{animation:none;}
+  .rank-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--gold);background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.4);border-radius:20px;padding:.3rem .8rem;}
+  .ai-bubble{background:rgba(0,243,255,.05);border:1px solid var(--hud-line);border-radius:8px;padding:.9rem 1.1rem;font-size:.85rem;line-height:1.6;color:var(--ink);text-align:left;}
+  .ai-bubble b{color:var(--neon-cyan);}
+
+  /* ---- Selección de misión: episodios con rango ---- */
+  .ep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+  .ep-card{padding:1.2rem;}
+  .ep-num{font-family:var(--mono);font-size:1.3rem;color:rgba(0,243,255,.5);margin-bottom:.4rem;}
+  .ep-card h4{font-family:var(--mono);font-size:.92rem;color:var(--ink);margin-bottom:.4rem;}
+  .ep-rank{font-family:var(--mono);font-size:.64rem;color:var(--gold);letter-spacing:.05em;}
+  .ep-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:.7rem;overflow:hidden;}
+  .ep-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--neon-cyan),var(--term-green));}
+
+  /* ---- Feedback demo: glitch / access granted-denied ---- */
+  .demo-row{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.4rem;}
+  .demo-btn{font-family:var(--mono);font-size:.76rem;background:none;border:1px solid var(--hud-line);color:var(--ink);border-radius:5px;padding:.6rem 1rem;cursor:pointer;transition:all .15s ease;}
+  .demo-btn:hover{border-color:var(--neon-cyan);color:var(--neon-cyan);}
+  .feedback-stage{position:relative;height:160px;border:1px solid var(--hud-line);border-radius:6px;background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .feedback-msg{font-family:var(--mono);font-size:1.3rem;letter-spacing:.08em;opacity:0;}
+  .feedback-msg.granted{color:var(--term-green);text-shadow:0 0 16px rgba(57,255,106,.7);}
+  .feedback-msg.denied{color:#ff4d5e;text-shadow:0 0 16px rgba(255,77,94,.7);}
+  .glitch-active .feedback-stage{animation:glitch-shake .35s steps(2) 2;}
+  @keyframes glitch-shake{0%{transform:translate(0);}25%{transform:translate(-4px,2px);filter:hue-rotate(20deg);}50%{transform:translate(3px,-2px);filter:hue-rotate(-15deg);}75%{transform:translate(-2px,1px);}100%{transform:translate(0);}}
+  .decrypt-bar{width:70%;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;position:absolute;bottom:1.4rem;left:15%;}
+  .decrypt-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-magenta));}
+  .decrypt-label{position:absolute;top:1.2rem;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--neon-cyan);opacity:0;letter-spacing:.1em;}
+
+  .reduced-toggle{position:fixed;bottom:1.4rem;right:1.4rem;z-index:9;font-family:var(--mono);font-size:.7rem;background:var(--panel);border:1px solid var(--hud-line);color:var(--ink-dim);border-radius:20px;padding:.6rem 1.1rem;cursor:pointer;}
+  .reduced-toggle.active{color:var(--neon-cyan);border-color:var(--neon-cyan);}
+</style>
+</head>
+<body>
+
+<div class="page-head" style="max-width:1180px;margin-left:auto;margin-right:auto;">
+  <h1>KERNEL CERO — <span>Dirección de arte v2.0</span></h1>
+  <p class="page-sub">Prototipo standalone (Fase 0 del plan). Sin lógica de juego real — solo la vitrina del nuevo lenguaje visual: marco HUD futurista (Deus Ex + Watch Dogs + Cyberpunk 2077 + Tron/Ghost in the Shell + Portal) envolviendo la consola CRT retro, que se mantiene intacta. Usa el botón inferior derecho para simular "reducir movimiento" y confirmar el fallback.</p>
+</div>
+
+<section>
+  <div class="sec-label">// 01 — MARCO HUD + CONSOLA RETRO INTACTA</div>
+  <div class="sec-title">El núcleo no cambia. Todo lo que lo rodea, sí.</div>
+  <p class="sec-desc">El <code>.hud-frame</code> (esquinas en L, línea neón, barrido de escaneo) es el componente base de todo el sistema v2.0. Adentro, la consola CRT verde-fósforo sigue exactamente igual — scanlines, cursor, tipografía mono.</p>
+  <div class="hud-frame">
+    <div class="hud-ticker"><span>0x4F2A &nbsp; SCAN::ACTIVE &nbsp; NODE_CIE_84 &nbsp; UPLINK_STABLE &nbsp; 0x91BC &nbsp; TRACE::NULLSHADOW77 &nbsp; 0x1D07 &nbsp; SCAN::ACTIVE &nbsp; NODE_CIE_84 &nbsp; UPLINK_STABLE &nbsp; 0x91BC &nbsp; TRACE::NULLSHADOW77</span></div>
+    <div class="hud-frame-pad">
+      <div class="crt-core">
+        <span class="dim">agente@labclub:~$</span> nmap -sV 192.168.56.10<br>
+        <span class="dim">Iniciando Nmap... </span><br>
+        PORT&nbsp;&nbsp;&nbsp;STATE&nbsp;SERVICE&nbsp;&nbsp;VERSION<br>
+        22/tcp&nbsp;open&nbsp;&nbsp;ssh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OpenSSH 7.2<br>
+        80/tcp&nbsp;open&nbsp;&nbsp;http&nbsp;&nbsp;&nbsp;&nbsp;nginx 1.10.3 <span class="prompt">← vulnerable</span><br><br>
+        <span class="prompt">agente@labclub:~$</span> <span class="cursor"></span>
+      </div>
+    </div>
+  </div>
+  <div class="hud-corner tl"></div>
+</section>
+
+<section>
+  <div class="sec-label">// 02 — INGENIOSO: NÚCLEO DE IA</div>
+  <div class="sec-title">De avatar decorativo a compañero de campo (Portal / GLaDOS)</div>
+  <p class="sec-desc">Mismo rig de ojos ya construido en el sitio principal (parpadeo idle, ojo-cyborg con pulso al pensar/hablar), ahora dentro de un panel de diagnóstico con badge de rango narrativo.</p>
+  <div class="grid2">
+    <div class="hud-frame"><div class="hud-frame-pad ai-core-panel" style="align-items:flex-start;text-align:left;">
+      <div class="rank-badge">🔍 INVESTIGADOR — Episodio 5</div>
+      <div class="ai-bubble"><b>INGenioso:</b> El DDoS fue la cortina de humo, agente. Alguien entró por otro lado mientras todos mirábamos el tráfico caer. Aísla el equipo antes de que borren más rastros — <code>ip link set eth0 down</code>.</div>
+    </div></div>
+    <div class="hud-frame"><div class="hud-frame-pad ai-core-panel">
+      <div class="ai-core-ring">
+        <svg viewBox="0 0 100 100" class="ai-core-avatar" aria-hidden="true">
+          <circle cx="22" cy="22" r="14" fill="#0d1f1a" stroke="#00f3ff" stroke-width="2"/>
+          <circle cx="78" cy="22" r="14" fill="#0d1f1a" stroke="#00f3ff" stroke-width="2"/>
+          <circle cx="22" cy="22" r="6" fill="#173229"/>
+          <circle cx="78" cy="22" r="6" fill="#173229"/>
+          <circle cx="50" cy="54" r="38" fill="#0f2620" stroke="#00f3ff" stroke-width="2.5"/>
+          <path d="M78 42 a10 10 0 0 1 0 20" fill="none" stroke="#e8b23a" stroke-width="2"/>
+          <circle cx="80" cy="52" r="2" fill="#e8b23a"/>
+          <ellipse cx="50" cy="68" rx="16" ry="12" fill="#173229" stroke="#00f3ff" stroke-width="1.5"/>
+          <circle cx="50" cy="64" r="3" fill="#eafffb"/>
+          <circle class="ai-eye" cx="35" cy="48" r="6" fill="#eafffb"/>
+          <circle cx="35" cy="48" r="2.4" fill="#0f2620"/>
+          <circle cx="65" cy="48" r="9" fill="#04140a" stroke="#00f3ff" stroke-width="1.5"/>
+          <circle class="ai-cybereye" cx="65" cy="48" r="2.2" fill="#39ff6a"/>
+          <path d="M50 16 v-8" stroke="#00f3ff" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="50" cy="6" r="3" fill="#e8b23a"/>
+        </svg>
+      </div>
+      <div class="caption" style="margin-top:0;">Parpadeo idle + ojo-cyborg reactivo — reutiliza .holo-ing-eye / .holo-ing-cybereye</div>
+    </div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">// 03 — SELECCIÓN DE MISIÓN CON RANGO</div>
+  <div class="sec-title">7 episodios, 7 rangos — el arco completo visible de un vistazo</div>
+  <p class="sec-desc">Reemplaza la grilla plana actual: cada tarjeta muestra el rango narrativo de ese tramo del viaje (Novato → Héroe), sin cambiar el contenido ya escrito de cada nivel.</p>
+  <div class="ep-grid">
+    <div class="hud-frame ep-card">
+      <div class="ep-num">01</div><h4>Reconocimiento</h4>
+      <div class="ep-rank">🔰 NOVATO RECLUTADO</div>
+      <div class="ep-bar"><i style="width:100%;"></i></div>
+    </div>
+    <div class="hud-frame ep-card">
+      <div class="ep-num">03</div><h4>Comunicación Segura</h4>
+      <div class="ep-rank">🛰️ OPERATIVO EN FORMACIÓN</div>
+      <div class="ep-bar"><i style="width:100%;"></i></div>
+    </div>
+    <div class="hud-frame ep-card">
+      <div class="ep-num">07–13</div><h4>Bajo Ataque → Forense</h4>
+      <div class="ep-rank">🔍 INVESTIGADOR</div>
+      <div class="ep-bar"><i style="width:45%;"></i></div>
+    </div>
+    <div class="hud-frame ep-card">
+      <div class="ep-num">22–31</div><h4>Rescate de la universidad</h4>
+      <div class="ep-rank">🦸 HÉROE DE CIBERSEGURIDAD</div>
+      <div class="ep-bar"><i style="width:0%;"></i></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-label">// 04 — FEEDBACK CINEMÁTICO</div>
+  <div class="sec-title">Transición de nivel + acceso concedido/denegado</div>
+  <p class="sec-desc">Reemplaza el cambio instantáneo y el texto plano de hoy por un breve glitch/aberración cromática y una barra de "descifrando". Con movimiento reducido activado, todo se vuelve un corte directo, sin glitch.</p>
+  <div class="demo-row">
+    <button class="demo-btn" id="btn-decrypt">▶ Simular transición de nivel</button>
+    <button class="demo-btn" id="btn-granted">▶ Simular ACCESO CONCEDIDO</button>
+    <button class="demo-btn" id="btn-denied">▶ Simular ACCESO DENEGADO</button>
+  </div>
+  <div class="feedback-stage" id="feedback-stage">
+    <div class="decrypt-label" id="decrypt-label">DESCIFRANDO SIGUIENTE FASE…</div>
+    <div class="feedback-msg" id="feedback-msg">ACCESO CONCEDIDO</div>
+    <div class="decrypt-bar" id="decrypt-bar"><i id="decrypt-fill"></i></div>
+  </div>
+</section>
+
+<button class="reduced-toggle" id="reduced-toggle">🎛 Simular "reducir movimiento": OFF</button>
+
+<script>
+(function(){
+  var body = document.body;
+  var toggle = document.getElementById('reduced-toggle');
+  toggle.addEventListener('click', function(){
+    var on = body.classList.toggle('simulate-reduced-motion');
+    toggle.textContent = '🎛 Simular "reducir movimiento": ' + (on ? 'ON' : 'OFF');
+    toggle.classList.toggle('active', on);
+  });
+
+  var reduced = function(){ return body.classList.contains('simulate-reduced-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
+
+  var stage = document.getElementById('feedback-stage');
+  var msg = document.getElementById('feedback-msg');
+  var label = document.getElementById('decrypt-label');
+  var fill = document.getElementById('decrypt-fill');
+
+  function resetStage(){
+    msg.className = 'feedback-msg';
+    msg.style.opacity = 0;
+    label.style.opacity = 0;
+    fill.style.width = '0%';
+    fill.style.transition = 'none';
+    stage.classList.remove('glitch-active');
+  }
+
+  document.getElementById('btn-decrypt').addEventListener('click', function(){
+    resetStage();
+    label.style.opacity = 1;
+    requestAnimationFrame(function(){
+      fill.style.transition = reduced() ? 'none' : 'width 1.1s ease';
+      fill.style.width = '100%';
+    });
+    if (!reduced()) stage.classList.add('glitch-active');
+    setTimeout(function(){ stage.classList.remove('glitch-active'); }, 700);
+  });
+
+  document.getElementById('btn-granted').addEventListener('click', function(){
+    resetStage();
+    msg.textContent = 'ACCESO CONCEDIDO';
+    msg.classList.add('granted');
+    msg.style.transition = reduced() ? 'none' : 'opacity .3s ease';
+    requestAnimationFrame(function(){ msg.style.opacity = 1; });
+  });
+
+  document.getElementById('btn-denied').addEventListener('click', function(){
+    resetStage();
+    msg.textContent = 'ACCESO DENEGADO';
+    msg.classList.add('denied');
+    msg.style.transition = reduced() ? 'none' : 'opacity .3s ease';
+    requestAnimationFrame(function(){ msg.style.opacity = 1; });
+    if (!reduced()) stage.classList.add('glitch-active');
+    setTimeout(function(){ stage.classList.remove('glitch-active'); }, 700);
+  });
+})();
+</script>
+
+</body>
+</html>

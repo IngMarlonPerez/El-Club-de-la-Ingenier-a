@@ -22,6 +22,11 @@
     --danger:#ff5f5f;
     --mono:'IBM Plex Mono','Courier New',monospace;
     --sans:'IBM Plex Sans',-apple-system,sans-serif;
+    /* ---- v2.0: chrome futurista (la consola retro de arriba no usa estos tokens) ---- */
+    --neon-cyan:#00f3ff;
+    --neon-magenta:#ff2079;
+    --hud-line: rgba(0,243,255,.32);
+    --hud-bg: #080b14;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{height:auto;overflow-x:hidden;}
@@ -29,6 +34,23 @@
   button{font-family:inherit;}
   a{color:var(--teal);}
   a:focus-visible, button:focus-visible, input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  /* ---- Sistema v2.0: marco HUD futurista (envuelve, nunca reemplaza, la consola retro) ---- */
+  .hud-frame{position:relative;border:1px solid var(--hud-line);border-radius:8px;background:linear-gradient(180deg, rgba(0,243,255,.04), transparent 45%), var(--hud-bg);box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 20px 55px rgba(0,0,0,.5);overflow:hidden;}
+  .hud-corner{position:absolute;width:16px;height:16px;pointer-events:none;z-index:3;}
+  .hud-corner.tl{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:8px 0 0 0;}
+  .hud-corner.tr{top:-1px;right:-1px;border-top:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 8px 0 0;}
+  .hud-corner.bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:0 0 0 8px;}
+  .hud-corner.br{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 8px 0;}
+  .hud-frame::after{content:'';position:absolute;left:0;right:0;height:40%;background:linear-gradient(180deg, transparent, rgba(0,243,255,.08), transparent);transform:translateY(-100%);animation:hud-scan 6s linear infinite;pointer-events:none;z-index:2;}
+  @keyframes hud-scan{0%{transform:translateY(-100%);}100%{transform:translateY(250%);}}
+  .hud-ticker{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;color:var(--neon-cyan);opacity:.5;white-space:nowrap;overflow:hidden;border-bottom:1px solid rgba(0,243,255,.15);padding:.35rem .7rem;position:relative;z-index:1;}
+  .hud-ticker span{display:inline-block;padding-right:3rem;animation:hud-ticker 20s linear infinite;}
+  @keyframes hud-ticker{to{transform:translateX(-50%);}}
+  @media (prefers-reduced-motion: reduce){
+    .hud-frame::after{animation:none;display:none;}
+    .hud-ticker span{animation:none;}
+  }
 
   #app{display:flex;flex-direction:column;min-height:100vh;}
 
@@ -102,7 +124,25 @@
   #stage-col{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;padding:2.4rem 1.4rem 2rem;min-width:0;}
   .lvlup-matrix{position:absolute;inset:0;z-index:0;opacity:0;pointer-events:none;transition:opacity .5s ease;}
   .lvlup-matrix.show{opacity:1;}
-  .mac-unit, .ingenioso-dock{position:relative;z-index:1;}
+  .mac-unit, .ingenioso-dock, .game-hud-frame{position:relative;z-index:1;}
+  .game-hud-frame{width:min(940px,96vw);padding:2.4rem 1.6rem 1.6rem;display:flex;justify-content:center;}
+  @media (min-width:1024px){.game-hud-frame{width:clamp(820px,60vw,1060px);}}
+  .game-hud-frame .hud-ticker{position:absolute;top:0;left:0;right:0;}
+
+  /* ---- Transición cinemática entre niveles ---- */
+  .level-transition{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:rgba(3,6,12,.88);opacity:0;pointer-events:none;transition:opacity .25s ease;}
+  .level-transition.show{opacity:1;}
+  .level-transition-label{font-family:var(--mono);font-size:.8rem;letter-spacing:.14em;color:var(--neon-cyan);text-shadow:0 0 10px rgba(0,243,255,.6);}
+  .level-transition-bar{width:60%;max-width:320px;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;}
+  .level-transition-bar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-magenta));}
+  .level-transition-bar i.fill{width:100%;transition:width 1s ease;}
+  .glitch-shake{animation:glitch-shake .35s steps(2) 2;}
+  @keyframes glitch-shake{0%{transform:translate(0);}25%{transform:translate(-4px,2px);filter:hue-rotate(20deg);}50%{transform:translate(3px,-2px);filter:hue-rotate(-15deg);}75%{transform:translate(-2px,1px);}100%{transform:translate(0);}}
+  @media (prefers-reduced-motion: reduce){
+    .level-transition{transition:none;}
+    .level-transition-bar i.fill{transition:none;}
+    .glitch-shake{animation:none;}
+  }
   @media (min-width:761px){ #action-bar{position:relative;z-index:1;} }
 
   .mac-unit{position:relative;width:min(880px,94vw);font-size:clamp(11px,1.15vw,16px);-webkit-font-smoothing:antialiased;}
@@ -150,8 +190,13 @@
   @keyframes ing-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
   .ing-eye{animation:ing-blink 4.5s ease-in-out infinite;transform-origin:65px 48px;}
   @keyframes ing-blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.1);}}
-  .ing-bubble-lg{flex:1;background:var(--panel);border:1px solid var(--teal-dim);border-radius:10px;padding:.8em 1em;font-size:.86rem;line-height:1.6;color:var(--ink);position:relative;min-width:0;}
-  .ing-bubble-lg::before{content:'';position:absolute;left:-8px;top:1.1em;border:8px solid transparent;border-right-color:var(--teal-dim);}
+  .ing-cybereye{opacity:.75;}
+  .ingenioso-dock.thinking .ing-cybereye{animation:ing-cybereye-pulse 1s ease-in-out infinite;}
+  @keyframes ing-cybereye-pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){.ingenioso-dock.thinking .ing-cybereye{animation:none;opacity:1;}}
+  .ing-bubble-lg{flex:1;background:var(--panel);border:1px solid var(--hud-line);border-radius:10px;padding:.8em 1em;font-size:.86rem;line-height:1.6;color:var(--ink);position:relative;min-width:0;box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 14px 40px rgba(0,0,0,.35);}
+  .ing-bubble-lg::before{content:'';position:absolute;left:-8px;top:1.1em;border:8px solid transparent;border-right-color:var(--hud-line);}
+  .ing-bubble-lg::after{content:'';position:absolute;top:-1px;right:-1px;width:14px;height:14px;border-top:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 10px 0 0;pointer-events:none;}
   .ing-bubble-lg.thinking{color:var(--ink-dim);font-style:italic;}
   .ing-bubble-lg b{color:var(--teal);}
 
@@ -170,7 +215,10 @@
   /* ---- Modales ---- */
   .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(2,6,4,.92);display:flex;align-items:center;justify-content:center;padding:2rem;}
   .modal-overlay[hidden]{display:none;}
-  .modal{width:min(560px,100%);max-height:86vh;overflow-y:auto;background:var(--panel);border:1px solid var(--teal-dim);border-radius:10px;padding:2rem;box-shadow:0 30px 80px rgba(0,0,0,.6);}
+  .modal{position:relative;width:min(560px,100%);max-height:86vh;overflow-y:auto;background:var(--panel);border:1px solid var(--hud-line);border-radius:10px;padding:2rem;box-shadow:0 0 0 1px rgba(0,243,255,.04), 0 30px 80px rgba(0,0,0,.6);}
+  .modal::before,.modal::after{content:'';position:absolute;width:18px;height:18px;pointer-events:none;z-index:2;}
+  .modal::before{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:10px 0 0 0;}
+  .modal::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 10px 0;}
   .modal h1{font-family:var(--mono);font-size:1.3rem;color:var(--ink);margin-bottom:1rem;}
   .modal h1 span{color:var(--gold);}
   .modal p{color:var(--ink-dim);line-height:1.7;margin-bottom:1rem;font-size:.92rem;}
@@ -179,6 +227,12 @@
   .modal .btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--teal);color:#04140a;border:none;border-radius:6px;padding:.8rem 1.4rem;font-family:var(--mono);font-weight:700;font-size:.85rem;cursor:pointer;}
   .modal .btn:hover{background:#5cf0e0;}
   .modal .btn-secondary{background:none;border:1px solid var(--line);color:var(--ink-dim);margin-left:.7rem;}
+  .codex-section{margin-bottom:1.4rem;}
+  .codex-section h2{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--neon-cyan);margin-bottom:.6rem;}
+  .codex-rank{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.7rem;color:var(--gold);margin-bottom:.5rem;}
+  .codex-recap{color:var(--ink-dim);line-height:1.7;white-space:pre-wrap;font-size:.86rem;}
+  .codex-commands{font-family:var(--mono);font-size:.78rem;line-height:1.8;color:var(--term-green);white-space:pre-wrap;background:#03110a;border:1px solid var(--term-green-dim);border-radius:6px;padding:.9rem 1rem;}
+  .codex-note{font-size:.68rem;color:var(--ink-dim);margin-top:.4rem;}
 
   .intro-modal-card{width:min(620px,100%);}
   .intro-hero{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.4rem;}
@@ -213,8 +267,8 @@
 
   /* ---- Selección de nivel ---- */
   .level-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin:1.4rem 0;}
-  .level-card{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:1.2rem;cursor:pointer;transition:border-color .2s,transform .2s;color:var(--ink);font-family:inherit;}
-  .level-card:hover:not(:disabled){border-color:var(--teal);transform:translateY(-3px);}
+  .level-card{text-align:left;background:var(--panel-2);border:1px solid var(--hud-line);border-radius:8px;padding:1.2rem;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;color:var(--ink);font-family:inherit;}
+  .level-card:hover:not(:disabled){border-color:var(--neon-cyan);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.4);}
   .level-card:disabled{opacity:.5;cursor:not-allowed;}
   .level-card .level-num{font-family:var(--mono);font-size:1.6rem;color:var(--teal-dim);margin-bottom:.4rem;}
   .level-card h3{font-family:var(--mono);font-size:.94rem;margin-bottom:.5rem;}
@@ -226,6 +280,8 @@
 </head>
 <body>
 
+<audio id="ambient-audio" src="/audio/cyberpunk-moonlight-sonata.mp3" loop preload="none"></audio>
+
 <div id="app">
   <header>
     <a class="back" href="/">← <span class="back-label">volver al club</span></a>
@@ -234,6 +290,7 @@
       <span><span class="dot"></span> <span id="level-label">NIVEL 1</span></span>
       <span id="timer">00:00</span>
       <button class="menu-btn" id="menu-btn" type="button">🎯 <span class="btn-label">niveles</span></button>
+      <button class="menu-btn" id="codex-toggle" type="button" aria-label="Abrir Codex de ayuda">📖 <span class="btn-label">codex</span></button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ <span class="btn-label">briefing</span></button>
       <button id="sound-toggle" type="button" aria-label="Silenciar sonidos">🔊</button>
     </div>
@@ -253,24 +310,32 @@
 
     <div id="stage-col">
       <canvas id="lvlup-matrix" class="lvlup-matrix" aria-hidden="true"></canvas>
-      <div class="mac-unit" id="game-mac">
-        <div class="mac-shadow"></div>
-        <div class="mac-case">
-          <div class="mac-vents"></div>
-          <div class="mac-bezel">
-            <div class="mac-screen">
-              <div class="mac-scanlines"></div>
-              <div id="scrollback"></div>
-              <div class="mac-screen-vignette"></div>
+      <div class="hud-frame game-hud-frame">
+        <div class="hud-corner tl"></div><div class="hud-corner tr"></div><div class="hud-corner bl"></div><div class="hud-corner br"></div>
+        <div class="hud-ticker"><span id="hud-ticker-text">NODE_CIE_84 &nbsp; UPLINK::ESTABLE &nbsp; 0x4F2A &nbsp; SCAN::ACTIVO &nbsp; NODE_CIE_84 &nbsp; UPLINK::ESTABLE &nbsp; 0x4F2A &nbsp; SCAN::ACTIVO</span></div>
+        <div class="level-transition" id="level-transition">
+          <div class="level-transition-label">DESCIFRANDO SIGUIENTE FASE…</div>
+          <div class="level-transition-bar"><i id="level-transition-fill"></i></div>
+        </div>
+        <div class="mac-unit" id="game-mac">
+          <div class="mac-shadow"></div>
+          <div class="mac-case">
+            <div class="mac-vents"></div>
+            <div class="mac-bezel">
+              <div class="mac-screen">
+                <div class="mac-scanlines"></div>
+                <div id="scrollback"></div>
+                <div class="mac-screen-vignette"></div>
+              </div>
+            </div>
+            <div class="mac-chin">
+              <div class="mac-disk-slot"></div>
+              <div class="mac-led" aria-hidden="true"></div>
+              <div class="mac-brand-plate">CIE · LAB-B</div>
             </div>
           </div>
-          <div class="mac-chin">
-            <div class="mac-disk-slot"></div>
-            <div class="mac-led" aria-hidden="true"></div>
-            <div class="mac-brand-plate">CIE · LAB-B</div>
-          </div>
+          <div class="mac-stand"></div>
         </div>
-        <div class="mac-stand"></div>
       </div>
 
       <div class="ingenioso-dock">
@@ -349,6 +414,24 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="codex-modal" hidden>
+  <div class="modal" style="width:min(620px,100%);">
+    <h1>📖 <span>Codex</span> del agente</h1>
+    <div class="codex-rank" id="codex-rank"></div>
+    <div class="codex-section">
+      <h2>// RECAPITULACIÓN</h2>
+      <div class="codex-recap" id="codex-recap"></div>
+    </div>
+    <div class="codex-section">
+      <h2>// SINTAXIS DE ESTE NIVEL</h2>
+      <div class="codex-commands" id="codex-commands"></div>
+      <div class="codex-note">Consultar el Codex no cuenta como pista — es referencia libre, cuando quieras.</div>
+    </div>
+    <p style="text-align:center;">📖 <a href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/blob/main/docs/teoria-operacion-laboratorio-b.md" target="_blank" rel="noopener">Lee la teoría completa de los 31 niveles →</a></p>
+    <button class="btn" id="codex-close" type="button">Cerrar</button>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -404,7 +487,7 @@
     + '<circle cx="35" cy="48" r="2.4" fill="#0f2620"/>'
     + '<circle cx="65" cy="48" r="9" fill="#04140a" stroke="#2fd8c9" stroke-width="1.5"/>'
     + '<circle cx="65" cy="48" r="5" fill="none" stroke="#2fd8c9" stroke-width="1"/>'
-    + '<circle cx="65" cy="48" r="2.2" fill="#39ff6a"/>'
+    + '<circle cx="65" cy="48" r="2.2" fill="#39ff6a" class="ing-cybereye"/>'
     + '<path d="M50 16 v-8" stroke="#2fd8c9" stroke-width="2" stroke-linecap="round"/>'
     + '<circle cx="50" cy="6" r="3" fill="#e8b23a"/>'
     + '</svg>';
@@ -527,6 +610,14 @@
       }
     }, 45);
   }
+  // ---- Ambiente cyberpunk de fondo (CC0 — ver public/audio/CREDITS.txt) ----
+  const ambientAudio = document.getElementById('ambient-audio');
+  if (ambientAudio) ambientAudio.volume = 0.14;
+  function syncAmbient(){
+    if (!ambientAudio) return;
+    if (soundOn) ambientAudio.play().catch(() => {});
+    else ambientAudio.pause();
+  }
   function setSoundUI(){
     soundToggle.textContent = soundOn ? '🔊' : '🔇';
     soundToggle.classList.toggle('muted', !soundOn);
@@ -537,6 +628,7 @@
     localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off');
     setSoundUI();
     if (soundOn) playTypeTick();
+    syncAmbient();
   });
   setSoundUI();
 
@@ -1214,23 +1306,26 @@
     31: 'EXAMEN FINAL — INFORME Y RECONOCIMIENTO [LAB-FICTICIO]\n\nCompila todo en un informe final. Este es el cierre de Kernel Cero (Operación Laboratorio-B) — desde la agente que no sabía qué buscar en el Nivel 1, hasta quien ' + MENTOR + ' envió a representar al club fuera de casa. Escribe el último comando, agente. Te lo ganaste.',
   };
   const RANKS = [
-    { max: 2, title: 'Recluta' },
-    { max: 6, title: 'Operador de Campo' },
-    { max: 10, title: 'Analista de Respuesta' },
-    { max: 13, title: 'Investigador Forense' },
-    { max: 17, title: 'Auditor Ofensivo' },
-    { max: 21, title: 'Arquitecto de Seguridad' },
-    { max: 30, title: 'Agente de Rescate' },
-    { max: 31, title: 'Héroe del Club' },
+    { max: 2, title: 'Recluta', icon: '🔰' },
+    { max: 6, title: 'Operador de Campo', icon: '🛡️' },
+    { max: 10, title: 'Analista de Respuesta', icon: '🚨' },
+    { max: 13, title: 'Investigador Forense', icon: '🔍' },
+    { max: 17, title: 'Auditor Ofensivo', icon: '🕸️' },
+    { max: 21, title: 'Arquitecto de Seguridad', icon: '📋' },
+    { max: 30, title: 'Agente de Rescate', icon: '☁️' },
+    { max: 31, title: 'Héroe del Club', icon: '🦸' },
   ];
   function rankForLevel(n){
-    for (const r of RANKS){ if (n <= r.max) return r.title; }
-    return RANKS[RANKS.length - 1].title;
+    for (const r of RANKS){ if (n <= r.max) return r; }
+    return RANKS[RANKS.length - 1];
   }
   function renderBriefing(){
     briefingText.textContent = BRIEFINGS[state.level] || '';
     levelLabel.textContent = state.level === 31 ? 'EXAMEN FINAL' : 'NIVEL ' + state.level;
-    if (rankBadge) rankBadge.textContent = '// RANGO: ' + rankForLevel(state.level).toUpperCase();
+    if (rankBadge){
+      const r = rankForLevel(state.level);
+      rankBadge.textContent = r.icon + ' RANGO: ' + r.title.toUpperCase();
+    }
     promptLabel.textContent = state.level === 1
       ? 'agente@labclub:' + (state.inHidden ? '~/.oculto' : '~') + '$'
       : 'agente@labclub:~$';
@@ -1569,12 +1664,14 @@
   function sayIngenioso(text, thinking){
     ingBubble.innerHTML = '<b>INGenioso:</b> ' + escapeHtml(text);
     ingBubble.className = 'ing-bubble-lg' + (thinking ? ' thinking' : '');
+    const dock = document.querySelector('.ingenioso-dock');
+    if (dock) dock.classList.toggle('thinking', Boolean(thinking));
   }
   async function askIngenioso(question){
     sayIngenioso('Dejame pensar...', true);
     const objs = objectivesFor(state.level);
     const pending = objs.find((o) => !o.done);
-    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Etapa pendiente: ' +
+    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Rango actual del jugador: ' + rankForLevel(state.level).title + '. Etapa pendiente: ' +
       (pending ? pending.label : 'todas completas, listo para avanzar de nivel') + '. Pistas ya usadas en este nivel: ' + state.hintsUsed + '.';
     try {
       const res = await fetch('/api/chat', {
@@ -4204,7 +4301,7 @@
         const objs = objectivesFor(state.level);
         if (!objs.every((o) => o.done)){ print('Todavía te faltan etapas de este nivel.', 'warn'); return true; }
         if (state.level >= 31){ print('Ya estás en el último nivel — completa el informe final para cerrar el juego.', 'info'); return true; }
-        goToLevel(state.level + 1);
+        playLevelTransition(() => goToLevel(state.level + 1));
         return true;
       }
       case '':
@@ -4316,7 +4413,8 @@
       btn.type = 'button';
       btn.className = 'level-card';
       btn.disabled = !prevDone;
-      btn.innerHTML = '<div class="level-num">' + String(lvl.n).padStart(2, '0') + '</div><h3>' + lvl.title + '</h3><p>' + lvl.desc + '</p><span class="level-status">' +
+      const rank = rankForLevel(lvl.n);
+      btn.innerHTML = '<div class="level-num">' + String(lvl.n).padStart(2, '0') + '</div><h3>' + lvl.title + '</h3><p>' + lvl.desc + '</p><div class="codex-rank" style="margin:.2rem 0 .5rem;">' + rank.icon + ' ' + rank.title + '</div><span class="level-status">' +
         (done ? 'Completo ✓' : prevDone ? 'Disponible' : '🔒 Completa el nivel anterior') + '</span>';
       btn.addEventListener('click', () => { if (prevDone) goToLevel(lvl.n); });
       container.appendChild(btn);
@@ -4325,6 +4423,25 @@
   function showLevelSelect(){
     renderLevelCards();
     levelSelectModal.hidden = false;
+  }
+  function prefersReducedMotion(){
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function playLevelTransition(onDone){
+    const overlay = document.getElementById('level-transition');
+    const fill = document.getElementById('level-transition-fill');
+    const frame = document.querySelector('.game-hud-frame');
+    if (!overlay || !fill || prefersReducedMotion()){ onDone(); return; }
+    overlay.classList.add('show');
+    fill.classList.remove('fill');
+    void fill.offsetWidth;
+    fill.classList.add('fill');
+    if (frame) frame.classList.add('glitch-shake');
+    setTimeout(() => { if (frame) frame.classList.remove('glitch-shake'); }, 700);
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      onDone();
+    }, 950);
   }
   function goToLevel(n){
     levelSelectModal.hidden = true;
@@ -4381,9 +4498,19 @@
   document.getElementById('intro-start').addEventListener('click', () => {
     introModal.hidden = true;
     playTensionSting();
+    syncAmbient();
     showLevelSelect();
   });
   document.getElementById('menu-btn').addEventListener('click', showLevelSelect);
+  function showCodex(){
+    const r = rankForLevel(state.level);
+    document.getElementById('codex-rank').textContent = r.icon + ' ' + r.title + ' — Nivel ' + state.level;
+    document.getElementById('codex-recap').textContent = BRIEFINGS[state.level] || '';
+    document.getElementById('codex-commands').textContent = (HELP_TEXT[state.level] || []).join('\n');
+    document.getElementById('codex-modal').hidden = false;
+  }
+  document.getElementById('codex-toggle').addEventListener('click', showCodex);
+  document.getElementById('codex-close').addEventListener('click', () => { document.getElementById('codex-modal').hidden = true; });
 
   document.getElementById('restart-btn').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
