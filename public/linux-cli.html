@@ -53,6 +53,13 @@
   }
 
   #app{display:flex;flex-direction:column;min-height:100vh;}
+  @media (min-width:761px){
+    html, body{height:100%;overflow:hidden;}
+    #app{height:100vh;}
+    main{min-height:0;}
+    aside{height:100%;}
+    #stage-col{height:100%;overflow-y:auto;}
+  }
 
   header{flex-shrink:0;display:flex;align-items:center;gap:1rem;padding:.8rem 1.4rem;background:var(--panel-2);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;}
   header a.back{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);text-decoration:none;flex-shrink:0;}
@@ -95,8 +102,12 @@
     #aside-toggle{display:inline-flex;}
   }
 
-  /* ---- Barra de instrucciones + input, fija sobre el teclado en móvil ---- */
-  .current-step{display:none;}
+  /* ---- Barra de instrucciones: siempre visible junto al input, en cualquier pantalla ---- */
+  .current-step{display:flex;gap:.5rem;align-items:flex-start;font-family:var(--mono);font-size:.78rem;line-height:1.5;color:var(--term-green);background:rgba(57,255,106,.06);border:1px solid var(--teal-dim);border-radius:6px;padding:.6rem .8rem;margin-bottom:.6rem;width:min(880px,94vw);animation:current-step-in .3s ease;}
+  .current-step b{color:var(--gold);flex-shrink:0;}
+  @keyframes current-step-in{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  @media (prefers-reduced-motion: reduce){.current-step{animation:none;}}
+  @media (min-width:1024px){.current-step{width:clamp(760px,58vw,1000px);}}
   @media (max-width:760px){
     header{padding:.5rem .6rem;gap:.4rem;flex-wrap:nowrap;}
     header a.back{font-size:.85rem;white-space:nowrap;}
@@ -114,8 +125,7 @@
     .mac-chin{height:1.9em;}
 
     #action-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--panel-2);border-top:1px solid var(--line);padding:.6rem .7rem calc(.55rem + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.4);}
-    .current-step{display:flex;gap:.4rem;align-items:flex-start;font-family:var(--mono);font-size:.72rem;line-height:1.4;color:var(--term-green);background:rgba(57,255,106,.06);border:1px solid var(--teal-dim);border-radius:6px;padding:.5rem .65rem;margin-bottom:.5rem;}
-    .current-step b{color:var(--gold);flex-shrink:0;}
+    .current-step{width:100%;font-size:.72rem;padding:.5rem .65rem;}
     .cmd-row{width:100%;margin:0;}
     .cmd-hint{display:none;}
   }
@@ -171,6 +181,10 @@
   .line.tip::before{content:'💡 ';}
   .line.warn{color:var(--danger);}
   .line.ethic{display:block;background:rgba(232,178,58,.08);border:1px solid var(--gold);border-radius:6px;padding:.6em .8em;color:var(--gold);margin:.5em 0;}
+  .line.intrusion{display:block;background:rgba(255,32,121,.08);border:1px solid var(--neon-magenta);border-radius:6px;padding:.6em .8em;color:#ff6fb0;margin:.5em 0;animation:intrusion-glitch .4s steps(3) 2;}
+  .line.intrusion::before{content:'⚠ TRANSMISIÓN NO IDENTIFICADA ⚠\A';white-space:pre;display:block;font-size:.68em;letter-spacing:.1em;color:var(--neon-magenta);margin-bottom:.3em;}
+  @keyframes intrusion-glitch{0%{transform:translate(0);}25%{transform:translate(-2px,1px);filter:hue-rotate(15deg);}50%{transform:translate(2px,-1px);filter:hue-rotate(-15deg);}75%{transform:translate(-1px,0);}100%{transform:translate(0);}}
+  @media (prefers-reduced-motion: reduce){.line.intrusion{animation:none;}}
   .line.success{color:var(--term-green);font-weight:700;}
 
   /* ---- INGenioso, junto a la computadora ---- */
@@ -233,6 +247,20 @@
   .codex-recap{color:var(--ink-dim);line-height:1.7;white-space:pre-wrap;font-size:.86rem;}
   .codex-commands{font-family:var(--mono);font-size:.78rem;line-height:1.8;color:var(--term-green);white-space:pre-wrap;background:#03110a;border:1px solid var(--term-green-dim);border-radius:6px;padding:.9rem 1rem;}
   .codex-note{font-size:.68rem;color:var(--ink-dim);margin-top:.4rem;}
+
+  /* ---- Ventana flotante de historia: diálogo + instrucción, distintos estilos ---- */
+  .story-modal-card{width:min(720px,100%);}
+  .story-kicker{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--neon-cyan);margin-bottom:1rem;}
+  .story-dialogue{font-family:var(--sans);font-size:1.05rem;line-height:1.85;color:#eafffb;white-space:pre-wrap;margin-bottom:1.6rem;min-height:3em;}
+  .story-dialogue b{color:var(--gold);}
+  .story-cursor{display:inline-block;color:var(--neon-cyan);animation:blink .8s steps(1) infinite;}
+  .story-cursor.done{display:none;}
+  .story-instruction{font-family:var(--mono);font-size:.86rem;color:var(--term-green);background:rgba(57,255,106,.06);border:1px solid var(--term-green-dim);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:1.6rem;line-height:1.7;opacity:0;transition:opacity .4s ease;}
+  .story-instruction.show{opacity:1;}
+  .story-instruction b{color:var(--gold);}
+  .story-modal-card .btn{width:100%;justify-content:center;font-size:.92rem;opacity:0;pointer-events:none;transition:opacity .4s ease;}
+  .story-modal-card .btn.show{opacity:1;pointer-events:auto;}
+  @media (prefers-reduced-motion: reduce){.story-cursor{animation:none;}}
 
   .intro-modal-card{width:min(620px,100%);}
   .intro-hero{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.4rem;}
@@ -432,6 +460,15 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="story-modal" hidden>
+  <div class="modal story-modal-card">
+    <div class="story-kicker" id="story-kicker">// BRIEFING — NIVEL 1</div>
+    <div class="story-dialogue" id="story-dialogue"><span id="story-dialogue-text"></span><span class="story-cursor" id="story-cursor">▋</span></div>
+    <div class="story-instruction" id="story-instruction"></div>
+    <button class="btn" id="story-continue" type="button">Adelante, hacker →</button>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -557,16 +594,19 @@
     beep(783.99, 0.16, { type: 'square', vol: 0.08, delay: 0.18 });
   }
   function playVictoryJingle(){
+    setAmbientMood('victory', 6500);
     [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((f, i) => {
       beep(f, 0.18, { type: 'square', vol: 0.08, delay: i * 0.15 });
     });
   }
   function playTensionSting(){
+    setAmbientMood('tension', 7000);
     [220, 233.08, 220, 277.18, 220, 329.63].forEach((f, i) => {
       beep(f, 0.14, { type: 'sawtooth', vol: 0.045, delay: i * 0.11 });
     });
   }
   function playLevelClearFanfare(){
+    setAmbientMood('victory', 3800);
     [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
       beep(f, 0.2, { type: 'square', vol: 0.075, delay: i * 0.11 });
     });
@@ -610,12 +650,44 @@
       }
     }, 45);
   }
-  // ---- Ambiente cyberpunk de fondo (CC0 — ver public/audio/CREDITS.txt) ----
+  // ---- Ambiente cyberpunk de fondo (CC0 — ver public/audio/CREDITS.txt), con estado de ánimo dinámico ----
   const ambientAudio = document.getElementById('ambient-audio');
   if (ambientAudio) ambientAudio.volume = 0.14;
+  let ambientFilter = null, ambientGain = null, ambientGraphReady = false, ambientMoodTimer = null;
+  function initAmbientGraph(){
+    if (ambientGraphReady || !ambientAudio || !soundOn) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaElementSource(ambientAudio);
+      ambientFilter = audioCtx.createBiquadFilter();
+      ambientFilter.type = 'lowpass';
+      ambientFilter.frequency.value = 2200;
+      ambientGain = audioCtx.createGain();
+      ambientGain.gain.value = 1;
+      source.connect(ambientFilter).connect(ambientGain).connect(audioCtx.destination);
+      ambientGraphReady = true;
+    } catch (e) { /* navegador sin soporte: el audio sigue sonando directo, sin ánimo dinámico */ }
+  }
+  const AMBIENT_MOODS = {
+    calm:    { freq: 1300, gain: .8 },
+    normal:  { freq: 2200, gain: 1 },
+    tension: { freq: 3800, gain: 1.25 },
+    victory: { freq: 6200, gain: 1.4 },
+  };
+  function setAmbientMood(mood, holdMs){
+    if (!ambientGraphReady || !ambientFilter || !ambientGain || !audioCtx) return;
+    const p = AMBIENT_MOODS[mood] || AMBIENT_MOODS.normal;
+    const t = audioCtx.currentTime;
+    ambientFilter.frequency.cancelScheduledValues(t);
+    ambientFilter.frequency.setTargetAtTime(p.freq, t, .7);
+    ambientGain.gain.cancelScheduledValues(t);
+    ambientGain.gain.setTargetAtTime(p.gain, t, .7);
+    clearTimeout(ambientMoodTimer);
+    if (mood !== 'normal') ambientMoodTimer = setTimeout(() => setAmbientMood('normal'), holdMs || 4200);
+  }
   function syncAmbient(){
     if (!ambientAudio) return;
-    if (soundOn) ambientAudio.play().catch(() => {});
+    if (soundOn){ initAmbientGraph(); ambientAudio.play().catch(() => {}); }
     else ambientAudio.pause();
   }
   function setSoundUI(){
@@ -1162,7 +1234,7 @@
     l11: { sshin: false, statCheck: false, fileType: false, stringsCheck: false, bashHistory: false, exifCheck: false, correlateLog: false, docIndicios: false },
     l12: { isolate: false, imageCreate: false, hashImage: false, verifyHash: false, custodyLabel: false, transfer: false, custodyReceive: false, verifyFinal: false },
     l13: { newCase: false, index: false, timeline: false, recoverDeleted: false, search: false, reportDraft: false, verifyReport: false, finalReport: false },
-    l14: { fingerprint: false, fullscan: false, dirbrute: false, robots: false, versionleak: false, gitexposed: false, gitdump: false, docRecon: false },
+    l14: { fingerprint: false, fullscan: false, dirbrute: false, robots: false, versionleak: false, gitexposed: false, gitdump: false, docRecon: false, intrusionShown: false },
     l15: { pkgjson: false, npmaudit: false, npminfo: false, cvedetail: false, crossref: false, npmversions: false, riskdoc: false, findingdoc: false },
     l16: { authcheck: false, msfopen: false, moduleselect: false, targetconfig: false, poc: false, sessionclose: false, evidence: false, confirmdoc: false },
     l17: { patchattempt: false, removepkg: false, installalt: false, reaudit: false, regression: false, summary: false, severity: false, finalreport: false },
@@ -1669,6 +1741,7 @@
   }
   async function askIngenioso(question){
     sayIngenioso('Dejame pensar...', true);
+    setAmbientMood('calm', 6000);
     const objs = objectivesFor(state.level);
     const pending = objs.find((o) => !o.done);
     const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Rango actual del jugador: ' + rankForLevel(state.level).title + '. Etapa pendiente: ' +
@@ -4352,13 +4425,25 @@
       return;
     }
 
-    const doneAfter = objectivesFor(levelAtStart).filter((o) => o.done).length;
+    const objsAfter = objectivesFor(levelAtStart);
+    const doneAfter = objsAfter.filter((o) => o.done).length;
     if (doneAfter > doneBefore){
       mistakeStreak = 0;
       celebrate();
+      announceNext(objsAfter);
       if (doneAfter >= totalStages && doneBefore < totalStages && levelAtStart !== 31){ playLevelClearFanfare(); runLevelUpMatrix(2600); }
     } else {
       registerMistake();
+    }
+  }
+  function announceNext(objs){
+    const pending = objs.find((o) => !o.done);
+    const praise = HACKER_PRAISE[Math.floor(Math.random() * HACKER_PRAISE.length)];
+    if (pending){
+      const n = objs.findIndex((o) => o.id === pending.id) + 1;
+      sayIngenioso(praise + ' Siguiente — Etapa ' + n + '/' + objs.length + ': ' + pending.label);
+    } else {
+      sayIngenioso(praise + ' ¡Nivel completo! Escribe "siguiente" cuando quieras avanzar.');
     }
   }
   function registerMistake(){
@@ -4443,7 +4528,61 @@
       onDone();
     }, 950);
   }
+  // ---- Ventana flotante de historia: diálogo (máquina de escribir) + instrucción ----
+  let storySkip = null;
+  function typewriter(el, text, cursorEl, onDone){
+    if (prefersReducedMotion()){
+      el.textContent = text;
+      if (cursorEl) cursorEl.classList.add('done');
+      onDone && onDone();
+      return function(){};
+    }
+    let i = 0;
+    el.textContent = '';
+    const timer = setInterval(() => {
+      el.textContent += text[i];
+      i++;
+      if (i >= text.length){
+        clearInterval(timer);
+        if (cursorEl) cursorEl.classList.add('done');
+        onDone && onDone();
+      }
+    }, 16);
+    return function skip(){
+      clearInterval(timer);
+      el.textContent = text;
+      if (cursorEl) cursorEl.classList.add('done');
+      onDone && onDone();
+    };
+  }
+  function showStoryModal(kicker, dialogue, instruction, onContinue){
+    const modal = document.getElementById('story-modal');
+    const kickerEl = document.getElementById('story-kicker');
+    const textEl = document.getElementById('story-dialogue-text');
+    const cursorEl = document.getElementById('story-cursor');
+    const instrEl = document.getElementById('story-instruction');
+    const btn = document.getElementById('story-continue');
+    kickerEl.textContent = kicker;
+    instrEl.innerHTML = '<b>Instrucción:</b> ' + escapeHtml(instruction);
+    instrEl.classList.remove('show');
+    btn.classList.remove('show');
+    cursorEl.classList.remove('done');
+    modal.hidden = false;
+    storySkip = typewriter(textEl, dialogue, cursorEl, () => {
+      instrEl.classList.add('show');
+      btn.classList.add('show');
+    });
+    btn.onclick = () => {
+      modal.hidden = true;
+      storySkip = null;
+      onContinue();
+    };
+  }
+  const storyDialogueEl = document.getElementById('story-dialogue');
+  if (storyDialogueEl) storyDialogueEl.addEventListener('click', () => { if (storySkip){ storySkip(); storySkip = null; } });
+
   function goToLevel(n){
+    const prevLevel = state.level;
     levelSelectModal.hidden = true;
     state.level = n;
     state.inHidden = false;
@@ -4455,16 +4594,52 @@
     const meta = LEVEL_META[n - 1];
     const objs = objectivesFor(n);
     const fresh = !objs[0].done;
-    if (fresh && [6, 13, 21, 31].includes(n)) playTensionSting();
-    print(meta.banner, 'success');
-    if (fresh){
-      print('Escribe "' + meta.firstCmd + '" para empezar.', 'tip');
-      sayIngenioso(meta.startMsg);
-    } else {
-      print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
-      sayIngenioso('¡Seguimos donde lo dejamos! Si quieres repasar, hazme clic en cualquier etapa del panel izquierdo.');
+
+    function startTerminal(){
+      if (fresh && [6, 13, 21, 31].includes(n)) playTensionSting();
+      print(meta.banner, 'success');
+      if (fresh){
+        print('Escribe "' + meta.firstCmd + '" para empezar.', 'tip');
+        sayIngenioso(meta.startMsg);
+      } else {
+        print('Retomando tu progreso. Escribe "ayuda" si necesitas recordar los comandos.', 'tip');
+        sayIngenioso('¡Seguimos donde lo dejamos! Si quieres repasar, hazme clic en cualquier etapa del panel izquierdo.');
+      }
+      let nextBeatDelay = 400;
+      if (fresh && n === 14 && !state.l14.intrusionShown){
+        state.l14.intrusionShown = true;
+        saveState();
+        setTimeout(() => {
+          print('no creas que esto termina porque me encontraste una vez, agente. sigue jugando a auditar tu clubcito — ' + ATTACKER_HANDLE, 'intrusion');
+          setAmbientMood('tension', 5000);
+          sayIngenioso('...eso no lo mandé yo, y no debería poder ver esta terminal. Le aviso a ' + MENTOR + ' ahora mismo — mientras tanto, sigamos, pero con más cuidado.');
+        }, 1600);
+        nextBeatDelay = 4600;
+      }
+      if (fresh && n > prevLevel){
+        const prevRank = rankForLevel(prevLevel).title;
+        const newRank = rankForLevel(n);
+        if (newRank.title !== prevRank){
+          setTimeout(() => sayIngenioso(rankUpMessage(newRank)), nextBeatDelay);
+        }
+      }
+      input.focus();
     }
-    input.focus();
+
+    if (fresh && BRIEFINGS[n]){
+      const rank = rankForLevel(n);
+      showStoryModal(rank.icon + ' NIVEL ' + n + ' · ' + (meta.title || '').toUpperCase(), BRIEFINGS[n], meta.startMsg, startTerminal);
+    } else {
+      startTerminal();
+    }
+  }
+  function rankUpMessage(rank){
+    const hints = state.hintsUsed;
+    let note;
+    if (hints === 0) note = 'Ni una pista en todo el camino — confías en tu propio criterio, y se nota.';
+    else if (hints <= 5) note = 'Usaste las pistas justas, en el momento justo — así piensa alguien que sabe cuándo pedir ayuda.';
+    else note = 'No te achicaste ante lo que no sabías — preguntaste, ajustaste, y llegaste igual. Eso vale más que no trabarse nunca.';
+    return '🎖️ Subiste de rango: ' + rank.icon + ' ' + rank.title.toUpperCase() + '. ' + note;
   }
 
   function finishGame(){
@@ -4483,6 +4658,7 @@
       div.innerHTML = '<b>' + name + '</b><span>' + desc + '</span>';
       cs.appendChild(div);
     });
+    print('CASO ' + ATTACKER_HANDLE.toUpperCase() + ' — ESTADO: CERRADO. Reportado a las autoridades competentes tras la remediación del Nivel 17. No hubo más transmisiones. [LAB-FICTICIO]', 'success');
     sayIngenioso('¡LO LOGRASTE! 🎉🐻⚙️ De reconocimiento a héroe del club, pasando por peritaje, pentesting, ISO 27001 y el rescate de ' + UNIV_ABBR + '. Completaste Kernel Cero. Estoy orgulloso, agente.');
     completeModal.hidden = false;
   }
