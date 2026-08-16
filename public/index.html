@@ -346,7 +346,16 @@
   #ai-panel.open{display:flex;}
   #ai-backdrop{position:fixed;inset:0;z-index:94;background:rgba(2,6,4,.72);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s ease;}
   #ai-backdrop.show{opacity:1;pointer-events:auto;}
-  #ai-panel.maximized{inset:3vh 3vw;bottom:auto;left:auto;width:auto;height:auto;max-height:none;z-index:200;border-radius:16px;box-shadow:0 30px 100px rgba(0,0,0,.75);}
+  #ai-panel.maximized{inset:0;width:auto;height:auto;max-height:none;z-index:200;border-radius:0;box-shadow:none;}
+  body.ai-lock-scroll{overflow:hidden;}
+  #ai-panel.maximized .ai-bar{padding-top:calc(.7rem + env(safe-area-inset-top));}
+  #ai-panel.maximized #holo-stage{padding:clamp(1rem,4vh,2.2rem) 0 clamp(.7rem,2vh,1.2rem);}
+  #ai-panel.maximized #holo-main{width:min(26vh,200px);height:min(26vh,200px);}
+  #ai-panel.maximized #ai-messages{padding:1.2rem clamp(1rem,5vw,3rem);font-size:clamp(.9rem,1.4vw,1.05rem);max-width:860px;margin:0 auto;width:100%;gap:1.1rem;}
+  #ai-panel.maximized .ai-msg{font-size:inherit;}
+  #ai-panel.maximized .ai-msg.bot{background:none;border:none;max-width:100%;padding:.1rem 0;font-family:var(--sans);line-height:1.65;}
+  #ai-panel.maximized .ai-msg.user{max-width:75%;border-radius:14px;}
+  #ai-panel.maximized .ai-input-row{padding:1rem clamp(1rem,5vw,3rem) calc(1.2rem + env(safe-area-inset-bottom));max-width:860px;margin:0 auto;width:100%;}
   .ai-bar{display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--panel-2);border-bottom:1px solid var(--line);flex-shrink:0;}
   .ai-bar .ai-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);flex-shrink:0;}
   .ai-bar .ai-title{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--ink);}
@@ -369,11 +378,7 @@
     .ai-bar .ai-title{font-size:.84rem;}
     #ai-messages{padding:1.4rem 1.6rem;font-size:.92rem;}
     .ai-input-row{padding:1rem 1.2rem;}
-    #ai-panel.maximized #holo-main{width:min(38vh,260px);height:min(38vh,260px);}
-    #ai-panel.maximized #holo-stage{padding:2.2rem 0 1.4rem;}
-    #ai-panel.maximized #ai-messages{padding:2rem min(10vw,3rem);font-size:1rem;max-width:900px;margin:0 auto;width:100%;}
-    #ai-panel.maximized .ai-msg{font-size:1rem;}
-    #ai-panel.maximized .ai-input-row{padding:1.2rem min(10vw,3rem) 1.6rem;max-width:900px;margin:0 auto;width:100%;}
+    #ai-panel.maximized #holo-main{width:min(34vh,240px);height:min(34vh,240px);}
   }
 
   .holo-ring{fill:none;stroke:var(--teal);}
@@ -387,7 +392,14 @@
   [data-state="thinking"] .holo-ing-cybereye, [data-state="speaking"] .holo-ing-cybereye{animation:holo-cybereye-pulse 1s ease-in-out infinite;}
   @keyframes holo-cybereye-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-  #ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;font-size:.84rem;line-height:1.5;}
+  #ai-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.7rem;font-size:.84rem;line-height:1.5;scrollbar-width:thin;scrollbar-color:var(--teal-dim) transparent;}
+  #ai-messages::-webkit-scrollbar{width:8px;}
+  #ai-messages::-webkit-scrollbar-track{background:transparent;}
+  #ai-messages::-webkit-scrollbar-thumb{background:var(--teal-dim);border-radius:4px;}
+  #ai-messages::-webkit-scrollbar-thumb:hover{background:var(--teal);}
+  .ai-scroll-btn{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%) translateY(8px);background:var(--panel);border:1px solid var(--hud-line);color:var(--teal);border-radius:20px;padding:.4rem .95rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.03em;cursor:pointer;opacity:0;pointer-events:none;transition:all .25s ease;z-index:6;display:flex;align-items:center;gap:.4rem;box-shadow:0 10px 24px rgba(0,0,0,.45);}
+  .ai-scroll-btn.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  .ai-scroll-btn:hover{border-color:var(--teal);}
   .ai-msg{max-width:88%;padding:.55rem .75rem;border-radius:8px;white-space:pre-wrap;word-break:break-word;}
   .ai-msg.bot{align-self:flex-start;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);font-family:var(--mono);font-size:.8rem;}
   .ai-msg.user{align-self:flex-end;background:var(--teal-dim);color:var(--ink);}
@@ -798,6 +810,7 @@
   <div id="ai-messages">
     <div class="ai-msg bot">Hola 👋 soy el asistente del Club de Ingeniería. Pregúntame sobre las áreas técnicas, los proyectos o cómo unirte.</div>
   </div>
+  <button type="button" class="ai-scroll-btn" id="ai-scroll-btn">↓ Ir al final</button>
   <form class="ai-input-row" id="ai-form">
     <input id="ai-input" type="text" placeholder="Escribe tu pregunta..." autocomplete="off" maxlength="500" required>
     <button type="submit" id="ai-send">Enviar</button>
@@ -1122,13 +1135,28 @@
   const history = [];
   let sending = false;
 
+  function nearBottom(){
+    return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 80;
+  }
   function addMessage(text, cls){
+    const wasNearBottom = nearBottom();
     const div = document.createElement('div');
     div.className = 'ai-msg ' + cls;
     div.textContent = text;
     messagesEl.appendChild(div);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (wasNearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+    else scrollBtn.classList.add('show');
     return div;
+  }
+  const scrollBtn = document.getElementById('ai-scroll-btn');
+  if (scrollBtn){
+    scrollBtn.addEventListener('click', () => {
+      messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+      scrollBtn.classList.remove('show');
+    });
+    messagesEl.addEventListener('scroll', () => {
+      if (nearBottom()) scrollBtn.classList.remove('show');
+    });
   }
 
   const maxBtn = document.getElementById('ai-max');
@@ -1145,6 +1173,7 @@
     const willMax = on ?? !panel.classList.contains('maximized');
     panel.classList.toggle('maximized', willMax);
     backdrop.classList.toggle('show', willMax);
+    document.body.classList.toggle('ai-lock-scroll', willMax);
     maxBtn.textContent = willMax ? '⤡' : '⛶';
     maxBtn.title = willMax ? 'Restaurar tamaño' : 'Pantalla completa';
     maxBtn.setAttribute('aria-label', maxBtn.title);
