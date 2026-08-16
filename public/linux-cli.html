@@ -75,6 +75,9 @@
   #sound-toggle{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .55rem;font-size:.8rem;cursor:pointer;line-height:1;}
   #sound-toggle:hover{color:var(--teal);border-color:var(--teal-dim);}
   #sound-toggle.muted{opacity:.5;}
+  #voice-toggle{background:none;border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;padding:.35rem .55rem;font-size:.8rem;cursor:pointer;line-height:1;}
+  #voice-toggle:hover{color:var(--neon-cyan);border-color:var(--hud-line);}
+  #voice-toggle.on{color:var(--neon-cyan);border-color:var(--hud-line);}
 
   main{flex:1;display:flex;}
   aside{width:280px;flex-shrink:0;background:var(--panel-2);border-right:1px solid var(--line);padding:1.2rem;overflow-y:auto;font-family:var(--mono);font-size:.78rem;}
@@ -249,9 +252,10 @@
   .codex-note{font-size:.68rem;color:var(--ink-dim);margin-top:.4rem;}
 
   /* ---- Ventana flotante de historia: diálogo + instrucción, distintos estilos ---- */
-  .story-modal-card{width:min(720px,100%);}
+  .story-modal-card{width:min(920px,94vw);padding:clamp(1.6rem,4vw,2.8rem);max-height:90vh;}
+  @media (min-width:1024px){.story-modal-card{width:min(980px,88vw);}}
   .story-kicker{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--neon-cyan);margin-bottom:1rem;}
-  .story-dialogue{font-family:var(--sans);font-size:1.05rem;line-height:1.85;color:#eafffb;white-space:pre-wrap;margin-bottom:1.6rem;min-height:3em;}
+  .story-dialogue{font-family:var(--sans);font-size:clamp(1.05rem,1.6vw,1.22rem);line-height:1.9;color:#eafffb;white-space:pre-wrap;margin-bottom:1.6rem;min-height:3em;}
   .story-dialogue b{color:var(--gold);}
   .story-cursor{display:inline-block;color:var(--neon-cyan);animation:blink .8s steps(1) infinite;}
   .story-cursor.done{display:none;}
@@ -320,6 +324,7 @@
       <button class="menu-btn" id="menu-btn" type="button">🎯 <span class="btn-label">niveles</span></button>
       <button class="menu-btn" id="codex-toggle" type="button" aria-label="Abrir Codex de ayuda">📖 <span class="btn-label">codex</span></button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ <span class="btn-label">briefing</span></button>
+      <button id="voice-toggle" type="button" aria-label="Activar voz de INGenioso" aria-pressed="false" title="Activar voz de INGenioso">🔇</button>
       <button id="sound-toggle" type="button" aria-label="Silenciar sonidos">🔊</button>
     </div>
   </header>
@@ -555,7 +560,62 @@
   const currentStepEl = document.getElementById('current-step');
   const actionBar = document.getElementById('action-bar');
   const soundToggle = document.getElementById('sound-toggle');
+  const voiceToggle = document.getElementById('voice-toggle');
   const rankBadge = document.getElementById('rank-badge');
+
+  // ---- Voz de INGenioso (Web Speech API nativa — sin costo ni cuota), tono cyborg/robot ----
+  const speechSynth = window.speechSynthesis;
+  let voiceOn = false;
+  let cachedGameVoices = [];
+  const VOICE_MALE_HINTS = /jorge|diego|carlos|pablo|juan|male|hombre|varón|masculin/i;
+  const VOICE_FEMALE_HINTS = /mónica|monica|paulina|helena|sabina|laura|elena|female|mujer|femenin/i;
+  function refreshGameVoices(){ cachedGameVoices = speechSynth ? speechSynth.getVoices() : []; }
+  if (speechSynth){
+    refreshGameVoices();
+    speechSynth.addEventListener('voiceschanged', refreshGameVoices);
+  }
+  function pickGameVoice(){
+    if (!speechSynth) return null;
+    const voices = cachedGameVoices.length ? cachedGameVoices : speechSynth.getVoices();
+    if (!voices.length) return null;
+    const esVoices = voices.filter((v) => /^es/i.test(v.lang));
+    const pool = esVoices.length ? esVoices : voices;
+    return pool.find((v) => VOICE_MALE_HINTS.test(v.name) && /google|neural|premium|natural/i.test(v.name))
+        || pool.find((v) => VOICE_MALE_HINTS.test(v.name))
+        || pool.find((v) => /google|neural|premium|natural/i.test(v.name) && !VOICE_FEMALE_HINTS.test(v.name))
+        || pool.find((v) => !VOICE_FEMALE_HINTS.test(v.name))
+        || pool[0]
+        || null;
+  }
+  // Tono cyborg: más grave y más mecánico/parejo que la voz "Jarvis" del sitio principal —
+  // distinto a propósito, porque aquí INGenioso es literalmente un oso cyborg dentro del juego.
+  function speakGame(text){
+    if (!voiceOn || !speechSynth || !text) return;
+    speechSynth.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    const voice = pickGameVoice();
+    if (voice) utter.voice = voice;
+    utter.lang = (voice && voice.lang) || 'es-ES';
+    utter.pitch = .55;
+    utter.rate = 1.04;
+    speechSynth.speak(utter);
+  }
+  function setVoiceUI(){
+    if (!voiceToggle) return;
+    voiceToggle.textContent = voiceOn ? '🔊' : '🔇';
+    voiceToggle.classList.toggle('on', voiceOn);
+    voiceToggle.setAttribute('aria-pressed', String(voiceOn));
+    voiceToggle.title = voiceOn ? 'Silenciar voz de INGenioso' : 'Activar voz de INGenioso';
+    voiceToggle.setAttribute('aria-label', voiceToggle.title);
+  }
+  if (voiceToggle){
+    voiceToggle.addEventListener('click', () => {
+      voiceOn = !voiceOn;
+      setVoiceUI();
+      if (!voiceOn && speechSynth) speechSynth.cancel();
+    });
+    setVoiceUI();
+  }
 
   // ---- Sonidos retro (sintetizados, sin archivos externos) ----
   const SOUND_KEY = 'linuxGameSound';
@@ -1738,6 +1798,7 @@
     ingBubble.className = 'ing-bubble-lg' + (thinking ? ' thinking' : '');
     const dock = document.querySelector('.ingenioso-dock');
     if (dock) dock.classList.toggle('thinking', Boolean(thinking));
+    if (!thinking) speakGame(text);
   }
   async function askIngenioso(question){
     sayIngenioso('Dejame pensar...', true);
@@ -4568,6 +4629,7 @@
     btn.classList.remove('show');
     cursorEl.classList.remove('done');
     modal.hidden = false;
+    speakGame(dialogue);
     storySkip = typewriter(textEl, dialogue, cursorEl, () => {
       instrEl.classList.add('show');
       btn.classList.add('show');
@@ -4575,6 +4637,7 @@
     btn.onclick = () => {
       modal.hidden = true;
       storySkip = null;
+      if (speechSynth) speechSynth.cancel();
       onContinue();
     };
   }
@@ -4583,6 +4646,7 @@
 
   function goToLevel(n){
     const prevLevel = state.level;
+    if (speechSynth) speechSynth.cancel();
     levelSelectModal.hidden = true;
     state.level = n;
     state.inHidden = false;
