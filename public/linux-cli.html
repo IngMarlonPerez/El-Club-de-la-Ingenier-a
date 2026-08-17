@@ -990,11 +990,11 @@
       const key = name.split(' ')[0].split('/')[0].split('(')[0].trim();
       if (key.length > 2){
         const re = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-        if (re.test(q)){ sayIngenioso(desc + ' (referencia: ' + name + ')'); return true; }
+        if (re.test(q)){ helpResponse(desc + ' (referencia: ' + name + ')'); return true; }
       }
     }
     for (const [re, answer] of CONCEPT_GLOSSARY){
-      if (re.test(q)){ sayIngenioso(answer); return true; }
+      if (re.test(q)){ helpResponse(answer); return true; }
     }
     return false;
   }
@@ -2169,15 +2169,22 @@
     const objs = objectivesFor(state.level);
     return objs.find((o) => !o.done);
   }
+  // La ayuda (pistas, "no entiendo", respuestas de la IA) responde directo en la CLI —
+  // es donde el jugador está mirando cuando pregunta, no en la burbuja de arriba (que
+  // ahora es solo el eco/voz de INGenioso, no el canal principal de ayuda).
+  function helpResponse(text){
+    print(text, 'tip');
+    sayIngenioso(text);
+  }
   function hintForObjective(objId){
     const bucket = (HINTS[state.level] && HINTS[state.level][objId]) || [];
     const text = bucket.length ? bucket[Math.min(state.hintsUsed, bucket.length - 1)] : 'Sigue explorando con los comandos que ya conoces.';
-    sayIngenioso(text);
+    helpResponse(text);
     if (bucket.length){ state.hintsUsed++; saveState(); }
   }
   function giveHint(){
     const unmet = currentUnmetObjective();
-    if (!unmet){ sayIngenioso('Ya completaste todas las etapas de este nivel. Usa "🎯 niveles" arriba para elegir el siguiente.'); return; }
+    if (!unmet){ helpResponse('Ya completaste todas las etapas de este nivel. Usa "🎯 niveles" arriba para elegir el siguiente.'); return; }
     hintForObjective(unmet.id);
   }
 
@@ -2191,6 +2198,7 @@
   }
   async function askIngenioso(question){
     sayIngenioso('Dejame pensar...', true);
+    print('INGenioso está pensando...', 'info');
     setAmbientMood('calm', 6000);
     const objs = objectivesFor(state.level);
     const pending = objs.find((o) => !o.done);
@@ -2204,9 +2212,9 @@
       });
       const data = await res.json();
       const clean = res.ok ? String(data.reply || '').replace(/^\s*ingenioso\s*:\s*/i, '') : (data.error || 'No pude responder, intenta de nuevo.');
-      sayIngenioso(clean);
+      helpResponse(clean);
     } catch (err) {
-      sayIngenioso('No pude conectarme para pensar la respuesta. Revisa tu conexión.');
+      helpResponse('No pude conectarme para pensar la respuesta. Revisa tu conexión.');
     }
   }
 
