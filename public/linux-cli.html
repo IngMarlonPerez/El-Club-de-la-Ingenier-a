@@ -113,8 +113,10 @@
     #aside-toggle{display:inline-flex;}
   }
 
-  /* ---- Barra de instrucciones: siempre visible junto al input, en cualquier pantalla ---- */
-  .current-step{display:flex;gap:.5rem;align-items:flex-start;font-family:var(--mono);font-size:.78rem;line-height:1.5;color:var(--term-green);background:rgba(57,255,106,.06);border:1px solid var(--teal-dim);border-radius:6px;padding:.6rem .8rem;margin-bottom:.6rem;width:var(--game-w, min(880px,94vw));animation:current-step-in .3s ease;}
+  /* ---- Barra de instrucciones: redundante desde v3.1 (la instrucción vive en la ventana/
+     burbuja flotante de INGenioso) — se mantiene el JS que la alimenta por si se reactiva,
+     pero queda oculta para no duplicar contenido en pantalla. ---- */
+  .current-step{display:none;gap:.5rem;align-items:flex-start;font-family:var(--mono);font-size:.78rem;line-height:1.5;color:var(--term-green);background:rgba(57,255,106,.06);border:1px solid var(--teal-dim);border-radius:6px;padding:.6rem .8rem;margin-bottom:.6rem;width:var(--game-w, min(880px,94vw));animation:current-step-in .3s ease;}
   .current-step b{color:var(--gold);flex-shrink:0;}
   @keyframes current-step-in{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
   @media (prefers-reduced-motion: reduce){.current-step{animation:none;}}
@@ -290,12 +292,14 @@
   .story-holo.speaking .sh-r2{animation-duration:8.5s;}
   .story-holo.speaking .sh-r3{animation-duration:10.5s;}
   .story-holo.speaking .sh-glow{animation-duration:1.1s;}
-  .story-holo-face{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54%;height:54%;animation:ing-bob 3.4s ease-in-out infinite;}
+  .story-holo-face{position:absolute;top:50%;left:50%;width:54%;height:54%;animation:ing-bob-centered 3.4s ease-in-out infinite;}
+  @keyframes ing-bob-centered{0%,100%{transform:translate(-50%,-50%) translateY(0);}50%{transform:translate(-50%,-50%) translateY(-5px);}}
   .story-holo-face svg{width:100%;height:100%;}
   .story-holo.speaking .story-holo-face .ing-cybereye{animation:ing-cybereye-pulse .9s ease-in-out infinite;}
   .story-holo-status{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;color:var(--neon-cyan);opacity:.7;}
   @media (prefers-reduced-motion: reduce){
-    .sh-rotor, .sh-glow, .story-holo-face, .story-holo.speaking .story-holo-face .ing-cybereye{animation:none;}
+    .sh-rotor, .sh-glow, .story-holo.speaking .story-holo-face .ing-cybereye{animation:none;}
+    .story-holo-face{animation:none;transform:translate(-50%,-50%);}
   }
 
   /* ---- v3.0: burbuja flotante de instrucciones (patrón "chat head", como #ai-float/#ai-panel de index.html) ---- */
@@ -306,16 +310,6 @@
   @keyframes instr-float-pulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.5);}50%{box-shadow:0 8px 22px rgba(0,0,0,.5), 0 0 0 8px rgba(0,243,255,.18);}}
   @media (min-width:761px){ #instr-float{right:1.4rem;bottom:auto;top:50%;transform:translateY(-50%);width:64px;height:64px;} }
   @media (prefers-reduced-motion: reduce){ #instr-float.pulse{animation:none;} }
-
-  #story-modal.light{background:transparent;pointer-events:none;padding:0;}
-  #story-modal.light .story-modal-card{position:fixed;pointer-events:auto;right:1rem;bottom:216px;left:auto;top:auto;transform:none;margin:0;width:min(360px,90vw);max-height:56vh;flex-direction:column;align-items:center;text-align:center;padding:1.4rem 1.5rem;gap:1rem;}
-  #story-modal.light .story-holo{width:84px;}
-  #story-modal.light .story-body{width:100%;}
-  #story-modal.light .story-dialogue{font-size:.92rem;line-height:1.6;min-height:0;margin-bottom:1rem;}
-  #story-modal.light .story-instruction{margin-bottom:1.1rem;}
-  @media (min-width:761px){
-    #story-modal.light .story-modal-card{right:6rem;bottom:auto;top:50%;transform:translateY(-50%);width:min(400px,30vw);max-height:70vh;}
-  }
 
   .intro-modal-card{width:min(620px,100%);}
   .intro-hero{display:flex;align-items:center;gap:1.2rem;margin-bottom:1.4rem;}
@@ -4581,9 +4575,9 @@
     const rank = rankForLevel(state.level);
     if (pending){
       const n = objs.findIndex((o) => o.id === pending.id) + 1;
-      showInstrPanel(rank.icon + ' NIVEL ' + state.level + ' · ETAPA ' + n + '/' + objs.length, praise, pending.label, { blocking: false });
+      showInstrPanel(rank.icon + ' NIVEL ' + state.level + ' · ETAPA ' + n + '/' + objs.length, praise, pending.label);
     } else {
-      showInstrPanel(rank.icon + ' NIVEL ' + state.level, praise + ' ¡Nivel completo!', 'Escribe "siguiente" cuando quieras avanzar.', { blocking: false });
+      showInstrPanel(rank.icon + ' NIVEL ' + state.level, praise + ' ¡Nivel completo!', 'Escribe "siguiente" cuando quieras avanzar.');
     }
   }
   function registerMistake(){
@@ -4703,15 +4697,15 @@
       onDone && onDone();
     };
   }
-  // ---- v3.0: panel único de instrucciones, dos modos ----
-  // blocking (brief de nivel, comportamiento original): fondo oscuro, centrado, bloquea el
-  // juego hasta continuar. No-blocking (cada etapa acertada): panel liviano anclado junto al
-  // botón flotante #instr-float, no bloquea el input — "Entendido" lo minimiza en vez de
-  // destruirlo, y #instr-float lo vuelve a abrir para releer en cualquier momento.
+  // ---- v3.1: un solo modo de ventana de instrucciones, siempre grande ----
+  // Cada paso acertado (y cada inicio de nivel) abre la MISMA ventana grande y bloqueante
+  // (fondo oscuro, centrada, tamaño de la historia) — el jugador lee, presiona "Entendido"
+  // y recién ahí escribe el siguiente comando. Al cerrarla, se minimiza a #instr-float (el
+  // mismo ícono siempre, posición fija a la derecha) para poder releerla cuando quiera —
+  // reabrir muestra el mismo contenido, sin máquina de escribir (instantáneo).
   let lastInstrState = null;
   function showInstrPanel(kicker, dialogue, instruction, opts){
     opts = opts || {};
-    const blocking = opts.blocking !== false;
     const instant = !!opts.instant;
     const onContinue = opts.onContinue || function(){};
     lastInstrState = { kicker: kicker, dialogue: dialogue, instruction: instruction };
@@ -4727,9 +4721,8 @@
     instrEl.innerHTML = '<b>Instrucción:</b> ' + escapeHtml(instruction);
     instrEl.classList.remove('show');
     btn.classList.remove('show');
-    btn.textContent = blocking ? 'Adelante, hacker →' : 'Entendido';
+    btn.textContent = 'Entendido, a la consola →';
     cursorEl.classList.remove('done');
-    modal.classList.toggle('light', !blocking);
     modal.hidden = false;
     holo.classList.add('speaking');
     holoStatus.textContent = 'NARRANDO...';
@@ -4752,7 +4745,6 @@
   }
   function minimizeInstrPanel(){
     const modal = document.getElementById('story-modal');
-    const wasLight = modal.classList.contains('light');
     modal.hidden = true;
     storySkip = null;
     const holo = document.getElementById('story-holo');
@@ -4760,23 +4752,16 @@
     if (speechSynth) speechSynth.cancel();
     const floatBtn = document.getElementById('instr-float');
     if (floatBtn){
-      floatBtn.classList.add('show');
-      if (wasLight){
-        floatBtn.classList.add('pulse');
-        setTimeout(() => floatBtn.classList.remove('pulse'), 5600);
-      }
+      floatBtn.classList.add('show', 'pulse');
+      setTimeout(() => floatBtn.classList.remove('pulse'), 5600);
     }
   }
   const instrFloatBtn = document.getElementById('instr-float');
   if (instrFloatBtn){
     instrFloatBtn.addEventListener('click', () => {
-      const modal = document.getElementById('story-modal');
-      if (!modal.hidden && modal.classList.contains('light')){
-        minimizeInstrPanel();
-      } else if (lastInstrState){
-        instrFloatBtn.classList.remove('pulse');
-        showInstrPanel(lastInstrState.kicker, lastInstrState.dialogue, lastInstrState.instruction, { blocking: false, instant: true });
-      }
+      if (!lastInstrState) return;
+      instrFloatBtn.classList.remove('pulse');
+      showInstrPanel(lastInstrState.kicker, lastInstrState.dialogue, lastInstrState.instruction, { instant: true, onContinue: function(){} });
     });
   }
   const storyDialogueEl = document.getElementById('story-dialogue');
@@ -4866,7 +4851,7 @@
 
     if (fresh && BRIEFINGS[n]){
       const rank = rankForLevel(n);
-      showInstrPanel(rank.icon + ' NIVEL ' + n + ' · ' + (meta.title || '').toUpperCase(), BRIEFINGS[n], meta.startMsg, { blocking: true, onContinue: startTerminal });
+      showInstrPanel(rank.icon + ' NIVEL ' + n + ' · ' + (meta.title || '').toUpperCase(), BRIEFINGS[n], meta.startMsg, { onContinue: startTerminal });
     } else {
       startTerminal();
     }
