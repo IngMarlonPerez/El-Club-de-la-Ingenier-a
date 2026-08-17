@@ -219,12 +219,12 @@ export default function BuscadorEmpleo() {
         )}
       </div>
 
-      <a className="junior-card" href="https://www.linkedin.com/in/danielgbaena/" target="_blank" rel="noopener noreferrer">
+      <a className="junior-card" href="https://www.linkedin.com/in/marlon-p%C3%A9rez-06ab32303/" target="_blank" rel="noopener noreferrer">
         <div className="junior-card-icon">📬</div>
         <div>
           <h2>JuniorJobs — boletín semanal para perfiles júnior</h2>
-          <p>Cada domingo, Daniel selecciona a mano decenas de ofertas para perfiles con 0-2 años de experiencia en España, Europa y LATAM. No reproducimos su lista aquí (es contenido curado por él) — visita su boletín directamente.</p>
-          <span className="junior-card-link">Conectar en LinkedIn →</span>
+          <p>Cada domingo, JuniorJobs selecciona a mano decenas de ofertas para perfiles con 0-2 años de experiencia en España, Europa y LATAM. No reproducimos su lista aquí (es contenido curado por su autor) — compartimos el boletín en nuestro LinkedIn, míralo ahí.</p>
+          <span className="junior-card-link">Ver en LinkedIn →</span>
         </div>
       </a>
 
@@ -238,7 +238,7 @@ export default function BuscadorEmpleo() {
         .bg-glow{position:fixed;width:60vw;height:60vw;max-width:640px;max-height:640px;border-radius:50%;filter:blur(90px);opacity:.12;pointer-events:none;z-index:0;}
         .bg-glow-a{background:#2fd8c9;top:-20vw;right:-15vw;}
         .bg-glow-b{background:#e8b23a;bottom:-10vw;left:-20vw;opacity:.08;}
-        .page > *{position:relative;z-index:1;}
+        .page > *:not(.bg-glow){position:relative;z-index:1;}
 
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
         .back{color:#2fd8c9;text-decoration:none;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.8rem;}
