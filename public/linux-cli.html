@@ -423,7 +423,7 @@
       <button class="menu-btn" id="codex-toggle" type="button" aria-label="Abrir Codex de ayuda">📖 <span class="btn-label">codex</span></button>
       <button class="menu-btn" id="shop-toggle" type="button" aria-label="Abrir la Tienda del Laboratorio">🏪 <span class="btn-label" id="shop-wallet-label">₿0</span></button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ <span class="btn-label">briefing</span></button>
-      <button id="voice-toggle" type="button" aria-label="Activar voz de INGenioso" aria-pressed="false" title="Activar voz de INGenioso">🔇</button>
+      <button id="voice-toggle" type="button" aria-label="Activar voz de INGenioso" aria-pressed="false" title="Activar voz de INGenioso">🤐</button>
       <button id="sound-toggle" type="button" aria-label="Silenciar sonidos">🔊</button>
     </div>
   </header>
@@ -762,7 +762,10 @@
   }
   function setVoiceUI(){
     if (!voiceToggle) return;
-    voiceToggle.textContent = voiceOn ? '🔊' : '🔇';
+    // Íconos distintos a los de #sound-toggle (🔊/🔇) a propósito: son dos controles
+    // distintos (voz narrada de INGenioso vs. sonido ambiente/SFX) y con el mismo par de
+    // parlantes se veían como un botón duplicado.
+    voiceToggle.textContent = voiceOn ? '🗣️' : '🤐';
     voiceToggle.classList.toggle('on', voiceOn);
     voiceToggle.setAttribute('aria-pressed', String(voiceOn));
     voiceToggle.title = voiceOn ? 'Silenciar voz de INGenioso' : 'Activar voz de INGenioso';

@@ -422,7 +422,7 @@ El endpoint `/api/chat` actúa como **proxy seguro** e inteligente entre el fron
 | Aspecto | Detalle |
 |:--------|:--------|
 | **Método** | `POST` |
-| **Modelos de IA** | Primario: Groq (`llama-3.1-8b-instant`) <br> Respaldo: NVIDIA NIM (`llama-3.1-nemotron-70b-instruct`) |
+| **Modelos de IA** | Primario: Groq (`openai/gpt-oss-20b`) <br> Respaldo 1: OpenRouter (`openrouter/free`) <br> Respaldo 2: NVIDIA NIM (`meta/llama-3.1-8b-instruct`) |
 | **Control de Cuota** | Registro diario de mensajes en Supabase (`ia_uso_diario`) para control estricto de cuota gratuita. |
 | **Voz & UI** | Síntesis de voz interactiva mediante Web Speech API y visualización holográfica reactiva por GSAP. |
 | **Validación** | Zod — roles `user`/`assistant`, máx. 20 mensajes, 1000 chars c/u |

@@ -114,10 +114,16 @@ async function callGroq(messages) {
       Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      // llama-3.1-8b-instant fue retirado del catálogo de Groq (verificado ago/2026 vía
+      // GET /v1/models: ya no aparece). gpt-oss-20b es el reemplazo directo en velocidad/
+      // costo. Es un modelo "razonador": sin reasoning_effort:"low" gasta el presupuesto
+      // de tokens pensando y devuelve la respuesta vacía (probado en vivo) — con "low" y
+      // suficiente margen de tokens responde normal.
+      model: 'openai/gpt-oss-20b',
+      reasoning_effort: 'low',
       messages,
       temperature: 0.6,
-      max_tokens: 400,
+      max_tokens: 500,
     }),
   });
   if (!res.ok) {
@@ -158,7 +164,11 @@ async function callNvidia(messages) {
       Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'nvidia/llama-3.1-nemotron-70b-instruct',
+      // nvidia/llama-3.1-nemotron-70b-instruct sigue en el catálogo (GET /v1/models lo
+      // lista) pero su "function" de NIM ya no está provisionada para esta cuenta (404
+      // "Function ... Not found for account", verificado ago/2026). meta/llama-3.1-8b-
+      // instruct sí responde con esta cuenta — probado en vivo, HTTP 200 en ~150ms.
+      model: 'meta/llama-3.1-8b-instruct',
       messages,
       temperature: 0.6,
       max_tokens: 400,
