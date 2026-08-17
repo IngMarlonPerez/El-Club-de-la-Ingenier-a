@@ -342,7 +342,7 @@ npm start
 | `SUPABASE_SERVICE_ROLE_KEY` | ⚠️ | Clave de rol de servicio (privada) para bypass RLS en backend |
 | `JOOBLE_API_KEY` | ⚠️ | Clave de la API de Jooble para el Buscador de Empleo (`jooble.org/api/about`) |
 | `JOB_CACHE_TTL_HOURS` | ❌ | Horas de vigencia de la caché de búsquedas (por defecto: 1) |
-| `JOB_SCRAPER_CRON_HOURS` | ❌ | Cada cuántas horas corre el cron de Computrabajo (por defecto: 6) |
+| `JOB_SCRAPER_CRON_HOURS` | ❌ | No usada actualmente por el código — el cron corre 1 vez al día (`vercel.json`), el límite del plan Hobby de Vercel (máx. 1 ejecución/día por cron) |
 | `CRON_SECRET` | ⚠️ | Protege `pages/api/cron/scrape-jobs.js` — Vercel lo envía solo si está en las variables de entorno del proyecto |
 
 ```env
@@ -371,7 +371,7 @@ Agrega ofertas de empleo recientes (últimos 7 días) a partir de un formulario 
 | Fuente | Cómo se integra | Motivo |
 |---|---|---|
 | **Jooble** | API REST oficial, en vivo, en cada búsqueda | API pública real con cobertura confirmada en Ecuador — sin scraping. |
-| **Computrabajo Ecuador** | Scraping ligero, **solo desde el cron** (`pages/api/cron/scrape-jobs.js`, cada 6h por defecto), nunca en el request del usuario | Estructura HTML verificada manualmente antes de escribir el scraper; robots.txt no bloquea las páginas de listado usadas. |
+| **Computrabajo Ecuador** | Scraping ligero, **solo desde el cron** (`pages/api/cron/scrape-jobs.js`, 1 vez al día — límite del plan Hobby de Vercel), nunca en el request del usuario | Estructura HTML verificada manualmente antes de escribir el scraper; robots.txt no bloquea las páginas de listado usadas. |
 | **Multitrabajos** | Enlace directo al portal, no se scrapea | Su API interna está protegida por un reto anti-bot (Cloudflare) que bloquea peticiones simples — intentar evadirlo no es aceptable ni técnica ni éticamente. |
 | **Red Socio Empleo (gob.ec)** | Enlace oficial destacado, no se scrapea | Es la fuente más confiable por ser del gobierno, pero es una aplicación legacy con sesiones (JSF) — no es "scraping ligero", y además tiene mayor sensibilidad legal. Se prioriza mostrarla siempre, con advertencia, en vez de intentar extraer sus datos. |
 
