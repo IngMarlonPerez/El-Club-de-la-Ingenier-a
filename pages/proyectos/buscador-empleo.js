@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Head from 'next/head';
 
 const EXPERIENCIA_OPTIONS = [
@@ -21,6 +21,9 @@ const FUENTE_STYLE = {
   Computrabajo: { color: '#e8b23a', icon: '💼' },
 };
 
+const MAX_CV_TEXT_CHARS = 6000;
+const MAX_CV_FILE_BYTES = 8 * 1024 * 1024;
+
 function formatFecha(iso) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -36,6 +39,12 @@ function haceCuanto(iso) {
   if (dias <= 0) return 'Hoy';
   if (dias === 1) return 'Ayer';
   return `Hace ${dias} días`;
+}
+
+function matchedSkillsFor(oferta, skills) {
+  if (!skills.length) return [];
+  const haystack = `${oferta.titulo} ${oferta.empresa}`.toLowerCase();
+  return skills.filter((s) => haystack.includes(s.toLowerCase()));
 }
 
 function SkeletonCard({ delay }) {
@@ -61,9 +70,16 @@ export default function BuscadorEmpleo() {
   const formRef = useRef(null);
   const resultsRef = useRef(null);
 
-  const handleSubmit = useCallback(async function handleSubmit(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    if (carrera.trim().length < 2) {
+  // ---- Análisis de CV (opcional): sube un PDF, la IA lo lee y pre-llena esta misma
+  // búsqueda -- el CV se procesa en el navegador (pdf.js), solo el texto extraído viaja
+  // al servidor, nunca el PDF en sí, y nada se guarda.
+  const [cvStatus, setCvStatus] = useState('idle'); // idle | reading | analyzing | done | error
+  const [cvErrorMsg, setCvErrorMsg] = useState('');
+  const [cvSkills, setCvSkills] = useState([]);
+  const [cvResumen, setCvResumen] = useState('');
+
+  const runSearch = useCallback(async (filters) => {
+    if (!filters.carrera || filters.carrera.trim().length < 2) {
       setErrorMsg('Escribe tu carrera o profesión (al menos 2 letras).');
       setStatus('error');
       return;
@@ -75,7 +91,12 @@ export default function BuscadorEmpleo() {
       const res = await fetch('/api/jobs/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ carrera: carrera.trim(), experiencia, tipoEmpleo, ubicacion: ubicacion.trim() || undefined }),
+        body: JSON.stringify({
+          carrera: filters.carrera.trim(),
+          experiencia: filters.experiencia,
+          tipoEmpleo: filters.tipoEmpleo,
+          ubicacion: (filters.ubicacion && filters.ubicacion.trim()) || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -91,7 +112,12 @@ export default function BuscadorEmpleo() {
       setErrorMsg('No pudimos conectarnos. Revisa tu conexión e intenta de nuevo.');
       setStatus('error');
     }
-  }, [carrera, experiencia, tipoEmpleo, ubicacion]);
+  }, []);
+
+  const handleSubmit = useCallback(function handleSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    runSearch({ carrera, experiencia, tipoEmpleo, ubicacion });
+  }, [runSearch, carrera, experiencia, tipoEmpleo, ubicacion]);
 
   // Se ata el listener de "submit" directamente al DOM (en vez de depender solo del
   // onSubmit sintético de React) para blindar contra un envío nativo del formulario
@@ -105,6 +131,84 @@ export default function BuscadorEmpleo() {
     form.addEventListener('submit', onNativeSubmit, { capture: true });
     return () => form.removeEventListener('submit', onNativeSubmit, { capture: true });
   }, [handleSubmit]);
+
+  const onCvFileChange = useCallback(async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ''; // permite volver a elegir el mismo archivo si hace falta reintentar
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setCvErrorMsg('Ese archivo no es un PDF. Sube tu CV en formato PDF.');
+      setCvStatus('error');
+      return;
+    }
+    if (file.size > MAX_CV_FILE_BYTES) {
+      setCvErrorMsg('El PDF es muy grande (máximo 8MB).');
+      setCvStatus('error');
+      return;
+    }
+
+    setCvErrorMsg('');
+    setCvSkills([]);
+    setCvResumen('');
+    setCvStatus('reading');
+
+    let texto = '';
+    try {
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      const buffer = await file.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
+      for (let i = 1; i <= doc.numPages && texto.length < MAX_CV_TEXT_CHARS; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        texto += content.items.map((it) => it.str || '').join(' ') + '\n';
+      }
+    } catch (err) {
+      setCvErrorMsg('No pudimos leer ese PDF. Intenta con otro archivo o usa el formulario manual de abajo.');
+      setCvStatus('error');
+      return;
+    }
+
+    texto = texto.trim().slice(0, MAX_CV_TEXT_CHARS);
+    if (texto.length < 30) {
+      setCvErrorMsg('No encontramos texto en ese PDF (¿es una imagen escaneada?). Prueba con el formulario manual de abajo.');
+      setCvStatus('error');
+      return;
+    }
+
+    setCvStatus('analyzing');
+    try {
+      const res = await fetch('/api/jobs/analyze-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ textoCv: texto }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCvErrorMsg(data.error || 'No pudimos analizar el CV. Intenta de nuevo.');
+        setCvStatus('error');
+        return;
+      }
+      setCarrera(data.carrera);
+      setExperiencia(data.experiencia);
+      setTipoEmpleo(data.tipoEmpleo);
+      setCvSkills(data.habilidadesClave || []);
+      setCvResumen(data.resumenPerfil || '');
+      setCvStatus('done');
+      runSearch({ carrera: data.carrera, experiencia: data.experiencia, tipoEmpleo: data.tipoEmpleo, ubicacion });
+    } catch (err) {
+      setCvErrorMsg('No pudimos conectarnos para analizar el CV. Revisa tu conexión e intenta de nuevo.');
+      setCvStatus('error');
+    }
+  }, [runSearch, ubicacion]);
+
+  const displayOfertas = useMemo(() => {
+    if (!cvSkills.length) return ofertas;
+    return [...ofertas].sort((a, b) => matchedSkillsFor(b, cvSkills).length - matchedSkillsFor(a, cvSkills).length);
+  }, [ofertas, cvSkills]);
+
+  const cvBusy = cvStatus === 'reading' || cvStatus === 'analyzing';
 
   return (
     <div className="page">
@@ -145,6 +249,33 @@ export default function BuscadorEmpleo() {
       <div className="warn-box">
         <span className="warn-icon">⚠️</span>
         <span><b>Antes de postular en cualquier oferta</b> (aquí o en cualquier portal): nunca compartas datos bancarios, pagues por un &quot;proceso de selección&quot;, ni entregues copias de tu cédula sin confirmar que la empresa es real. Ante la duda, prioriza siempre ofertas de Red Socio Empleo o empresas que puedas verificar de forma independiente.</span>
+      </div>
+
+      <div className="cv-card">
+        <div className="cv-card-icon">📄</div>
+        <div className="cv-card-body">
+          <h2>¿Tienes tu CV a mano?</h2>
+          <p>Súbelo en PDF y dejamos que la IA rellene la búsqueda por ti, resaltando qué ofertas coinciden más con tu perfil. Tu CV se procesa en tu navegador — solo el texto extraído se envía a la IA para el análisis, nunca se guarda en nuestros servidores.</p>
+          <label className={`cv-upload-btn${cvBusy ? ' busy' : ''}`}>
+            {cvBusy ? (
+              <><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo PDF…' : 'Analizando con IA…'}</>
+            ) : (
+              <>📎 Subir mi CV (PDF)</>
+            )}
+            <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
+          </label>
+          {cvErrorMsg && <p className="cv-error">⚠️ {cvErrorMsg}</p>}
+          {cvStatus === 'done' && (
+            <div className="cv-result">
+              {cvResumen && <p className="cv-resumen"><b>Perfil detectado:</b> {cvResumen}</p>}
+              {cvSkills.length > 0 && (
+                <div className="cv-skills">
+                  {cvSkills.map((s, i) => <span key={i} className="skill-chip">{s}</span>)}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <form className="search-form" ref={formRef} noValidate>
@@ -192,12 +323,13 @@ export default function BuscadorEmpleo() {
           </div>
         )}
 
-        {ofertas.length > 0 && (
+        {displayOfertas.length > 0 && (
           <>
-            <div className="results-count">{ofertas.length} oferta{ofertas.length === 1 ? '' : 's'} encontrada{ofertas.length === 1 ? '' : 's'}</div>
+            <div className="results-count">{displayOfertas.length} oferta{displayOfertas.length === 1 ? '' : 's'} encontrada{displayOfertas.length === 1 ? '' : 's'}</div>
             <ul className="results">
-              {ofertas.map((o, i) => {
+              {displayOfertas.map((o, i) => {
                 const fuenteStyle = FUENTE_STYLE[o.fuente] || { color: '#8fa89c', icon: '📋' };
+                const coincidencias = matchedSkillsFor(o, cvSkills);
                 return (
                   <li key={i} className="result-card" style={{ '--accent': fuenteStyle.color }}>
                     <div className="result-top">
@@ -210,7 +342,10 @@ export default function BuscadorEmpleo() {
                       <span className="meta-item">📍 {o.ubicacion}</span>
                       {o.tipoEmpleo && <span className="meta-item">🕒 {o.tipoEmpleo}</span>}
                     </p>
-                    <a href={o.url} target="_blank" rel="noopener noreferrer" className="result-link">Ver oferta original →</a>
+                    {coincidencias.length > 0 && (
+                      <p className="match-chip">✓ Coincide en: {coincidencias.join(', ')}</p>
+                    )}
+                    <a href={o.url} target="_blank" rel="noopener noreferrer" className="result-link">Ver oferta y postular →</a>
                   </li>
                 );
               })}
@@ -263,8 +398,23 @@ export default function BuscadorEmpleo() {
         .gov-card p{font-size:.84rem;color:#8fa89c;line-height:1.55;margin:0 0 .6rem;}
         .gov-card-link{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.78rem;color:#e8b23a;}
 
-        .warn-box{display:flex;gap:.7rem;align-items:flex-start;background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.35);border-radius:10px;padding:1rem 1.2rem;font-size:.82rem;line-height:1.6;color:#eef3f6;margin-bottom:2rem;}
+        .warn-box{display:flex;gap:.7rem;align-items:flex-start;background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.35);border-radius:10px;padding:1rem 1.2rem;font-size:.82rem;line-height:1.6;color:#eef3f6;margin-bottom:1.4rem;}
         .warn-icon{flex-shrink:0;}
+
+        .cv-card{display:flex;gap:1rem;align-items:flex-start;background:linear-gradient(135deg,#101a2c,#0d1e22);border:1px dashed #2fd8c9;border-radius:12px;padding:1.3rem;margin-bottom:1.4rem;}
+        .cv-card-icon{font-size:2.1rem;flex-shrink:0;}
+        .cv-card-body{flex:1;min-width:0;}
+        .cv-card h2{font-size:1rem;color:#eef3f6;margin:0 0 .4rem;}
+        .cv-card p{font-size:.84rem;color:#8fa89c;line-height:1.55;margin:0 0 .8rem;}
+        .cv-upload-btn{display:inline-flex;align-items:center;gap:.5rem;background:#2fd8c9;color:#04140a;border-radius:8px;padding:.7rem 1.1rem;font-weight:700;font-family:'IBM Plex Mono','Courier New',monospace;cursor:pointer;font-size:.85rem;transition:transform .15s,box-shadow .15s;}
+        .cv-upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(47,216,201,.25);}
+        .cv-upload-btn.busy{cursor:wait;opacity:.85;}
+        .spinner-dark{border-color:rgba(4,20,10,.35);border-top-color:#04140a;}
+        .cv-error{font-size:.82rem;color:#ff9f9f;margin-top:.7rem;}
+        .cv-result{margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
+        .cv-resumen{font-size:.84rem;color:#eef3f6;line-height:1.5;margin:0 0 .6rem;}
+        .cv-skills{display:flex;flex-wrap:wrap;gap:.4rem;}
+        .skill-chip{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.7rem;color:#2fd8c9;background:rgba(47,216,201,.1);border:1px solid rgba(47,216,201,.3);border-radius:20px;padding:.25rem .6rem;}
 
         .search-form{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;background:#101a2c;border:1px solid #1d2b42;border-radius:14px;padding:1.6rem;margin-bottom:1.4rem;box-shadow:0 20px 50px rgba(0,0,0,.25);}
         .search-form label{display:flex;flex-direction:column;gap:.5rem;font-size:.8rem;color:#8fa89c;grid-column:span 1;}
@@ -294,8 +444,9 @@ export default function BuscadorEmpleo() {
         .badge{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.66rem;font-weight:700;color:#04140a;padding:.25rem .55rem;border-radius:5px;white-space:nowrap;}
         .result-date{font-size:.72rem;color:#5c7267;font-family:'IBM Plex Mono','Courier New',monospace;}
         .result-card h3{font-size:1.02rem;margin:0 0 .5rem;line-height:1.35;}
-        .result-meta{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.82rem;color:#8fa89c;margin:0 0 .7rem;}
+        .result-meta{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.82rem;color:#8fa89c;margin:0 0 .5rem;}
         .meta-item{white-space:nowrap;}
+        .match-chip{font-size:.76rem;color:#e8b23a;margin:0 0 .6rem;}
         .result-link{color:#2fd8c9;text-decoration:none;font-size:.82rem;font-family:'IBM Plex Mono','Courier New',monospace;}
         .result-link:hover{text-decoration:underline;}
 
@@ -322,7 +473,7 @@ export default function BuscadorEmpleo() {
           .field-carrera{grid-column:span 1;}
           .search-form button{grid-column:span 1;}
           .hero-facts{gap:1.4rem;}
-          .gov-card,.junior-card{flex-direction:column;}
+          .gov-card,.junior-card,.cv-card{flex-direction:column;}
         }
       `}</style>
     </div>
