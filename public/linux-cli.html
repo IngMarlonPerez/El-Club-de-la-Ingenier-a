@@ -1804,12 +1804,7 @@
     l31: { compileAll: false, execSummary: false, techFindings: false, recommendations: false, finalReport: false, thankYouLetter: false, clubRecognition: false, closeGame: false },
     completed: false,
     economy: {
-      // Beca inicial del laboratorio: cada partida nueva arranca con un capital generoso
-      // para poder curiosear la tienda desde el minuto uno. No cuenta como "ganado" (por
-      // eso bytecoinLifetime arranca en 0) — ese contador solo refleja lo que el jugador
-      // gana jugando de verdad. Los precios de UPGRADES están calibrados para que este
-      // capital no alcance para comprar todo el árbol: sigue haciendo falta jugar.
-      bytecoin: 1000000,
+      bytecoin: 0,
       bytecoinLifetime: 0,
       reputation: 0,
       transactions: [],
@@ -1822,6 +1817,7 @@
       levelHintsUsed: 0,
       levelErrors: 0,
       levelStartedAt: Date.now(),
+      becaInicialOtorgada: false,
     },
   };
   // Compatibilidad con partidas guardadas antes de la economía virtual: si el estado
@@ -1829,10 +1825,25 @@
   // el resto del progreso.
   if (!state.economy){
     state.economy = {
-      bytecoin: 1000000, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
+      bytecoin: 0, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
       levelFirstDone: {}, episodeRepAwarded: {}, gameCompleteRepAwarded: false,
       replayDate: null, replayCountToday: 0, levelHintsUsed: 0, levelErrors: 0, levelStartedAt: Date.now(),
+      becaInicialOtorgada: false,
     };
+  }
+  // Beca inicial del laboratorio: se otorga UNA sola vez, sin importar si la partida es
+  // nueva o venía de antes de que existiera esta beca (por eso vive fuera del literal de
+  // arriba — un save ya existente con "economy" creado, aunque sea con bytecoin:0, nunca
+  // pasa por ninguno de los dos bloques anteriores). No cuenta como "ganado" — por eso usa
+  // el campo directo en vez de awardBytecoin(), que sí incrementa bytecoinLifetime (ese
+  // contador debe reflejar solo lo ganado jugando). Los precios de UPGRADES están
+  // calibrados para que este capital no alcance para comprar todo el árbol de una vez.
+  if (state.economy.becaInicialOtorgada === undefined) state.economy.becaInicialOtorgada = false;
+  if (!state.economy.becaInicialOtorgada){
+    state.economy.bytecoin += 1000000;
+    state.economy.becaInicialOtorgada = true;
+    pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'earn', currency: 'BC', amount: 1000000, reason: '🎁 Beca de bienvenida del laboratorio', referenceId: 'beca_inicial' });
+    saveState();
   }
 
   function loadState(){

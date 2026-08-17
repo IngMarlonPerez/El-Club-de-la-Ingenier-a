@@ -37,7 +37,10 @@
     --sans:'IBM Plex Sans', -apple-system, sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  /* El header es position:fixed (~66px de alto) — sin este offset, saltar a un ancla
+     (#about, #projects, etc.) deja el título de la sección tapado detrás del header. */
   html{scroll-behavior:smooth;}
+  section[id],#hero{scroll-margin-top:88px;}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
   ::selection{background:var(--teal);color:#04140a;}
   img{max-width:100%;display:block;}
@@ -256,6 +259,30 @@
   .game-hero-glow{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, rgba(57,255,106,.18), transparent 70%);filter:blur(10px);}
   @keyframes game-hero-bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
   @media (min-width:1600px){.game-hero-mascot{width:340px;}}
+
+  /* Segunda tarjeta destacada (Buscador de Empleo) — mismo tamaño y estructura que
+     .proj-featured/.game-hero-* de arriba (mismo padding, radio, corner-brackets,
+     grid 1.2fr/.8fr, escalas tipográficas), solo con acento teal/oro en vez de verde
+     para diferenciarla sin romper la simetría de tamaño entre ambas tarjetas. */
+  .job-featured{border:1px solid var(--teal-dim);border-radius:14px;background:repeating-linear-gradient(to bottom, rgba(47,216,201,0.025) 0px, transparent 2px, transparent 4px), radial-gradient(ellipse at 80% 30%, rgba(232,178,58,.08), transparent 60%), #030f14;position:relative;overflow:hidden;padding:2.6rem clamp(1.4rem,4vw,3.2rem);box-shadow:0 0 0 1px rgba(47,216,201,.05), 0 30px 70px rgba(0,0,0,.4);margin-top:1.8rem;}
+  .job-featured::before,.job-featured::after{content:'';position:absolute;width:20px;height:20px;pointer-events:none;z-index:2;}
+  .job-featured::before{top:-1px;left:-1px;border-top:2px solid var(--neon-cyan);border-left:2px solid var(--neon-cyan);border-radius:14px 0 0 0;}
+  .job-featured::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--neon-cyan);border-right:2px solid var(--neon-cyan);border-radius:0 0 14px 0;}
+  .job-hero-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:3rem;align-items:center;position:relative;}
+  @media (max-width:860px){.job-hero-inner{grid-template-columns:1fr;text-align:center;}}
+  .job-hero-copy .sec-tag{color:var(--teal);}
+  .job-hero-copy h2{font-family:var(--mono);font-size:clamp(1.6rem,3.4vw,2.5rem);color:var(--ink);margin:.8rem 0 1.2rem;line-height:1.2;}
+  .job-hero-copy p{color:var(--ink-dim);line-height:1.7;max-width:52ch;margin-bottom:1.8rem;}
+  @media (max-width:860px){.job-hero-copy p{margin-left:auto;margin-right:auto;}}
+  .job-hero-copy strong{color:var(--teal);}
+  .job-roadmap{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:1.6rem;}
+  @media (max-width:860px){.job-roadmap{justify-content:center;}}
+  .job-roadmap::before{content:'FUENTES:';font-family:var(--mono);font-size:.62rem;color:var(--ink-dim);letter-spacing:.08em;margin-right:.2rem;}
+  .jm-step{width:26px;height:26px;border-radius:50%;background:rgba(47,216,201,.08);border:1px solid var(--teal-dim);display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;line-height:1;}
+  .job-hero-art{position:relative;display:flex;align-items:center;justify-content:center;}
+  .job-hero-icon{width:min(280px,70%);filter:drop-shadow(0 0 30px rgba(47,216,201,.35));animation:game-hero-bob 3.6s ease-in-out infinite;}
+  .job-hero-glow{position:absolute;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, rgba(47,216,201,.18), transparent 70%);filter:blur(10px);}
+  @media (min-width:1600px){.job-hero-icon{width:340px;}}
 
   #team{border-top:1px solid var(--line);}
   .team-card{display:grid;grid-template-columns:220px 1fr;gap:2.6rem;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2.4rem;}
@@ -602,12 +629,43 @@
       </div>
     </div>
 
+    <a href="/proyectos/buscador-empleo" class="job-featured" style="display:block;text-decoration:none;color:inherit;">
+      <div class="job-hero-inner">
+        <div class="job-hero-copy">
+          <div class="sec-tag">💼 PROYECTO DESTACADO — BUSCADOR DE EMPLEO</div>
+          <h2>Tu próxima oportunidad, a un formulario de distancia</h2>
+          <p>Filtra por carrera, experiencia y tipo de empleo: agregamos ofertas recientes de <strong>Jooble</strong> y <strong>Computrabajo</strong>, y te llevamos directo a <strong>Red Socio Empleo</strong>, el portal oficial del Ministerio del Trabajo de Ecuador — la fuente más confiable que existe. Con alertas de seguridad para que nunca caigas en una oferta falsa.</p>
+          <span class="btn btn-primary">Buscar empleo →</span>
+          <div class="job-roadmap" aria-hidden="true">
+            <span class="jm-step" title="Filtros de búsqueda">🔍</span>
+            <span class="jm-step" title="Jooble">🌐</span>
+            <span class="jm-step" title="Computrabajo">💼</span>
+            <span class="jm-step" title="Red Socio Empleo (portal oficial)">🏛️</span>
+            <span class="jm-step" title="JuniorJobs (perfiles júnior)">📬</span>
+          </div>
+        </div>
+        <div class="job-hero-art" aria-hidden="true">
+          <div class="job-hero-glow"></div>
+          <svg viewBox="0 0 100 100" class="job-hero-icon">
+            <rect x="20" y="40" width="60" height="42" rx="8" fill="#0f2620" stroke="#2fd8c9" stroke-width="2.5"/>
+            <path d="M40 40 v-8 a10 10 0 0 1 20 0 v8" fill="none" stroke="#2fd8c9" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="44" y="52" width="12" height="8" rx="2" fill="#173229" stroke="#e8b23a" stroke-width="1.5"/>
+            <line x1="20" y1="58" x2="80" y2="58" stroke="#2fd8c9" stroke-width="1.5" opacity=".5"/>
+            <circle cx="70" cy="30" r="16" fill="#04140a" stroke="#e8b23a" stroke-width="2.5"/>
+            <circle cx="70" cy="30" r="9" fill="none" stroke="#e8b23a" stroke-width="1.2" opacity=".6"/>
+            <line x1="80.5" y1="40.5" x2="90" y2="50" stroke="#e8b23a" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="18" cy="20" r="2" fill="#2fd8c9"/>
+            <circle cx="86" cy="14" r="1.6" fill="#e8b23a"/>
+          </svg>
+        </div>
+      </div>
+    </a>
+
     <div class="sec-head" style="margin-top:3.4rem;">
       <div class="sec-tag">// Y ADEMÁS</div>
-      <h2 style="font-size:clamp(1.3rem,2.6vw,1.9rem);">Más proyectos en construcción activa</h2>
+      <h2 style="font-size:clamp(1.3rem,2.6vw,1.9rem);">Otros proyectos del club</h2>
     </div>
     <div class="proj-grid">
-      <a class="proj-card" href="/proyectos/buscador-empleo"><div class="proj-tag">EMPLEO &amp; DATOS</div><h3>💼 Buscador de Empleo</h3><p>Agrega ofertas recientes (Jooble + Computrabajo) y te lleva directo a Red Socio Empleo, el portal oficial del gobierno — la fuente más confiable.</p><div class="proj-status">En producción</div></a>
       <div class="proj-card"><div class="proj-tag">SOFTWARE</div><h3>Portal web del club</h3><p>Plataforma construida en Next.js y Supabase: landing retro, membresía y login social en un solo lugar.</p><div class="proj-status">En producción</div></div>
       <div class="proj-card"><div class="proj-tag">DATOS &amp; IA</div><h3>Asistente IA del club (holograma)</h3><p>Chatbot con Groq/NVIDIA (respaldo automático), voz y holograma reactivo, más INGenioso: la IA que guía el reto de terminal Linux.</p><div class="proj-status">En producción</div></div>
       <div class="proj-card"><div class="proj-tag">CIBERSEGURIDAD</div><h3>Auditoría de seguridad interna</h3><p>Escaneo de vulnerabilidades y simulacros de phishing para fortalecer la higiene digital del campus.</p><div class="proj-status">Fase de pentesting</div></div>
