@@ -2582,6 +2582,31 @@
       helpResponse('No pude conectarme para pensar la respuesta. Revisa tu conexión.');
     }
   }
+  // Ayuda proactiva: el jugador no preguntó nada, pero lleva varios fallos seguidos en la
+  // misma etapa (ver STUCK_HELP_THRESHOLD). Reusa el mismo formato de contexto que
+  // askIngenioso(), pidiéndole a la IA un empujón concreto sin regalar la respuesta completa.
+  async function offerStuckHelp(){
+    sayIngenioso('Veo que te está costando esta etapa... dejame pensar cómo ayudarte.', true);
+    print('INGenioso notó que llevas varios intentos seguidos y está pensando una ayuda...', 'info');
+    setAmbientMood('calm', 6000);
+    const objs = objectivesFor(state.level);
+    const pending = objs.find((o) => !o.done);
+    const context = '[CONTEXTO DEL JUEGO] Nivel ' + state.level + '. Rango actual del jugador: ' + rankForLevel(state.level).title + '. Etapa pendiente: ' +
+      (pending ? pending.label : 'todas completas, listo para avanzar de nivel') + '. El jugador lleva ' + mistakeStreak +
+      ' intentos fallidos seguidos en esta etapa, sin pedir ayuda explícitamente. Pistas ya usadas en este nivel: ' + state.hintsUsed + '.';
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: context + '\n\nEl jugador no preguntó nada, pero está claramente atascado. Ofrécele por tu cuenta un empujón breve y concreto para esta etapa (sin dar el comando completo de la respuesta), en tono de mentor cercano.' }] }),
+      });
+      const data = await res.json();
+      const clean = res.ok ? String(data.reply || '').replace(/^\s*ingenioso\s*:\s*/i, '') : mindsetTip();
+      helpResponse(clean);
+    } catch (err) {
+      helpResponse(mindsetTip());
+    }
+  }
 
   // ---- Ayuda contextual ----
   const HELP_TEXT = {
@@ -5281,11 +5306,18 @@
       showInstrPanel(rank.icon + ' NIVEL ' + state.level, praise + ' ¡Nivel completo!', 'Escribe "siguiente" cuando quieras avanzar.');
     }
   }
+  // A los 2/4 fallos seguidos alcanza un tip local (gratis, instantáneo). Si el jugador
+  // sigue atascado de verdad (5 fallos, y cada 5 más si continúa), se gasta una llamada
+  // real a la IA con el contexto del nivel — INGenioso ofrece ayuda sin que se la pidan,
+  // en vez de repetir el mismo tip genérico en bucle.
+  const STUCK_HELP_THRESHOLD = 5;
   function registerMistake(){
     mistakeStreak++;
     state.economy.levelErrors++;
     saveState();
-    if (mistakeStreak >= 2 && mistakeStreak % 2 === 0){
+    if (mistakeStreak >= STUCK_HELP_THRESHOLD && (mistakeStreak - STUCK_HELP_THRESHOLD) % 5 === 0){
+      offerStuckHelp();
+    } else if (mistakeStreak >= 2 && mistakeStreak % 2 === 0){
       sayIngenioso(mindsetTip());
     }
   }
@@ -5456,7 +5488,10 @@
     modal.hidden = false;
     holo.classList.add('speaking');
     holoStatus.textContent = 'NARRANDO...';
-    if (!instant) speakGame(dialogue);
+    // Se lee el diálogo narrativo y la instrucción como una sola locución (no dos llamadas
+    // separadas a speakGame): cada llamada cancela la anterior internamente, así que
+    // encadenarlas cortaría la primera antes de que se oiga.
+    if (!instant) speakGame(instruction ? dialogue + ' Instrucción: ' + instruction : dialogue);
     storySkip = typewriter(textEl, dialogue, cursorEl, () => {
       instrEl.classList.add('show');
       btn.classList.add('show');
