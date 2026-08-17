@@ -831,6 +831,16 @@
       beep(f, 0.2, { type: 'square', vol: 0.075, delay: i * 0.11 });
     });
   }
+  // Onda triangular (más "brillante" que el cuadrado usado en el resto de la UI) para que
+  // el ₿C se sienta distinto a un simple beep de confirmación — un mini "cha-ching".
+  function playCoinEarnSound(){
+    beep(987.77, 0.07, { type: 'triangle', vol: 0.08, delay: 0 });
+    beep(1318.51, 0.13, { type: 'triangle', vol: 0.09, delay: 0.07 });
+  }
+  function playCoinSpendSound(){
+    beep(659.25, 0.06, { type: 'square', vol: 0.06, delay: 0 });
+    beep(392, 0.12, { type: 'square', vol: 0.06, delay: 0.05 });
+  }
 
   // ---- Código binario en los márgenes del monitor (momentos críticos) ----
   let lvlupMatrixInterval = null;
@@ -1791,7 +1801,12 @@
     l31: { compileAll: false, execSummary: false, techFindings: false, recommendations: false, finalReport: false, thankYouLetter: false, clubRecognition: false, closeGame: false },
     completed: false,
     economy: {
-      bytecoin: 0,
+      // Beca inicial del laboratorio: cada partida nueva arranca con un capital generoso
+      // para poder curiosear la tienda desde el minuto uno. No cuenta como "ganado" (por
+      // eso bytecoinLifetime arranca en 0) — ese contador solo refleja lo que el jugador
+      // gana jugando de verdad. Los precios de UPGRADES están calibrados para que este
+      // capital no alcance para comprar todo el árbol: sigue haciendo falta jugar.
+      bytecoin: 1000000,
       bytecoinLifetime: 0,
       reputation: 0,
       transactions: [],
@@ -1811,7 +1826,7 @@
   // el resto del progreso.
   if (!state.economy){
     state.economy = {
-      bytecoin: 0, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
+      bytecoin: 1000000, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
       levelFirstDone: {}, episodeRepAwarded: {}, gameCompleteRepAwarded: false,
       replayDate: null, replayCountToday: 0, levelHintsUsed: 0, levelErrors: 0, levelStartedAt: Date.now(),
     };
@@ -1957,14 +1972,18 @@
   // ---- Economía virtual: ByteCoin (₿C) + Reputación del Club (REP) ----
   // 7 episodios narrativos reales del juego (distinto del array RANKS, que tiene 8 tramos
   // de rango). Cada episodio tiene una recompensa base en ₿C por nivel completado dentro de él.
+  // Recompensas ×200 respecto al diseño original (que asumía un jugador arrancando en
+  // ₿0): con la beca inicial de 1.000.000 ₿C, una recompensa de 50 sería una propina
+  // invisible. Se mantiene la misma proporción entre episodios y el mismo balance ya
+  // calibrado (una partida perfecta ≈ el costo de todo el árbol de mejoras).
   const EPISODES = [
-    { n: 1, title: 'Reconocimiento', levels: [1], baseReward: 50 },
-    { n: 2, title: 'Infiltración WiFi', levels: [2], baseReward: 70 },
-    { n: 3, title: 'Comunicación Segura', levels: [3], baseReward: 90 },
-    { n: 4, title: 'Detección y Respuesta', levels: [4, 5, 6], baseReward: 120 },
-    { n: 5, title: 'Bajo Ataque → Forense', levels: [7, 8, 9, 10, 11, 12, 13], baseReward: 160 },
-    { n: 6, title: 'Pentesting Web + SGSI', levels: [14, 15, 16, 17, 18, 19, 20, 21], baseReward: 220 },
-    { n: 7, title: 'Datacenter + Nube (rescate UMT)', levels: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31], baseReward: 300 },
+    { n: 1, title: 'Reconocimiento', levels: [1], baseReward: 10000 },
+    { n: 2, title: 'Infiltración WiFi', levels: [2], baseReward: 14000 },
+    { n: 3, title: 'Comunicación Segura', levels: [3], baseReward: 18000 },
+    { n: 4, title: 'Detección y Respuesta', levels: [4, 5, 6], baseReward: 24000 },
+    { n: 5, title: 'Bajo Ataque → Forense', levels: [7, 8, 9, 10, 11, 12, 13], baseReward: 32000 },
+    { n: 6, title: 'Pentesting Web + SGSI', levels: [14, 15, 16, 17, 18, 19, 20, 21], baseReward: 44000 },
+    { n: 7, title: 'Datacenter + Nube (rescate UMT)', levels: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31], baseReward: 60000 },
   ];
   const EPISODE_REP = [10, 15, 20, 30, 45, 65, 100];
   const GAME_COMPLETE_REP_BONUS = 200;
@@ -1990,33 +2009,38 @@
   // (prereqUpgrades) y un episodio mínimo completado (prereqEpisodio). "Clúster del Club"
   // es la versión in-universe de "más nodos trabajando en paralelo" — nunca se le llama
   // "botnet" ni da funcionalidad de ataque real, solo acelera animaciones visuales.
+  // Precios ×200 respecto al diseño original, para que la beca inicial de 1.000.000 ₿C
+  // sea generosa (alcanza para curiosear la tienda desde el nivel 1) sin alcanzar para
+  // comprar todo el árbol de una sola vez (el árbol completo cuesta ≈1.995.000 ₿C) — el
+  // resto de las mejoras, sobre todo las de tramos altos, siguen requiriendo jugar y ganar
+  // más, además de sus candados por episodio completado.
   const UPGRADES = [
-    { id: 'ram1', categoria: 'RAM', nombre: 'Módulo RAM — 8GB', nivel: 1, costo: 80, prereqUpgrades: [], prereqEpisodio: 1, efecto: 'Reduce 10% el tiempo de las animaciones de escaneo y carga.' },
-    { id: 'ram2', categoria: 'RAM', nombre: 'Módulo RAM — 16GB', nivel: 2, costo: 120, prereqUpgrades: ['ram1'], prereqEpisodio: 2, efecto: 'Reduce 20% el tiempo de las animaciones de escaneo y carga.' },
-    { id: 'ram3', categoria: 'RAM', nombre: 'Módulo RAM — 32GB', nivel: 3, costo: 180, prereqUpgrades: ['ram2'], prereqEpisodio: 3, efecto: 'Reduce 30% el tiempo de las animaciones de escaneo y carga.' },
-    { id: 'ram4', categoria: 'RAM', nombre: 'Módulo RAM — 64GB', nivel: 4, costo: 270, prereqUpgrades: ['ram3'], prereqEpisodio: 4, efecto: 'Reduce 40% el tiempo de las animaciones de escaneo y carga.' },
-    { id: 'ram5', categoria: 'RAM', nombre: 'Módulo RAM — 128GB', nivel: 5, costo: 405, prereqUpgrades: ['ram4'], prereqEpisodio: 5, efecto: 'Reduce 50% el tiempo de las animaciones de escaneo y carga.' },
-    { id: 'cpu1', categoria: 'CPU', nombre: 'Procesador — 4 núcleos', nivel: 1, costo: 100, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Reduce 10% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
-    { id: 'cpu2', categoria: 'CPU', nombre: 'Procesador — 8 núcleos', nivel: 2, costo: 150, prereqUpgrades: ['cpu1'], prereqEpisodio: 3, efecto: 'Reduce 20% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
-    { id: 'cpu3', categoria: 'CPU', nombre: 'Procesador — 16 núcleos', nivel: 3, costo: 225, prereqUpgrades: ['cpu2'], prereqEpisodio: 4, efecto: 'Reduce 30% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
-    { id: 'cpu4', categoria: 'CPU', nombre: 'Procesador — 32 núcleos', nivel: 4, costo: 338, prereqUpgrades: ['cpu3'], prereqEpisodio: 5, efecto: 'Reduce 40% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
-    { id: 'cpu5', categoria: 'CPU', nombre: 'Procesador — 64 núcleos', nivel: 5, costo: 506, prereqUpgrades: ['cpu4'], prereqEpisodio: 6, efecto: 'Reduce 50% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
-    { id: 'gpu1', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 1', nivel: 1, costo: 150, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Desbloquea un diccionario ampliado en retos de fuerza bruta simulada.' },
-    { id: 'gpu2', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 2', nivel: 2, costo: 240, prereqUpgrades: ['gpu1'], prereqEpisodio: 3, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
-    { id: 'gpu3', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 3', nivel: 3, costo: 384, prereqUpgrades: ['gpu2'], prereqEpisodio: 5, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
-    { id: 'gpu4', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 4', nivel: 4, costo: 614, prereqUpgrades: ['gpu3'], prereqEpisodio: 6, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
-    { id: 'gpu5', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 5', nivel: 5, costo: 983, prereqUpgrades: ['gpu4'], prereqEpisodio: 7, efecto: 'Diccionario máximo disponible en retos de fuerza bruta simulada.' },
-    { id: 'store1', categoria: 'Almacenamiento', nombre: 'Disco — 1TB', nivel: 1, costo: 60, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Aumenta el cupo de evidencias/capturas guardadas en tu inventario forense.' },
-    { id: 'store2', categoria: 'Almacenamiento', nombre: 'Disco — 2TB', nivel: 2, costo: 84, prereqUpgrades: ['store1'], prereqEpisodio: 5, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
-    { id: 'store3', categoria: 'Almacenamiento', nombre: 'Disco — 4TB', nivel: 3, costo: 118, prereqUpgrades: ['store2'], prereqEpisodio: 6, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
-    { id: 'store4', categoria: 'Almacenamiento', nombre: 'Disco — 8TB', nivel: 4, costo: 165, prereqUpgrades: ['store3'], prereqEpisodio: 7, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
-    { id: 'store5', categoria: 'Almacenamiento', nombre: 'RAID de laboratorio', nivel: 5, costo: 231, prereqUpgrades: ['store4'], prereqEpisodio: 7, efecto: 'Cupo máximo de evidencias/capturas, con redundancia simulada.' },
-    { id: 'server1', categoria: 'Servidor Propio', nombre: 'Servidor Propio del Laboratorio', nivel: 1, costo: 800, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Desbloquea el modo sandbox: repetir cualquier nivel ya superado, sin afectar tu progreso ni tu rango.' },
-    { id: 'cluster1', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 1', nivel: 1, costo: 200, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Acelera visualmente el escaneo de puertos/red en niveles de reconocimiento.' },
-    { id: 'cluster2', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 2', nivel: 2, costo: 340, prereqUpgrades: ['cluster1'], prereqEpisodio: 3, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
-    { id: 'cluster3', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 3', nivel: 3, costo: 578, prereqUpgrades: ['cluster2'], prereqEpisodio: 4, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
-    { id: 'cluster4', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 4', nivel: 4, costo: 983, prereqUpgrades: ['cluster3'], prereqEpisodio: 5, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
-    { id: 'cluster5', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 5', nivel: 5, costo: 1671, prereqUpgrades: ['cluster4'], prereqEpisodio: 6, efecto: 'Clúster de voluntarios al máximo — escaneos lo más rápido posible en pantalla.' },
+    { id: 'ram1', categoria: 'RAM', nombre: 'Módulo RAM — 8GB', nivel: 1, costo: 16000, prereqUpgrades: [], prereqEpisodio: 1, efecto: 'Reduce 10% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram2', categoria: 'RAM', nombre: 'Módulo RAM — 16GB', nivel: 2, costo: 24000, prereqUpgrades: ['ram1'], prereqEpisodio: 2, efecto: 'Reduce 20% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram3', categoria: 'RAM', nombre: 'Módulo RAM — 32GB', nivel: 3, costo: 36000, prereqUpgrades: ['ram2'], prereqEpisodio: 3, efecto: 'Reduce 30% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram4', categoria: 'RAM', nombre: 'Módulo RAM — 64GB', nivel: 4, costo: 54000, prereqUpgrades: ['ram3'], prereqEpisodio: 4, efecto: 'Reduce 40% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram5', categoria: 'RAM', nombre: 'Módulo RAM — 128GB', nivel: 5, costo: 81000, prereqUpgrades: ['ram4'], prereqEpisodio: 5, efecto: 'Reduce 50% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'cpu1', categoria: 'CPU', nombre: 'Procesador — 4 núcleos', nivel: 1, costo: 20000, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Reduce 10% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu2', categoria: 'CPU', nombre: 'Procesador — 8 núcleos', nivel: 2, costo: 30000, prereqUpgrades: ['cpu1'], prereqEpisodio: 3, efecto: 'Reduce 20% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu3', categoria: 'CPU', nombre: 'Procesador — 16 núcleos', nivel: 3, costo: 45000, prereqUpgrades: ['cpu2'], prereqEpisodio: 4, efecto: 'Reduce 30% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu4', categoria: 'CPU', nombre: 'Procesador — 32 núcleos', nivel: 4, costo: 67600, prereqUpgrades: ['cpu3'], prereqEpisodio: 5, efecto: 'Reduce 40% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu5', categoria: 'CPU', nombre: 'Procesador — 64 núcleos', nivel: 5, costo: 101200, prereqUpgrades: ['cpu4'], prereqEpisodio: 6, efecto: 'Reduce 50% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'gpu1', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 1', nivel: 1, costo: 30000, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Desbloquea un diccionario ampliado en retos de fuerza bruta simulada.' },
+    { id: 'gpu2', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 2', nivel: 2, costo: 48000, prereqUpgrades: ['gpu1'], prereqEpisodio: 3, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu3', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 3', nivel: 3, costo: 76800, prereqUpgrades: ['gpu2'], prereqEpisodio: 5, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu4', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 4', nivel: 4, costo: 122800, prereqUpgrades: ['gpu3'], prereqEpisodio: 6, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu5', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 5', nivel: 5, costo: 196600, prereqUpgrades: ['gpu4'], prereqEpisodio: 7, efecto: 'Diccionario máximo disponible en retos de fuerza bruta simulada.' },
+    { id: 'store1', categoria: 'Almacenamiento', nombre: 'Disco — 1TB', nivel: 1, costo: 12000, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Aumenta el cupo de evidencias/capturas guardadas en tu inventario forense.' },
+    { id: 'store2', categoria: 'Almacenamiento', nombre: 'Disco — 2TB', nivel: 2, costo: 16800, prereqUpgrades: ['store1'], prereqEpisodio: 5, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store3', categoria: 'Almacenamiento', nombre: 'Disco — 4TB', nivel: 3, costo: 23600, prereqUpgrades: ['store2'], prereqEpisodio: 6, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store4', categoria: 'Almacenamiento', nombre: 'Disco — 8TB', nivel: 4, costo: 33000, prereqUpgrades: ['store3'], prereqEpisodio: 7, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store5', categoria: 'Almacenamiento', nombre: 'RAID de laboratorio', nivel: 5, costo: 46200, prereqUpgrades: ['store4'], prereqEpisodio: 7, efecto: 'Cupo máximo de evidencias/capturas, con redundancia simulada.' },
+    { id: 'server1', categoria: 'Servidor Propio', nombre: 'Servidor Propio del Laboratorio', nivel: 1, costo: 160000, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Desbloquea el modo sandbox: repetir cualquier nivel ya superado, sin afectar tu progreso ni tu rango.' },
+    { id: 'cluster1', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 1', nivel: 1, costo: 40000, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Acelera visualmente el escaneo de puertos/red en niveles de reconocimiento.' },
+    { id: 'cluster2', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 2', nivel: 2, costo: 68000, prereqUpgrades: ['cluster1'], prereqEpisodio: 3, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster3', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 3', nivel: 3, costo: 115600, prereqUpgrades: ['cluster2'], prereqEpisodio: 4, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster4', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 4', nivel: 4, costo: 196600, prereqUpgrades: ['cluster3'], prereqEpisodio: 5, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster5', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 5', nivel: 5, costo: 334200, prereqUpgrades: ['cluster4'], prereqEpisodio: 6, efecto: 'Clúster de voluntarios al máximo — escaneos lo más rápido posible en pantalla.' },
     { id: 'cosm1', categoria: 'Cosméticos', nombre: 'Tema de terminal: Ámbar', nivel: 1, costoRep: 10, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Cambia el color de la terminal a tono ámbar retro.' },
     { id: 'cosm2', categoria: 'Cosméticos', nombre: 'Tema de terminal: Matrix', nivel: 2, costoRep: 20, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Cambia el color de la terminal a verde Matrix.' },
     { id: 'cosm3', categoria: 'Cosméticos', nombre: 'Insignia: Ojo de Halcón', nivel: 3, costoRep: 30, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Insignia de perfil visible en el Codex.' },
@@ -2417,6 +2441,10 @@
     helpResponse('Ejemplo: ' + cmd);
   }
 
+  // Formato legible para montos grandes (la beca inicial ya arranca en 6 cifras):
+  // "1.000.000" en vez de "1000000", para que siga siendo fácil de leer de un vistazo.
+  function fmtBC(n){ return Number(n || 0).toLocaleString('es-EC'); }
+
   // ---- Economía virtual: lógica de negocio ----
   // Todo el saldo/validación vive aquí, nunca se confía en un valor editado desde fuera
   // de estas funciones — coherente con lo que el propio juego enseña sobre validación
@@ -2432,12 +2460,14 @@
     state.economy.bytecoinLifetime += amount;
     pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'earn', currency: 'BC', amount, reason, referenceId });
     saveState();
+    playCoinEarnSound();
   }
   function spendBytecoin(amount, reason, referenceId){
     if (state.economy.bytecoin < amount) return false;
     state.economy.bytecoin -= amount;
     pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'spend', currency: 'BC', amount: -amount, reason, referenceId });
     saveState();
+    playCoinSpendSound();
     return true;
   }
   function awardReputation(amount, reason, referenceId){
@@ -2486,7 +2516,7 @@
         ? ('Nivel ' + level + ' completado' + (bonusLabels.length ? ' (' + bonusLabels.join(', ') + ')' : ''))
         : ('Nivel ' + level + ' repetido (modo sandbox)');
       awardBytecoin(finalAmount, reason, 'nivel_' + level);
-      helpResponse('💰 +' + finalAmount + ' ₿C — ' + reason + '.');
+      helpResponse('💰 +' + fmtBC(finalAmount) + ' ₿C — ' + reason + '.');
     } else if (!isFirst){
       helpResponse('Ya alcanzaste el máximo de rejugadas que otorgan ₿C hoy — vuelve mañana.');
     }
@@ -2531,7 +2561,7 @@
     if (upg.costoRep != null){
       if (!spendReputation(upg.costoRep, 'Mejora: ' + upg.nombre, upg.id)){ helpResponse('No tienes suficiente REP para esta mejora (' + upg.costoRep + ' REP).'); return; }
     } else {
-      if (!spendBytecoin(upg.costo, 'Mejora: ' + upg.nombre, upg.id)){ helpResponse('No tienes suficiente ₿C para esta mejora (' + upg.costo + ' ₿C).'); return; }
+      if (!spendBytecoin(upg.costo, 'Mejora: ' + upg.nombre, upg.id)){ helpResponse('No tienes suficiente ₿C para esta mejora (' + fmtBC(upg.costo) + ' ₿C).'); return; }
     }
     state.economy.upgradesOwned.push(id);
     saveState();
@@ -2544,7 +2574,7 @@
   // juego, así que la protección real es la doble confirmación explícita en la UI.
   function resetEconomy(){
     state.economy = {
-      bytecoin: 0, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
+      bytecoin: 1000000, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
       levelFirstDone: {}, episodeRepAwarded: {}, gameCompleteRepAwarded: false,
       replayDate: null, replayCountToday: 0, levelHintsUsed: 0, levelErrors: 0, levelStartedAt: Date.now(),
     };
@@ -5680,7 +5710,7 @@
     document.getElementById('stat-hints').textContent = String(state.hintsUsed);
     document.getElementById('stat-commands').textContent = String(learned.size) + ' / ' + CHEATSHEET.length;
     const statBc = document.getElementById('stat-bytecoin');
-    if (statBc) statBc.textContent = String(state.economy.bytecoinLifetime) + ' ₿C';
+    if (statBc) statBc.textContent = fmtBC(state.economy.bytecoinLifetime) + ' ₿C';
     const statRep = document.getElementById('stat-reputation');
     if (statRep) statRep.textContent = String(state.economy.reputation) + ' REP';
     const statUpg = document.getElementById('stat-upgrades');
@@ -5731,7 +5761,7 @@
   const CATEGORY_ORDER = ['RAM', 'CPU', 'GPU', 'Almacenamiento', 'Servidor Propio', 'Clúster del Club', 'Cosméticos'];
   function updateWalletLabel(){
     const label = document.getElementById('shop-wallet-label');
-    if (label) label.textContent = '₿' + state.economy.bytecoin;
+    if (label) label.textContent = '₿' + fmtBC(state.economy.bytecoin);
   }
   function renderShopUpgrades(){
     const panel = document.getElementById('shop-panel-upgrades');
@@ -5753,7 +5783,7 @@
         node.className = 'shop-node' + (owned ? ' owned' : '') + (lockReason ? ' locked' : '');
         const info = document.createElement('div');
         info.className = 'shop-node-info';
-        const costLabel = upg.costoRep != null ? (upg.costoRep + ' REP') : (upg.costo + ' ₿C');
+        const costLabel = upg.costoRep != null ? (upg.costoRep + ' REP') : (fmtBC(upg.costo) + ' ₿C');
         info.innerHTML = '<b>' + escapeHtml(upg.nombre) + ' — ' + costLabel + '</b><span>' + escapeHtml(upg.efecto) + '</span>' + (lockReason ? '<div class="shop-node-lock">🔒 ' + escapeHtml(lockReason) + '</div>' : '');
         node.appendChild(info);
         if (owned){
@@ -5787,7 +5817,7 @@
       const fecha = isNaN(d.getTime()) ? '' : (d.toLocaleDateString('es-EC') + ' ' + d.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }));
       const sign = t.amount >= 0 ? '+' : '';
       const cls = t.amount >= 0 ? 'earn' : 'spend';
-      html += '<tr><td>' + fecha + '</td><td>' + escapeHtml(t.reason || '') + '</td><td class="' + cls + '">' + sign + t.amount + ' ' + (t.currency || 'BC') + '</td></tr>';
+      html += '<tr><td>' + fecha + '</td><td>' + escapeHtml(t.reason || '') + '</td><td class="' + cls + '">' + sign + fmtBC(Math.abs(t.amount)) + ' ' + (t.currency || 'BC') + '</td></tr>';
     });
     html += '</tbody></table>';
     panel.innerHTML = html;
@@ -5813,8 +5843,8 @@
     panel.appendChild(note);
   }
   function renderShop(){
-    document.getElementById('wallet-bc').textContent = String(state.economy.bytecoin);
-    document.getElementById('wallet-bc-lifetime').textContent = String(state.economy.bytecoinLifetime);
+    document.getElementById('wallet-bc').textContent = fmtBC(state.economy.bytecoin);
+    document.getElementById('wallet-bc-lifetime').textContent = fmtBC(state.economy.bytecoinLifetime);
     document.getElementById('wallet-rep').textContent = String(state.economy.reputation);
     updateWalletLabel();
     renderShopUpgrades();
