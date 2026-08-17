@@ -19,6 +19,12 @@
     --line:#173229;
     --term-green:#39ff6a;
     --term-green-dim:#1c8a3d;
+  }
+  /* Cosméticos comprados con REP (Tienda del Laboratorio) — solo cambian el color de la
+     terminal, nunca la lógica del juego. */
+  #app.theme-amber{--term-green:#ffb347;--term-green-dim:#8a5a1c;}
+  #app.theme-matrix{--term-green:#00ff41;--term-green-dim:#0a5c1c;}
+  :root{
     --danger:#ff5f5f;
     --mono:'IBM Plex Mono','Courier New',monospace;
     --sans:'IBM Plex Sans',-apple-system,sans-serif;
@@ -263,6 +269,44 @@
   .codex-commands{font-family:var(--mono);font-size:.78rem;line-height:1.8;color:var(--term-green);white-space:pre-wrap;background:#03110a;border:1px solid var(--term-green-dim);border-radius:6px;padding:.9rem 1rem;}
   .codex-note{font-size:.68rem;color:var(--ink-dim);margin-top:.4rem;}
 
+  /* ---- Tienda del Laboratorio (economía virtual) ---- */
+  .wallet-summary{display:flex;gap:1rem;flex-wrap:wrap;margin:1rem 0 1.2rem;}
+  .wallet-stat{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:.7rem 1rem;font-family:var(--mono);flex:1;min-width:140px;}
+  .wallet-stat b{display:block;font-size:1.2rem;color:var(--gold,var(--teal));}
+  .wallet-stat span{font-size:.6rem;color:var(--ink-dim);letter-spacing:.06em;}
+  .shop-tabs{display:flex;gap:.5rem;border-bottom:1px solid var(--line);margin-bottom:1rem;flex-wrap:wrap;}
+  .shop-tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--ink-dim);font-family:var(--mono);font-size:.78rem;padding:.6rem .4rem;cursor:pointer;}
+  .shop-tab.active{color:var(--neon-cyan,var(--teal));border-bottom-color:var(--neon-cyan,var(--teal));}
+  .shop-panel{max-height:52vh;overflow-y:auto;padding-right:.3rem;}
+  .shop-category{margin-bottom:1.4rem;}
+  .shop-category h3{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;color:var(--ink);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+  .shop-nodes{display:flex;flex-direction:column;gap:.5rem;}
+  .shop-node{display:flex;align-items:center;justify-content:space-between;gap:.8rem;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:.6rem .8rem;font-size:.8rem;flex-wrap:wrap;}
+  .shop-node.owned{border-color:var(--term-green,var(--teal));background:rgba(57,255,106,.06);}
+  .shop-node.locked{opacity:.62;}
+  .shop-node-info b{display:block;font-size:.84rem;}
+  .shop-node-info span{display:block;font-size:.68rem;color:var(--ink-dim);margin-top:.15rem;}
+  .shop-node-lock{font-size:.66rem;color:#e8b23a;margin-top:.2rem;}
+  .shop-buy-btn{background:var(--teal);color:#04140a;border:none;border-radius:5px;padding:.5rem .9rem;font-family:var(--mono);font-weight:700;font-size:.72rem;cursor:pointer;white-space:nowrap;}
+  .shop-buy-btn:disabled{background:var(--line);color:var(--ink-dim);cursor:not-allowed;}
+  .shop-owned-tag{font-family:var(--mono);font-size:.68rem;color:var(--term-green,var(--teal));white-space:nowrap;}
+  .shop-history-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.72rem;}
+  .shop-history-table th{text-align:left;color:var(--ink-dim);font-weight:400;padding:.4rem .5rem;border-bottom:1px solid var(--line);}
+  .shop-history-table td{padding:.4rem .5rem;border-bottom:1px solid rgba(255,255,255,.05);}
+  .shop-history-table .earn{color:var(--term-green,#39ff6a);}
+  .shop-history-table .spend{color:#ff6b6b;}
+  .shop-empty{color:var(--ink-dim);font-size:.8rem;padding:1rem 0;text-align:center;}
+  .lab-rack{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;}
+  .lab-category{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:.8rem;text-align:center;}
+  .lab-category .lab-icon{font-size:1.6rem;}
+  .lab-category b{display:block;font-size:.72rem;margin:.3rem 0 .5rem;}
+  .lab-slots{display:flex;gap:.25rem;justify-content:center;flex-wrap:wrap;}
+  .lab-slot{width:14px;height:14px;border-radius:3px;background:var(--line);}
+  .lab-slot.filled{background:var(--term-green,#39ff6a);box-shadow:0 0 6px rgba(57,255,106,.6);}
+  .shop-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.6rem;margin-top:1.2rem;}
+  .shop-reset-link{background:none;border:none;color:var(--ink-dim);font-size:.64rem;text-decoration:underline;cursor:pointer;font-family:var(--mono);}
+  .shop-reset-link:hover{color:#ff6b6b;}
+
   /* ---- Ventana flotante de historia: diálogo + instrucción, distintos estilos ---- */
   .story-modal-card{width:min(920px,94vw);padding:clamp(1.6rem,4vw,2.8rem);max-height:90vh;display:flex;gap:1.8rem;align-items:flex-start;}
   @media (min-width:1024px){.story-modal-card{width:min(980px,88vw);}}
@@ -356,6 +400,10 @@
   .level-card h3{font-family:var(--mono);font-size:.94rem;margin-bottom:.5rem;}
   .level-card p{font-size:.8rem;color:var(--ink-dim);line-height:1.5;margin-bottom:.6rem;}
   .level-card .level-status{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;color:var(--gold);}
+  .level-card-wrap{display:flex;flex-direction:column;gap:.4rem;}
+  .level-card-wrap .level-card{width:100%;}
+  .level-replay-btn{background:none;border:1px dashed var(--line);color:var(--ink-dim);border-radius:6px;padding:.4rem .5rem;font-family:var(--mono);font-size:.62rem;cursor:pointer;}
+  .level-replay-btn:hover{border-color:var(--neon-cyan);color:var(--ink);}
 
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;}}
 </style>
@@ -373,6 +421,7 @@
       <span id="timer">00:00</span>
       <button class="menu-btn" id="menu-btn" type="button">🎯 <span class="btn-label">niveles</span></button>
       <button class="menu-btn" id="codex-toggle" type="button" aria-label="Abrir Codex de ayuda">📖 <span class="btn-label">codex</span></button>
+      <button class="menu-btn" id="shop-toggle" type="button" aria-label="Abrir la Tienda del Laboratorio">🏪 <span class="btn-label" id="shop-wallet-label">₿0</span></button>
       <button id="aside-toggle" type="button" aria-label="Mostrar briefing">☰ <span class="btn-label">briefing</span></button>
       <button id="voice-toggle" type="button" aria-label="Activar voz de INGenioso" aria-pressed="false" title="Activar voz de INGenioso">🔇</button>
       <button id="sound-toggle" type="button" aria-label="Silenciar sonidos">🔊</button>
@@ -499,6 +548,12 @@
       <div class="stat"><b id="stat-hints">0</b><span>PISTAS USADAS</span></div>
       <div class="stat"><b id="stat-commands">0</b><span>COMANDOS APRENDIDOS</span></div>
     </div>
+    <h2 style="text-align:center;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;color:var(--ink-dim);margin:1.2rem 0 .4rem;">// ECONOMÍA VIRTUAL</h2>
+    <div class="stats">
+      <div class="stat"><b id="stat-bytecoin">0 ₿C</b><span>₿C GANADOS EN TOTAL</span></div>
+      <div class="stat"><b id="stat-reputation">0 REP</b><span>REPUTACIÓN DEL CLUB</span></div>
+      <div class="stat"><b id="stat-upgrades">0 / 0</b><span>MEJORAS ADQUIRIDAS</span></div>
+    </div>
     <div id="cheatsheet"></div>
     <p style="text-align:center;">📖 <a href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/blob/main/docs/teoria-operacion-laboratorio-b.md" target="_blank" rel="noopener">Repasa la teoría completa de los 31 niveles →</a></p>
     <a class="btn" href="/#join">Únete al club →</a>
@@ -521,6 +576,30 @@
     </div>
     <p style="text-align:center;">📖 <a href="https://github.com/IngMarlonPerez/El-Club-de-la-Ingenier-a/blob/main/docs/teoria-operacion-laboratorio-b.md" target="_blank" rel="noopener">Lee la teoría completa de los 31 niveles →</a></p>
     <button class="btn" id="codex-close" type="button">Cerrar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="shop-modal" hidden>
+  <div class="modal shop-modal-card" style="width:min(920px,100%);">
+    <h1>🏪 Tienda del <span>Laboratorio</span></h1>
+    <p style="margin-top:-.6rem;">ByteCoin (₿C) es una moneda 100% ficticia del laboratorio — no vale dinero real. Las mejoras solo dan pistas extra, aceleran animaciones en pantalla o desbloquean variantes de nivel: nunca resuelven un reto por ti.</p>
+    <div class="wallet-summary">
+      <div class="wallet-stat"><b id="wallet-bc">0</b><span>₿C DISPONIBLES</span></div>
+      <div class="wallet-stat"><b id="wallet-bc-lifetime">0</b><span>₿C GANADOS EN TOTAL</span></div>
+      <div class="wallet-stat"><b id="wallet-rep">0</b><span>REPUTACIÓN DEL CLUB</span></div>
+    </div>
+    <div class="shop-tabs" role="tablist">
+      <button type="button" class="shop-tab active" id="shop-tab-upgrades" role="tab" aria-selected="true">🌳 Mejoras</button>
+      <button type="button" class="shop-tab" id="shop-tab-history" role="tab" aria-selected="false">📜 Historial</button>
+      <button type="button" class="shop-tab" id="shop-tab-lab" role="tab" aria-selected="false">🖥️ Laboratorio</button>
+    </div>
+    <div class="shop-panel" id="shop-panel-upgrades"></div>
+    <div class="shop-panel" id="shop-panel-history" hidden></div>
+    <div class="shop-panel" id="shop-panel-lab" hidden></div>
+    <div class="shop-footer">
+      <button class="btn" id="shop-close" type="button">Cerrar</button>
+      <button type="button" id="shop-reset-admin" class="shop-reset-link">⚙️ Reiniciar economía (solo mentor/profesor)</button>
+    </div>
   </div>
 </div>
 
@@ -1711,7 +1790,32 @@
     l30: { rollbackSync: false, fixIam: false, createAlarm: false, enableVersioning: false, restoreData: false, fixRaid: false, verifyFinal: false, recoveryDoc: false },
     l31: { compileAll: false, execSummary: false, techFindings: false, recommendations: false, finalReport: false, thankYouLetter: false, clubRecognition: false, closeGame: false },
     completed: false,
+    economy: {
+      bytecoin: 0,
+      bytecoinLifetime: 0,
+      reputation: 0,
+      transactions: [],
+      upgradesOwned: [],
+      levelFirstDone: {},
+      episodeRepAwarded: {},
+      gameCompleteRepAwarded: false,
+      replayDate: null,
+      replayCountToday: 0,
+      levelHintsUsed: 0,
+      levelErrors: 0,
+      levelStartedAt: Date.now(),
+    },
   };
+  // Compatibilidad con partidas guardadas antes de la economía virtual: si el estado
+  // cargado no tiene "economy" (versión anterior del juego), se le agrega sin tocar
+  // el resto del progreso.
+  if (!state.economy){
+    state.economy = {
+      bytecoin: 0, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
+      levelFirstDone: {}, episodeRepAwarded: {}, gameCompleteRepAwarded: false,
+      replayDate: null, replayCountToday: 0, levelHintsUsed: 0, levelErrors: 0, levelStartedAt: Date.now(),
+    };
+  }
 
   function loadState(){
     try {
@@ -1849,6 +1953,77 @@
     for (const r of RANKS){ if (n <= r.max) return r; }
     return RANKS[RANKS.length - 1];
   }
+
+  // ---- Economía virtual: ByteCoin (₿C) + Reputación del Club (REP) ----
+  // 7 episodios narrativos reales del juego (distinto del array RANKS, que tiene 8 tramos
+  // de rango). Cada episodio tiene una recompensa base en ₿C por nivel completado dentro de él.
+  const EPISODES = [
+    { n: 1, title: 'Reconocimiento', levels: [1], baseReward: 50 },
+    { n: 2, title: 'Infiltración WiFi', levels: [2], baseReward: 70 },
+    { n: 3, title: 'Comunicación Segura', levels: [3], baseReward: 90 },
+    { n: 4, title: 'Detección y Respuesta', levels: [4, 5, 6], baseReward: 120 },
+    { n: 5, title: 'Bajo Ataque → Forense', levels: [7, 8, 9, 10, 11, 12, 13], baseReward: 160 },
+    { n: 6, title: 'Pentesting Web + SGSI', levels: [14, 15, 16, 17, 18, 19, 20, 21], baseReward: 220 },
+    { n: 7, title: 'Datacenter + Nube (rescate UMT)', levels: [22, 23, 24, 25, 26, 27, 28, 29, 30, 31], baseReward: 300 },
+  ];
+  const EPISODE_REP = [10, 15, 20, 30, 45, 65, 100];
+  const GAME_COMPLETE_REP_BONUS = 200;
+  function episodeForLevel(n){ return EPISODES.find((e) => e.levels.includes(n)); }
+  function episodeIndexForLevel(n){ return EPISODES.findIndex((e) => e.levels.includes(n)); }
+  function highestEpisodeCompleted(){
+    let max = 0;
+    EPISODES.forEach((ep) => { if (state.economy.levelFirstDone[ep.levels[ep.levels.length - 1]]) max = ep.n; });
+    return max;
+  }
+
+  const ECONOMY_CONFIG = {
+    bonusNoHints: 0.25,
+    bonusFewErrors: 0.15,
+    bonusFewErrorsMax: 2,
+    bonusFastTime: 0.10,
+    fastTimeSeconds: 480,
+    replayRewardPct: 0.20,
+    replayDailyCap: 3,
+  };
+
+  // Árbol de mejoras (DAG): cada mejora referencia otras mejoras de la misma categoría
+  // (prereqUpgrades) y un episodio mínimo completado (prereqEpisodio). "Clúster del Club"
+  // es la versión in-universe de "más nodos trabajando en paralelo" — nunca se le llama
+  // "botnet" ni da funcionalidad de ataque real, solo acelera animaciones visuales.
+  const UPGRADES = [
+    { id: 'ram1', categoria: 'RAM', nombre: 'Módulo RAM — 8GB', nivel: 1, costo: 80, prereqUpgrades: [], prereqEpisodio: 1, efecto: 'Reduce 10% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram2', categoria: 'RAM', nombre: 'Módulo RAM — 16GB', nivel: 2, costo: 120, prereqUpgrades: ['ram1'], prereqEpisodio: 2, efecto: 'Reduce 20% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram3', categoria: 'RAM', nombre: 'Módulo RAM — 32GB', nivel: 3, costo: 180, prereqUpgrades: ['ram2'], prereqEpisodio: 3, efecto: 'Reduce 30% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram4', categoria: 'RAM', nombre: 'Módulo RAM — 64GB', nivel: 4, costo: 270, prereqUpgrades: ['ram3'], prereqEpisodio: 4, efecto: 'Reduce 40% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'ram5', categoria: 'RAM', nombre: 'Módulo RAM — 128GB', nivel: 5, costo: 405, prereqUpgrades: ['ram4'], prereqEpisodio: 5, efecto: 'Reduce 50% el tiempo de las animaciones de escaneo y carga.' },
+    { id: 'cpu1', categoria: 'CPU', nombre: 'Procesador — 4 núcleos', nivel: 1, costo: 100, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Reduce 10% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu2', categoria: 'CPU', nombre: 'Procesador — 8 núcleos', nivel: 2, costo: 150, prereqUpgrades: ['cpu1'], prereqEpisodio: 3, efecto: 'Reduce 20% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu3', categoria: 'CPU', nombre: 'Procesador — 16 núcleos', nivel: 3, costo: 225, prereqUpgrades: ['cpu2'], prereqEpisodio: 4, efecto: 'Reduce 30% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu4', categoria: 'CPU', nombre: 'Procesador — 32 núcleos', nivel: 4, costo: 338, prereqUpgrades: ['cpu3'], prereqEpisodio: 5, efecto: 'Reduce 40% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'cpu5', categoria: 'CPU', nombre: 'Procesador — 64 núcleos', nivel: 5, costo: 506, prereqUpgrades: ['cpu4'], prereqEpisodio: 6, efecto: 'Reduce 50% el tiempo de comandos de cómputo intensivo (crackeo simulado).' },
+    { id: 'gpu1', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 1', nivel: 1, costo: 150, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Desbloquea un diccionario ampliado en retos de fuerza bruta simulada.' },
+    { id: 'gpu2', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 2', nivel: 2, costo: 240, prereqUpgrades: ['gpu1'], prereqEpisodio: 3, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu3', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 3', nivel: 3, costo: 384, prereqUpgrades: ['gpu2'], prereqEpisodio: 5, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu4', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 4', nivel: 4, costo: 614, prereqUpgrades: ['gpu3'], prereqEpisodio: 6, efecto: 'Amplía aún más el diccionario disponible en retos de fuerza bruta simulada.' },
+    { id: 'gpu5', categoria: 'GPU', nombre: 'Tarjeta gráfica — Nivel 5', nivel: 5, costo: 983, prereqUpgrades: ['gpu4'], prereqEpisodio: 7, efecto: 'Diccionario máximo disponible en retos de fuerza bruta simulada.' },
+    { id: 'store1', categoria: 'Almacenamiento', nombre: 'Disco — 1TB', nivel: 1, costo: 60, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Aumenta el cupo de evidencias/capturas guardadas en tu inventario forense.' },
+    { id: 'store2', categoria: 'Almacenamiento', nombre: 'Disco — 2TB', nivel: 2, costo: 84, prereqUpgrades: ['store1'], prereqEpisodio: 5, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store3', categoria: 'Almacenamiento', nombre: 'Disco — 4TB', nivel: 3, costo: 118, prereqUpgrades: ['store2'], prereqEpisodio: 6, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store4', categoria: 'Almacenamiento', nombre: 'Disco — 8TB', nivel: 4, costo: 165, prereqUpgrades: ['store3'], prereqEpisodio: 7, efecto: 'Aumenta aún más el cupo de evidencias/capturas guardadas.' },
+    { id: 'store5', categoria: 'Almacenamiento', nombre: 'RAID de laboratorio', nivel: 5, costo: 231, prereqUpgrades: ['store4'], prereqEpisodio: 7, efecto: 'Cupo máximo de evidencias/capturas, con redundancia simulada.' },
+    { id: 'server1', categoria: 'Servidor Propio', nombre: 'Servidor Propio del Laboratorio', nivel: 1, costo: 800, prereqUpgrades: [], prereqEpisodio: 4, efecto: 'Desbloquea el modo sandbox: repetir cualquier nivel ya superado, sin afectar tu progreso ni tu rango.' },
+    { id: 'cluster1', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 1', nivel: 1, costo: 200, prereqUpgrades: [], prereqEpisodio: 2, efecto: 'Acelera visualmente el escaneo de puertos/red en niveles de reconocimiento.' },
+    { id: 'cluster2', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 2', nivel: 2, costo: 340, prereqUpgrades: ['cluster1'], prereqEpisodio: 3, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster3', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 3', nivel: 3, costo: 578, prereqUpgrades: ['cluster2'], prereqEpisodio: 4, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster4', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 4', nivel: 4, costo: 983, prereqUpgrades: ['cluster3'], prereqEpisodio: 5, efecto: 'Suma un nodo voluntario más al clúster — escaneos más rápidos en pantalla.' },
+    { id: 'cluster5', categoria: 'Clúster del Club', nombre: 'Clúster del Club — Nodo 5', nivel: 5, costo: 1671, prereqUpgrades: ['cluster4'], prereqEpisodio: 6, efecto: 'Clúster de voluntarios al máximo — escaneos lo más rápido posible en pantalla.' },
+    { id: 'cosm1', categoria: 'Cosméticos', nombre: 'Tema de terminal: Ámbar', nivel: 1, costoRep: 10, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Cambia el color de la terminal a tono ámbar retro.' },
+    { id: 'cosm2', categoria: 'Cosméticos', nombre: 'Tema de terminal: Matrix', nivel: 2, costoRep: 20, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Cambia el color de la terminal a verde Matrix.' },
+    { id: 'cosm3', categoria: 'Cosméticos', nombre: 'Insignia: Ojo de Halcón', nivel: 3, costoRep: 30, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Insignia de perfil visible en el Codex.' },
+    { id: 'cosm4', categoria: 'Cosméticos', nombre: 'Avatar: INGenioso Dorado', nivel: 4, costoRep: 40, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Variante dorada del avatar de INGenioso.' },
+    { id: 'cosm5', categoria: 'Cosméticos', nombre: 'Título: Leyenda del Club', nivel: 5, costoRep: 50, prereqUpgrades: [], prereqEpisodio: 0, efecto: 'Título especial mostrado junto a tu rango.' },
+  ];
+  const UPGRADE_CATEGORY_ICON = { RAM: '💾', CPU: '⚙️', GPU: '🖥️', 'Almacenamiento': '🗄️', 'Servidor Propio': '🖧', 'Clúster del Club': '🌐', 'Cosméticos': '🎨' };
   function renderBriefing(){
     briefingText.textContent = BRIEFINGS[state.level] || '';
     levelLabel.textContent = state.level === 31 ? 'EXAMEN FINAL' : 'NIVEL ' + state.level;
@@ -2225,7 +2400,7 @@
     const bucket = (HINTS[state.level] && HINTS[state.level][objId]) || [];
     const text = bucket.length ? bucket[Math.min(state.hintsUsed, bucket.length - 1)] : 'Sigue explorando con los comandos que ya conoces.';
     helpResponse(text);
-    if (bucket.length){ state.hintsUsed++; saveState(); }
+    if (bucket.length){ state.hintsUsed++; state.economy.levelHintsUsed++; saveState(); }
   }
   function giveHint(){
     const unmet = currentUnmetObjective();
@@ -2240,6 +2415,142 @@
     const cmd = EXAMPLES[state.level] && EXAMPLES[state.level][unmet.id];
     if (!cmd){ helpResponse('Sigue explorando con los comandos que ya conoces.'); return; }
     helpResponse('Ejemplo: ' + cmd);
+  }
+
+  // ---- Economía virtual: lógica de negocio ----
+  // Todo el saldo/validación vive aquí, nunca se confía en un valor editado desde fuera
+  // de estas funciones — coherente con lo que el propio juego enseña sobre validación
+  // del lado del servidor (aquí, la única "fuente de verdad" autorizada es este módulo).
+  function txId(){ return 'tx_' + Date.now() + '_' + Math.floor(Math.random() * 10000); }
+  function pushTransaction(tx){
+    state.economy.transactions.push(tx);
+    if (state.economy.transactions.length > 300) state.economy.transactions.shift();
+  }
+  function awardBytecoin(amount, reason, referenceId){
+    if (amount <= 0) return;
+    state.economy.bytecoin += amount;
+    state.economy.bytecoinLifetime += amount;
+    pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'earn', currency: 'BC', amount, reason, referenceId });
+    saveState();
+  }
+  function spendBytecoin(amount, reason, referenceId){
+    if (state.economy.bytecoin < amount) return false;
+    state.economy.bytecoin -= amount;
+    pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'spend', currency: 'BC', amount: -amount, reason, referenceId });
+    saveState();
+    return true;
+  }
+  function awardReputation(amount, reason, referenceId){
+    if (amount <= 0) return;
+    state.economy.reputation += amount;
+    pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'earn', currency: 'REP', amount, reason, referenceId });
+    saveState();
+  }
+  function spendReputation(amount, reason, referenceId){
+    if (state.economy.reputation < amount) return false;
+    state.economy.reputation -= amount;
+    pushTransaction({ id: txId(), timestamp: new Date().toISOString(), type: 'spend', currency: 'REP', amount: -amount, reason, referenceId });
+    saveState();
+    return true;
+  }
+
+  function computeLevelReward(level){
+    const ep = episodeForLevel(level);
+    if (!ep) return { amount: 0, isFirst: false, bonusLabels: [] };
+    const isFirst = !state.economy.levelFirstDone[level];
+    const base = ep.baseReward;
+    if (!isFirst) return { amount: Math.round(base * ECONOMY_CONFIG.replayRewardPct), isFirst: false, bonusLabels: [] };
+    let amount = base;
+    const bonusLabels = [];
+    if (state.economy.levelHintsUsed === 0){ amount += Math.round(base * ECONOMY_CONFIG.bonusNoHints); bonusLabels.push('sin pistas'); }
+    if (state.economy.levelErrors <= ECONOMY_CONFIG.bonusFewErrorsMax){ amount += Math.round(base * ECONOMY_CONFIG.bonusFewErrors); bonusLabels.push('pocos errores'); }
+    const elapsedSec = (Date.now() - (state.economy.levelStartedAt || Date.now())) / 1000;
+    if (elapsedSec <= ECONOMY_CONFIG.fastTimeSeconds){ amount += Math.round(base * ECONOMY_CONFIG.bonusFastTime); bonusLabels.push('tiempo rápido'); }
+    return { amount, isFirst: true, bonusLabels };
+  }
+
+  // Se llama justo cuando las 8 etapas de un nivel acaban de completarse (ver runCommand).
+  function awardLevelCompletion(level){
+    const today = new Date().toISOString().slice(0, 10);
+    if (state.economy.replayDate !== today){ state.economy.replayDate = today; state.economy.replayCountToday = 0; }
+    const { amount, isFirst, bonusLabels } = computeLevelReward(level);
+    let finalAmount = amount;
+    if (isFirst){
+      state.economy.levelFirstDone[level] = true;
+    } else {
+      if (state.economy.replayCountToday >= ECONOMY_CONFIG.replayDailyCap){ finalAmount = 0; }
+      else state.economy.replayCountToday++;
+    }
+    if (finalAmount > 0){
+      const reason = isFirst
+        ? ('Nivel ' + level + ' completado' + (bonusLabels.length ? ' (' + bonusLabels.join(', ') + ')' : ''))
+        : ('Nivel ' + level + ' repetido (modo sandbox)');
+      awardBytecoin(finalAmount, reason, 'nivel_' + level);
+      helpResponse('💰 +' + finalAmount + ' ₿C — ' + reason + '.');
+    } else if (!isFirst){
+      helpResponse('Ya alcanzaste el máximo de rejugadas que otorgan ₿C hoy — vuelve mañana.');
+    }
+    state.economy.levelHintsUsed = 0;
+    state.economy.levelErrors = 0;
+    // Bono de Reputación al cerrar un episodio completo (solo la primera vez).
+    const epIdx = episodeIndexForLevel(level);
+    const ep = EPISODES[epIdx];
+    if (ep && isFirst && ep.levels[ep.levels.length - 1] === level && !state.economy.episodeRepAwarded[ep.n]){
+      state.economy.episodeRepAwarded[ep.n] = true;
+      const rep = EPISODE_REP[epIdx];
+      awardReputation(rep, 'Episodio ' + ep.n + ' completado (' + ep.title + ')', 'episodio_' + ep.n);
+      helpResponse('🏅 +' + rep + ' REP — Episodio ' + ep.n + ' completado.');
+    }
+    saveState();
+    if (typeof renderShop === 'function') renderShop();
+  }
+  function awardGameCompleteBonus(){
+    if (state.economy.gameCompleteRepAwarded) return;
+    state.economy.gameCompleteRepAwarded = true;
+    awardReputation(GAME_COMPLETE_REP_BONUS, 'Kernel Cero completo — Héroe del Club', 'juego_completo');
+  }
+
+  function upgradeLockReason(upg){
+    const missing = upg.prereqUpgrades.filter((id) => !state.economy.upgradesOwned.includes(id));
+    if (missing.length){
+      const names = missing.map((id) => (UPGRADES.find((u) => u.id === id) || {}).nombre || id);
+      return 'Requiere primero: ' + names.join(', ');
+    }
+    if (upg.prereqEpisodio && highestEpisodeCompleted() < upg.prereqEpisodio){
+      const ep = EPISODES[upg.prereqEpisodio - 1];
+      return 'Requiere Episodio ' + upg.prereqEpisodio + ' completo (' + (ep ? ep.title : '') + ')';
+    }
+    return null;
+  }
+  function purchaseUpgrade(id){
+    const upg = UPGRADES.find((u) => u.id === id);
+    if (!upg) return;
+    if (state.economy.upgradesOwned.includes(id)){ helpResponse('Ya tienes esa mejora.'); return; }
+    const reason = upgradeLockReason(upg);
+    if (reason){ helpResponse('🔒 Bloqueado — ' + reason); return; }
+    if (upg.costoRep != null){
+      if (!spendReputation(upg.costoRep, 'Mejora: ' + upg.nombre, upg.id)){ helpResponse('No tienes suficiente REP para esta mejora (' + upg.costoRep + ' REP).'); return; }
+    } else {
+      if (!spendBytecoin(upg.costo, 'Mejora: ' + upg.nombre, upg.id)){ helpResponse('No tienes suficiente ₿C para esta mejora (' + upg.costo + ' ₿C).'); return; }
+    }
+    state.economy.upgradesOwned.push(id);
+    saveState();
+    helpResponse('✅ Compraste: ' + upg.nombre + '. ' + upg.efecto);
+    if (typeof renderShop === 'function') renderShop();
+    if (typeof applyCosmeticTheme === 'function') applyCosmeticTheme();
+  }
+  // Reinicio de la economía — pensado para el mentor/profesor del club en caso de bug
+  // o abuso, nunca para el flujo normal del jugador. No hay backend/roles reales en este
+  // juego, así que la protección real es la doble confirmación explícita en la UI.
+  function resetEconomy(){
+    state.economy = {
+      bytecoin: 0, bytecoinLifetime: 0, reputation: 0, transactions: [], upgradesOwned: [],
+      levelFirstDone: {}, episodeRepAwarded: {}, gameCompleteRepAwarded: false,
+      replayDate: null, replayCountToday: 0, levelHintsUsed: 0, levelErrors: 0, levelStartedAt: Date.now(),
+    };
+    saveState();
+    if (typeof renderShop === 'function') renderShop();
+    if (typeof applyCosmeticTheme === 'function') applyCosmeticTheme();
   }
 
   // ---- INGenioso: diálogo junto a la computadora ----
@@ -4947,7 +5258,10 @@
       mistakeStreak = 0;
       celebrate();
       announceNext(objsAfter);
-      if (doneAfter >= totalStages && doneBefore < totalStages && levelAtStart !== 31){ playLevelClearFanfare(); runLevelUpMatrix(2600); }
+      if (doneAfter >= totalStages && doneBefore < totalStages){
+        awardLevelCompletion(levelAtStart);
+        if (levelAtStart !== 31){ playLevelClearFanfare(); runLevelUpMatrix(2600); }
+      }
     } else {
       registerMistake();
     }
@@ -4969,6 +5283,8 @@
   }
   function registerMistake(){
     mistakeStreak++;
+    state.economy.levelErrors++;
+    saveState();
     if (mistakeStreak >= 2 && mistakeStreak % 2 === 0){
       sayIngenioso(mindsetTip());
     }
@@ -5009,12 +5325,25 @@
     { n: 31, title: 'Informe Final y Reconocimiento', desc: '8 etapas: compila el informe final y cierra Kernel Cero como héroe del club.', banner: '=== EXAMEN FINAL: INFORME Y RECONOCIMIENTO ===', firstCmd: 'cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt', startMsg: 'El cierre, agente. Compila toda la auditoría: cat fase-datacenter.txt fase-iam.txt fase-storage.txt fase-monitoreo.txt fase-causa-raiz.txt fase-impacto.txt' },
   ];
   function levelDone(n){ return objectivesFor(n).every((o) => o.done); }
+  // Mejora "Servidor Propio" (server1): desbloquea repetir cualquier nivel ya superado en
+  // modo sandbox, sin afectar tu progreso real — solo resetea las banderas de ETAPA de ese
+  // nivel para poder volver a jugarlo; tu nivel actual, rango y demás niveles no se tocan.
+  function resetLevelForSandbox(n){
+    const flagMap = STAGE_FLAG[n];
+    const s = state['l' + n];
+    if (!flagMap || !s) return;
+    Object.values(flagMap).forEach((prop) => { s[prop] = false; });
+    saveState();
+  }
   function renderLevelCards(){
     const container = document.getElementById('level-cards');
     container.innerHTML = '';
+    const hasSandbox = state.economy.upgradesOwned.includes('server1');
     LEVEL_META.forEach((lvl, idx) => {
       const prevDone = idx === 0 || levelDone(LEVEL_META[idx - 1].n);
       const done = levelDone(lvl.n);
+      const wrap = document.createElement('div');
+      wrap.className = 'level-card-wrap';
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'level-card';
@@ -5023,7 +5352,21 @@
       btn.innerHTML = '<div class="level-num">' + String(lvl.n).padStart(2, '0') + '</div><h3>' + lvl.title + '</h3><p>' + lvl.desc + '</p><div class="codex-rank" style="margin:.2rem 0 .5rem;">' + rank.icon + ' ' + rank.title + '</div><span class="level-status">' +
         (done ? 'Completo ✓' : prevDone ? 'Disponible' : '🔒 Completa el nivel anterior') + '</span>';
       btn.addEventListener('click', () => { if (prevDone) goToLevel(lvl.n); });
-      container.appendChild(btn);
+      wrap.appendChild(btn);
+      if (done && hasSandbox){
+        const replayBtn = document.createElement('button');
+        replayBtn.type = 'button';
+        replayBtn.className = 'level-replay-btn';
+        replayBtn.textContent = '🔁 Repetir (sandbox, no afecta tu progreso)';
+        replayBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          resetLevelForSandbox(lvl.n);
+          levelSelectModal.hidden = true;
+          goToLevel(lvl.n);
+        });
+        wrap.appendChild(replayBtn);
+      }
+      container.appendChild(wrap);
     });
   }
   function showLevelSelect(){
@@ -5231,6 +5574,10 @@
       // completo de docs/narrativa-dialogos-completos.md) — reabrir el ícono flotante
       // la vuelve a mostrar en cualquier momento, igual que cualquier otra etapa.
       if (fresh){
+        state.economy.levelHintsUsed = 0;
+        state.economy.levelErrors = 0;
+        state.economy.levelStartedAt = Date.now();
+        saveState();
         print('Escribe "' + meta.firstCmd + '" para empezar.', 'tip');
         const objs0 = objectivesFor(n);
         const first = objs0[0];
@@ -5290,12 +5637,19 @@
 
   function finishGame(){
     state.completed = true;
+    awardGameCompleteBonus();
     saveState();
     playVictoryJingle();
     runLevelUpMatrix(3600);
     document.getElementById('stat-time').textContent = fmtTime(elapsedMs());
     document.getElementById('stat-hints').textContent = String(state.hintsUsed);
     document.getElementById('stat-commands').textContent = String(learned.size) + ' / ' + CHEATSHEET.length;
+    const statBc = document.getElementById('stat-bytecoin');
+    if (statBc) statBc.textContent = String(state.economy.bytecoinLifetime) + ' ₿C';
+    const statRep = document.getElementById('stat-reputation');
+    if (statRep) statRep.textContent = String(state.economy.reputation) + ' REP';
+    const statUpg = document.getElementById('stat-upgrades');
+    if (statUpg) statUpg.textContent = String(state.economy.upgradesOwned.length) + ' / ' + UPGRADES.length;
     const cs = document.getElementById('cheatsheet');
     cs.innerHTML = '';
     CHEATSHEET.forEach(([name, desc]) => {
@@ -5337,6 +5691,150 @@
   document.getElementById('quick-hint-btn').addEventListener('click', giveHint);
   document.getElementById('quick-example-btn').addEventListener('click', giveExample);
   document.getElementById('codex-close').addEventListener('click', () => { document.getElementById('codex-modal').hidden = true; });
+
+  // ---- Tienda del Laboratorio (economía virtual): UI ----
+  const CATEGORY_ORDER = ['RAM', 'CPU', 'GPU', 'Almacenamiento', 'Servidor Propio', 'Clúster del Club', 'Cosméticos'];
+  function updateWalletLabel(){
+    const label = document.getElementById('shop-wallet-label');
+    if (label) label.textContent = '₿' + state.economy.bytecoin;
+  }
+  function renderShopUpgrades(){
+    const panel = document.getElementById('shop-panel-upgrades');
+    panel.innerHTML = '';
+    CATEGORY_ORDER.forEach((cat) => {
+      const items = UPGRADES.filter((u) => u.categoria === cat);
+      if (!items.length) return;
+      const box = document.createElement('div');
+      box.className = 'shop-category';
+      const h3 = document.createElement('h3');
+      h3.textContent = (UPGRADE_CATEGORY_ICON[cat] || '🔧') + ' ' + cat;
+      box.appendChild(h3);
+      const list = document.createElement('div');
+      list.className = 'shop-nodes';
+      items.forEach((upg) => {
+        const owned = state.economy.upgradesOwned.includes(upg.id);
+        const lockReason = owned ? null : upgradeLockReason(upg);
+        const node = document.createElement('div');
+        node.className = 'shop-node' + (owned ? ' owned' : '') + (lockReason ? ' locked' : '');
+        const info = document.createElement('div');
+        info.className = 'shop-node-info';
+        const costLabel = upg.costoRep != null ? (upg.costoRep + ' REP') : (upg.costo + ' ₿C');
+        info.innerHTML = '<b>' + escapeHtml(upg.nombre) + ' — ' + costLabel + '</b><span>' + escapeHtml(upg.efecto) + '</span>' + (lockReason ? '<div class="shop-node-lock">🔒 ' + escapeHtml(lockReason) + '</div>' : '');
+        node.appendChild(info);
+        if (owned){
+          const tag = document.createElement('span');
+          tag.className = 'shop-owned-tag';
+          tag.textContent = '✅ Adquirida';
+          node.appendChild(tag);
+        } else {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'shop-buy-btn';
+          btn.textContent = 'Comprar';
+          btn.dataset.upgradeId = upg.id;
+          const canAfford = upg.costoRep != null ? state.economy.reputation >= upg.costoRep : state.economy.bytecoin >= upg.costo;
+          btn.disabled = Boolean(lockReason) || !canAfford;
+          node.appendChild(btn);
+        }
+        list.appendChild(node);
+      });
+      box.appendChild(list);
+      panel.appendChild(box);
+    });
+  }
+  function renderShopHistory(){
+    const panel = document.getElementById('shop-panel-history');
+    const tx = state.economy.transactions.slice().reverse().slice(0, 40);
+    if (!tx.length){ panel.innerHTML = '<div class="shop-empty">Todavía no hay transacciones. ¡Completa un nivel para empezar a ganar ₿C!</div>'; return; }
+    let html = '<table class="shop-history-table"><thead><tr><th>Fecha</th><th>Motivo</th><th>Monto</th></tr></thead><tbody>';
+    tx.forEach((t) => {
+      const d = new Date(t.timestamp);
+      const fecha = isNaN(d.getTime()) ? '' : (d.toLocaleDateString('es-EC') + ' ' + d.toLocaleTimeString('es-EC', { hour: '2-digit', minute: '2-digit' }));
+      const sign = t.amount >= 0 ? '+' : '';
+      const cls = t.amount >= 0 ? 'earn' : 'spend';
+      html += '<tr><td>' + fecha + '</td><td>' + escapeHtml(t.reason || '') + '</td><td class="' + cls + '">' + sign + t.amount + ' ' + (t.currency || 'BC') + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    panel.innerHTML = html;
+  }
+  function renderShopLab(){
+    const panel = document.getElementById('shop-panel-lab');
+    panel.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'lab-rack';
+    CATEGORY_ORDER.filter((c) => c !== 'Cosméticos').forEach((cat) => {
+      const items = UPGRADES.filter((u) => u.categoria === cat);
+      const ownedCount = items.filter((u) => state.economy.upgradesOwned.includes(u.id)).length;
+      const card = document.createElement('div');
+      card.className = 'lab-category';
+      const slots = items.map((u) => '<span class="lab-slot' + (state.economy.upgradesOwned.includes(u.id) ? ' filled' : '') + '"></span>').join('');
+      card.innerHTML = '<div class="lab-icon">' + (UPGRADE_CATEGORY_ICON[cat] || '🔧') + '</div><b>' + cat + ' (' + ownedCount + '/' + items.length + ')</b><div class="lab-slots">' + slots + '</div>';
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+    const note = document.createElement('p');
+    note.style.cssText = 'font-size:.7rem;color:var(--ink-dim);margin-top:1rem;';
+    note.textContent = 'Cada casilla iluminada es una mejora que ya instalaste en tu rack del laboratorio.';
+    panel.appendChild(note);
+  }
+  function renderShop(){
+    document.getElementById('wallet-bc').textContent = String(state.economy.bytecoin);
+    document.getElementById('wallet-bc-lifetime').textContent = String(state.economy.bytecoinLifetime);
+    document.getElementById('wallet-rep').textContent = String(state.economy.reputation);
+    updateWalletLabel();
+    renderShopUpgrades();
+    renderShopHistory();
+    renderShopLab();
+  }
+  function openShop(){ renderShop(); document.getElementById('shop-modal').hidden = false; }
+  function closeShop(){ document.getElementById('shop-modal').hidden = true; }
+  document.getElementById('shop-toggle').addEventListener('click', openShop);
+  document.getElementById('shop-close').addEventListener('click', closeShop);
+  document.getElementById('shop-panel-upgrades').addEventListener('click', (e) => {
+    const btn = e.target.closest('.shop-buy-btn');
+    if (!btn || btn.disabled) return;
+    purchaseUpgrade(btn.dataset.upgradeId);
+  });
+  const SHOP_TABS = [
+    { btn: 'shop-tab-upgrades', panel: 'shop-panel-upgrades' },
+    { btn: 'shop-tab-history', panel: 'shop-panel-history' },
+    { btn: 'shop-tab-lab', panel: 'shop-panel-lab' },
+  ];
+  SHOP_TABS.forEach(({ btn, panel }) => {
+    document.getElementById(btn).addEventListener('click', () => {
+      SHOP_TABS.forEach((t) => {
+        document.getElementById(t.btn).classList.toggle('active', t.btn === btn);
+        document.getElementById(t.btn).setAttribute('aria-selected', String(t.btn === btn));
+        document.getElementById(t.panel).hidden = t.panel !== panel;
+      });
+    });
+  });
+  let resetConfirmPending = false;
+  let resetConfirmTimer = null;
+  document.getElementById('shop-reset-admin').addEventListener('click', (e) => {
+    if (!resetConfirmPending){
+      resetConfirmPending = true;
+      e.target.textContent = '⚠️ ¿Seguro? Haz clic de nuevo para reiniciar toda la economía';
+      resetConfirmTimer = setTimeout(() => {
+        resetConfirmPending = false;
+        e.target.textContent = '⚙️ Reiniciar economía (solo mentor/profesor)';
+      }, 5000);
+      return;
+    }
+    clearTimeout(resetConfirmTimer);
+    resetConfirmPending = false;
+    e.target.textContent = '⚙️ Reiniciar economía (solo mentor/profesor)';
+    resetEconomy();
+  });
+  function applyCosmeticTheme(){
+    const app = document.getElementById('app');
+    if (!app) return;
+    app.classList.remove('theme-amber', 'theme-matrix');
+    if (state.economy.upgradesOwned.includes('cosm2')) app.classList.add('theme-matrix');
+    else if (state.economy.upgradesOwned.includes('cosm1')) app.classList.add('theme-amber');
+  }
+  applyCosmeticTheme();
+  updateWalletLabel();
 
   document.getElementById('restart-btn').addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
