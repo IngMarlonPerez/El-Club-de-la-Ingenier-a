@@ -340,6 +340,10 @@ npm start
 | `SUPABASE_URL` | ⚠️ | URL del proyecto Supabase (para tracking de cuotas e integrantes) |
 | `SUPABASE_ANON_KEY` | ⚠️ | Clave pública Anon de Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | ⚠️ | Clave de rol de servicio (privada) para bypass RLS en backend |
+| `JOOBLE_API_KEY` | ⚠️ | Clave de la API de Jooble para el Buscador de Empleo (`jooble.org/api/about`) |
+| `JOB_CACHE_TTL_HOURS` | ❌ | Horas de vigencia de la caché de búsquedas (por defecto: 1) |
+| `JOB_SCRAPER_CRON_HOURS` | ❌ | Cada cuántas horas corre el cron de Computrabajo (por defecto: 6) |
+| `CRON_SECRET` | ⚠️ | Protege `pages/api/cron/scrape-jobs.js` — Vercel lo envía solo si está en las variables de entorno del proyecto |
 
 ```env
 # .env.local
@@ -350,7 +354,28 @@ NVIDIA_DAILY_LIMIT=300
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_ANON_KEY=sb_publishable_xxxxxxxx
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
+JOOBLE_API_KEY=tu_clave_de_jooble_aqui
+JOB_CACHE_TTL_HOURS=1
+JOB_SCRAPER_CRON_HOURS=6
+CRON_SECRET=genera_un_valor_aleatorio_largo_aqui
 ```
+
+---
+
+## 💼 Buscador de Empleo (`/proyectos/buscador-empleo`)
+
+Agrega ofertas de empleo recientes (últimos 7 días) a partir de un formulario de carrera, experiencia, tipo de empleo y ubicación.
+
+**Fuentes de datos y por qué se eligió cada una** (investigado antes de implementar):
+
+| Fuente | Cómo se integra | Motivo |
+|---|---|---|
+| **Jooble** | API REST oficial, en vivo, en cada búsqueda | API pública real con cobertura confirmada en Ecuador — sin scraping. |
+| **Computrabajo Ecuador** | Scraping ligero, **solo desde el cron** (`pages/api/cron/scrape-jobs.js`, cada 6h por defecto), nunca en el request del usuario | Estructura HTML verificada manualmente antes de escribir el scraper; robots.txt no bloquea las páginas de listado usadas. |
+| **Multitrabajos** | Enlace directo al portal, no se scrapea | Su API interna está protegida por un reto anti-bot (Cloudflare) que bloquea peticiones simples — intentar evadirlo no es aceptable ni técnica ni éticamente. |
+| **Red Socio Empleo (gob.ec)** | Enlace oficial destacado, no se scrapea | Es la fuente más confiable por ser del gobierno, pero es una aplicación legacy con sesiones (JSF) — no es "scraping ligero", y además tiene mayor sensibilidad legal. Se prioriza mostrarla siempre, con advertencia, en vez de intentar extraer sus datos. |
+
+Deduplicación (por título + empresa normalizados) y filtro de "últimos 7 días" en `lib/jobs/aggregator.js` (función pura, con tests en `lib/jobs/__tests__/aggregator.test.js` — corre con `npm test`).
 
 ---
 
