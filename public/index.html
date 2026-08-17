@@ -10,6 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://elclubdelaingenieria.dpdns.org/logo.png?v=2">
 <link rel="canonical" href="https://elclubdelaingenieria.dpdns.org/">
+<link rel="preconnect" href="https://i.ytimg.com" crossorigin>
 
 <style>
   :root{
@@ -18,6 +19,10 @@
     --panel-2:#0d1626;
     --teal:#2fd8c9;
     --teal-dim:#186a63;
+    /* --teal-dim no cumple contraste AA como color de texto sobre fondos oscuros
+       (~2.7:1) — se usa solo para bordes/hover. Para texto atenuado pero legible
+       (~6:1 sobre --panel), usar --teal-text-dim. */
+    --teal-text-dim:#4fa89c;
     --gold:#e8b23a;
     --ink:#eef3f6;
     --ink-dim:#93a2b8;
@@ -198,7 +203,7 @@
   .term-bar{display:flex;gap:6px;align-items:center;padding:.55rem .8rem;background:var(--panel-2);border-bottom:1px solid var(--line);}
   .term-dot{width:9px;height:9px;border-radius:50%;background:var(--teal-dim);}
   .term-title{margin-left:auto;margin-right:auto;font-size:.65rem;color:var(--ink-dim);letter-spacing:.1em;}
-  .terminal-card .body{padding:1.2rem 1.4rem;color:var(--teal-dim);line-height:1.9;}
+  .terminal-card .body{padding:1.2rem 1.4rem;color:var(--teal-text-dim);line-height:1.9;}
   .terminal-card .body .k{color:var(--teal);}
   .terminal-card .body .v{color:var(--ink);}
 
@@ -277,6 +282,15 @@
   .media-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
   .media-card .frame-wrap{position:relative;width:100%;padding-top:56.25%;background:#000;}
   .media-card .frame-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  /* Facade de video: solo miniatura + botón de play hasta que el usuario hace clic —
+     evita cargar el iframe (JS/CSS de terceros, cookies) en la carga inicial. */
+  .frame-facade{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;cursor:pointer;padding:0;display:block;}
+  .frame-facade img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75;}
+  .frame-facade .facade-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#132238,#0a1220);color:var(--ink-dim);font-family:var(--mono);font-size:.72rem;text-align:center;padding:1rem;}
+  .frame-facade .play-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:rgba(8,14,26,.75);border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s;}
+  .frame-facade:hover .play-btn{transform:translate(-50%,-50%) scale(1.08);background:var(--teal);}
+  .frame-facade .play-btn svg{width:20px;height:20px;fill:var(--ink);margin-left:3px;}
+  .frame-facade:hover .play-btn svg{fill:#04140a;}
   .media-card .cap{padding:1rem 1.2rem;}
   .media-card .cap p{font-family:var(--mono);font-size:.72rem;color:var(--ink-dim);letter-spacing:.05em;}
   .media-links{display:flex;gap:1rem;margin-top:2.6rem;flex-wrap:wrap;}
@@ -366,7 +380,7 @@
 
   #holo-stage{position:relative;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;padding:.9rem 0 .7rem;background:radial-gradient(ellipse at 50% 35%, rgba(47,216,201,.1), transparent 70%);border-bottom:1px solid var(--line);}
   #holo-main{width:104px;height:104px;}
-  #holo-status{text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;color:var(--teal-dim);}
+  #holo-status{text-align:center;font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;color:var(--teal-text-dim);}
 
   @media (min-width:1024px){
     #ai-float{width:84px;height:84px;bottom:2.2rem;left:2.2rem;}
@@ -459,7 +473,10 @@
 <div id="site">
   <header>
     <a href="#hero" class="brand">
-      <img src="logo.png" alt="Logo Club de Ingeniería">
+      <picture>
+        <source srcset="logo.webp" type="image/webp">
+        <img src="logo-optimized.png" alt="Logo Club de Ingeniería" width="38" height="38" loading="eager" decoding="async">
+      </picture>
       <div class="brand-text">CLUB DE INGENIERÍA<span>INNOVANDO EL FUTURO</span></div>
     </a>
     <nav>
@@ -607,7 +624,10 @@
       <p>El equipo directivo del Club de Ingeniería. Da clic en cualquier ícono para ir directo a sus redes.</p>
     </div>
     <div class="team-card">
-      <div class="team-photo"><img src="marlon-profile.jpg" alt="Marlon Pérez — CEO y Fundador"></div>
+      <div class="team-photo"><picture>
+        <source srcset="marlon-profile.webp" type="image/webp">
+        <img src="marlon-profile-optimized.jpg" alt="Marlon Pérez — CEO y Fundador" width="180" height="180" loading="lazy" decoding="async">
+      </picture></div>
       <div>
         <div class="team-role">CEO Y FUNDADOR</div>
         <h3>Ing. Marlon Pérez</h3>
@@ -642,19 +662,40 @@
     <div class="media-grid">
       <div class="media-card">
         <div class="frame-wrap">
-          <iframe src="https://www.youtube.com/embed/-MjXtWBno-4" title="Video del Club de Ingeniería" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          <button type="button" class="frame-facade"
+            data-embed-src="https://www.youtube.com/embed/-MjXtWBno-4?autoplay=1"
+            data-embed-title="Video del Club de Ingeniería"
+            data-embed-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            aria-label="Reproducir: Video del Club de Ingeniería">
+            <img src="https://i.ytimg.com/vi/-MjXtWBno-4/hqdefault.jpg" alt="" loading="lazy" decoding="async">
+            <span class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
         </div>
         <div class="cap"><p>▸ YOUTUBE — VIDEO DESTACADO</p></div>
       </div>
       <div class="media-card">
         <div class="frame-wrap">
-          <iframe src="https://www.youtube.com/embed/videoseries?list=UU_z6dXnuY56EAjdpokmDXyw" title="Últimos videos del canal" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          <button type="button" class="frame-facade"
+            data-embed-src="https://www.youtube.com/embed/videoseries?list=UU_z6dXnuY56EAjdpokmDXyw&autoplay=1"
+            data-embed-title="Últimos videos del canal"
+            data-embed-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            aria-label="Reproducir: Últimos videos del canal">
+            <span class="facade-fallback">▸ Ver últimos videos<br>del canal en YouTube</span>
+            <span class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
         </div>
         <div class="cap"><p>▸ YOUTUBE — ÚLTIMOS VIDEOS DEL CANAL</p></div>
       </div>
       <div class="media-card">
         <div class="frame-wrap">
-          <iframe src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2FIngMarlonPerez2026%2Fvideos%2F1886818965812096%2F&show_text=false&width=560&t=0" title="Video de Facebook del Club de Ingeniería" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+          <button type="button" class="frame-facade"
+            data-embed-src="https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2FIngMarlonPerez2026%2Fvideos%2F1886818965812096%2F&show_text=false&width=560&t=0&autoplay=true"
+            data-embed-title="Video de Facebook del Club de Ingeniería"
+            data-embed-allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            aria-label="Reproducir: Video de Facebook del Club de Ingeniería">
+            <span class="facade-fallback">▸ Ver clip del taller<br>en Facebook</span>
+            <span class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
         </div>
         <div class="cap"><p>▸ FACEBOOK — CLIP DEL TALLER</p></div>
       </div>
@@ -963,8 +1004,8 @@
 })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+<script defer>
 (function(){
   // ---- Generador del SVG del holograma (se usa para la versión mini del botón y la grande del panel) ----
   let holoUid = 0;
@@ -1258,14 +1299,6 @@ privacyBannerOk.addEventListener('click', () => {
 });
 
 let supabase;
-try {
-  const res = await fetch('/api/public-config');
-  const config = await res.json();
-  if (!res.ok || !config.supabaseUrl) throw new Error(config.error || 'config no disponible');
-  supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
-} catch (err) {
-  console.error('No se pudo inicializar Supabase', err);
-}
 
 function showLoggedOut() {
   accountArea.innerHTML = '<a href="#join" class="account-link" id="account-link">unirse</a>';
@@ -1322,44 +1355,8 @@ async function refreshMemberState(session) {
   }
 }
 
-if (supabase) {
-  const { data: { session } } = await supabase.auth.getSession();
-  refreshMemberState(session);
-  supabase.auth.onAuthStateChange((_event, session) => refreshMemberState(session));
-
-  document.getElementById('oauth-google').addEventListener('click', () => {
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/' } });
-  });
-  document.getElementById('oauth-github').addEventListener('click', () => {
-    supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/' } });
-  });
-  document.getElementById('oauth-facebook').addEventListener('click', () => {
-    supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin + '/' } });
-  });
-
-  document.getElementById('profile-save').addEventListener('click', async () => {
-    const { data: { session: current } } = await supabase.auth.getSession();
-    if (!current) return;
-    profileNote.textContent = 'Guardando...';
-    profileNote.className = 'form-note';
-    const { error } = await supabase
-      .from('miembros')
-      .update({ area_interes: profileArea.value, mensaje: profileMsg.value.trim() })
-      .eq('user_id', current.user.id);
-    if (error) {
-      console.error('Error guardando perfil', error);
-      profileNote.textContent = 'No pudimos guardar. Intenta de nuevo.';
-      profileNote.className = 'form-note error';
-      return;
-    }
-    profileNote.textContent = '';
-    refreshMemberState(current);
-  });
-} else {
-  document.getElementById('oauth-google').disabled = true;
-  document.getElementById('oauth-github').disabled = true;
-}
-
+// El formulario de unión sin login (vía /api/join) no depende de Supabase — se conecta
+// de inmediato, sin esperar a que cargue el cliente de autenticación.
 joinForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const consent = document.getElementById('consent');
@@ -1404,6 +1401,77 @@ joinForm.addEventListener('submit', async (e) => {
     joinSubmit.disabled = false;
   }
 });
+
+// Todo lo que depende de Supabase (config remota + cliente + sesión OAuth) corre en
+// segundo plano dentro de esta función async, en vez de con top-level await — así no
+// retrasa nada más de este módulo (como el listener de arriba) si /api/public-config
+// tarda en responder.
+(async function initSupabase(){
+  try {
+    const res = await fetch('/api/public-config');
+    const config = await res.json();
+    if (!res.ok || !config.supabaseUrl) throw new Error(config.error || 'config no disponible');
+    supabase = createClient(config.supabaseUrl, config.supabaseAnonKey);
+  } catch (err) {
+    console.error('No se pudo inicializar Supabase', err);
+  }
+
+  if (supabase) {
+    const { data: { session } } = await supabase.auth.getSession();
+    refreshMemberState(session);
+    supabase.auth.onAuthStateChange((_event, session) => refreshMemberState(session));
+
+    document.getElementById('oauth-google').addEventListener('click', () => {
+      supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/' } });
+    });
+    document.getElementById('oauth-github').addEventListener('click', () => {
+      supabase.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/' } });
+    });
+    document.getElementById('oauth-facebook').addEventListener('click', () => {
+      supabase.auth.signInWithOAuth({ provider: 'facebook', options: { redirectTo: window.location.origin + '/' } });
+    });
+
+    document.getElementById('profile-save').addEventListener('click', async () => {
+      const { data: { session: current } } = await supabase.auth.getSession();
+      if (!current) return;
+      profileNote.textContent = 'Guardando...';
+      profileNote.className = 'form-note';
+      const { error } = await supabase
+        .from('miembros')
+        .update({ area_interes: profileArea.value, mensaje: profileMsg.value.trim() })
+        .eq('user_id', current.user.id);
+      if (error) {
+        console.error('Error guardando perfil', error);
+        profileNote.textContent = 'No pudimos guardar. Intenta de nuevo.';
+        profileNote.className = 'form-note error';
+        return;
+      }
+      profileNote.textContent = '';
+      refreshMemberState(current);
+    });
+  } else {
+    document.getElementById('oauth-google').disabled = true;
+    document.getElementById('oauth-github').disabled = true;
+  }
+})();
+</script>
+
+<script>
+// ---- Facades de video (YouTube/Facebook): el iframe real (y sus cookies/JS de
+// terceros) solo se crea cuando el usuario hace clic — nunca en la carga inicial.
+(function(){
+  document.querySelectorAll('.frame-facade').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const iframe = document.createElement('iframe');
+      iframe.src = btn.dataset.embedSrc;
+      iframe.title = btn.dataset.embedTitle || '';
+      iframe.allow = btn.dataset.embedAllow || '';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'eager';
+      btn.replaceWith(iframe);
+    }, { once: true });
+  });
+})();
 </script>
 
 </body>
