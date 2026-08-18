@@ -14,6 +14,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV DOCKER_BUILD=1
 RUN npm run build
 
 # ---- runner: imagen final, solo lo necesario para correr ----
