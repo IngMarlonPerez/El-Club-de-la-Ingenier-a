@@ -19,13 +19,66 @@ const BodySchema = z.object({
 // el término precargado que mejor coincide con lo que escribió el usuario, en vez de
 // scrapear Computrabajo en vivo dentro de este request — esa es la regla de diseño
 // no negociable del documento base.
-function bestScrapedTerm(carrera) {
-  const q = carrera.toLowerCase();
-  let best = null;
+//
+// matchScrapedTerms intenta, en orden, tres formas de encontrar coincidencias -- el
+// simple "substring" original fallaba con carreras reales como "Ingeniería en
+// Tecnologías de la Información" (no comparte texto literal con ningún término
+// curado) y devolvía cero resultados en silencio, aunque sí había ofertas guardadas.
+function normalizeCarrera(str) {
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // quita acentos
+    .replace(/[^a-z0-9\s]/g, ' ');
+}
+
+const STOPWORDS = new Set(['de', 'la', 'el', 'en', 'y', 'del', 'las', 'los', 'para', 'con']);
+
+function tokenizeCarrera(str) {
+  return normalizeCarrera(str).split(/\s+/).filter((w) => w.length >= 4 && !STOPWORDS.has(w));
+}
+
+// Pistas para carreras comunes que no comparten ninguna raíz literal con los
+// términos curados, pero en la práctica son el término más cercano disponible.
+const CARRERA_HINTS = [
+  { match: ['tecnologia', 'informatica', 'computacion', 'sistemas'], term: 'desarrollador' },
+  { match: ['seguridad'], term: 'ciberseguridad' },
+  { match: ['dato'], term: 'ciencia de datos' },
+  { match: ['telecomunicacion'], term: 'redes' },
+  { match: ['contable', 'auditoria', 'finanza'], term: 'contabilidad' },
+  { match: ['mercadeo', 'publicidad', 'comercial'], term: 'marketing' },
+];
+
+// Devuelve TODOS los términos plausibles, no solo "el mejor" -- un término puede
+// calzar muy bien por texto pero tener solo ofertas viejas cacheadas ese día
+// (Computrabajo no siempre tiene resultados recientes para cada término), así que
+// combinar varios candidatos y dejar que el filtro de "últimos 7 días" decida cuáles
+// sobreviven da resultados más confiables que apostar a un único término "ganador".
+function matchScrapedTerms(carrera) {
+  const q = normalizeCarrera(carrera);
+  const matches = new Set();
+
+  // 1) coincidencia directa por substring (caso más común: "desarrollador web").
   for (const term of CRON_SEARCH_TERMS) {
-    if (q.includes(term) || term.includes(q)) { best = term; break; }
+    if (q.includes(term) || term.includes(q)) matches.add(term);
   }
-  return best;
+
+  // 2) coincidencia por raíz de palabra compartida (primeros 6 caracteres) --
+  // cubre variantes de género/número que el substring exacto no detecta
+  // (ej. "ingenieria" vs "ingeniero").
+  const qTokens = tokenizeCarrera(carrera);
+  for (const term of CRON_SEARCH_TERMS) {
+    const termTokens = tokenizeCarrera(term);
+    const hasMatch = qTokens.some((qt) => termTokens.some((tt) => qt.slice(0, 6) === tt.slice(0, 6)));
+    if (hasMatch) matches.add(term);
+  }
+
+  // 3) pistas curadas para carreras que no comparten raíz literal con ningún término.
+  for (const hint of CARRERA_HINTS) {
+    if (hint.match.some((w) => q.includes(w))) matches.add(hint.term);
+  }
+
+  return Array.from(matches);
 }
 
 export default async function handler(req, res) {
@@ -59,8 +112,9 @@ export default async function handler(req, res) {
     console.error('Jooble falló, se continúa solo con la caché de Computrabajo', err);
   }
 
-  const term = bestScrapedTerm(keywords);
-  const computrabajoJobs = term ? await readScrapedListings(term) : [];
+  const terms = matchScrapedTerms(keywords);
+  const computrabajoLists = await Promise.all(terms.map((t) => readScrapedListings(t)));
+  const computrabajoJobs = computrabajoLists.flat();
 
   const ofertas = aggregateJobs([joobleJobs, computrabajoJobs], { maxAgeDays: 7, limit: 10 });
 
