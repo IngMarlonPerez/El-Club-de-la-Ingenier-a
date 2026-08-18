@@ -140,7 +140,19 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 <tr>
 <td align="center" colspan="3">
 <h3>🎮 Reto Terminal Linux con INGenioso — 31 niveles</h3>
-<strong>Kernel Cero</strong> (Operación Laboratorio-B): aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas en 7 episodios, sonido retro sintetizado, respuestas locales que cuidan la cuota de IA, y un documento de teoría aplicada nivel por nivel. 100% simulado y ficticio.
+<strong>Kernel Cero</strong> (Operación Laboratorio-B): aprende comandos reales de Linux jugando dentro de una computadora retro (el mismo diseño del boot), con <strong>INGenioso</strong> — un oso cyborg asistido por IA — guiándote paso a paso en un único input. 248 etapas en 7 episodios, sonido retro sintetizado, respuestas locales que cuidan la cuota de IA, ayuda proactiva de IA cuando llevas varias fallas seguidas en la misma etapa, voz que narra tanto la historia como la instrucción, y un documento de teoría aplicada nivel por nivel. 100% simulado y ficticio.
+</td>
+</tr>
+<tr>
+<td align="center" colspan="3">
+<h3>₿ Economía virtual ByteCoin</h3>
+Beca inicial de 1.000.000 ₿C (con migración retroactiva para partidas ya guardadas) + tienda del laboratorio con árbol de mejoras (RAM, CPU, GPU, almacenamiento, clúster del club), reputación por episodio completado, modo sandbox para rejugar niveles sin afectar el progreso, e historial de transacciones — todo simulado, sin dinero real.
+</td>
+</tr>
+<tr>
+<td align="center" colspan="3">
+<h3>💼 Buscador de Empleo con análisis de CV por IA</h3>
+Agrega ofertas de Jooble + Computrabajo, enlaza al portal oficial del gobierno, y ahora además <strong>lee tu CV en PDF</strong> (extracción de texto en el propio navegador con <code>pdf.js</code>, el archivo nunca se sube al servidor) para pre-llenar la búsqueda y resaltar qué ofertas coinciden más con tu perfil.
 </td>
 </tr>
 </table>
@@ -173,10 +185,12 @@ Preparado para <strong>Vercel</strong> con configuración mínima y variables de
 | **Framework** | Next.js 16 (Pages Router) | ✅ Activo |
 | **UI Runtime** | React 19 | ✅ Activo |
 | **Validación** | Zod | ✅ Activo |
-| **IA** | Groq API + NVIDIA NIM (Respaldo) | ✅ Activo |
+| **IA** | Groq + OpenRouter + NVIDIA NIM (cascada con respaldo automático) | ✅ Activo |
 | **Base de datos** | Supabase (PostgreSQL + RLS) | ⚠️ En desarrollo (Migraciones creadas) |
 | **Animaciones** | GSAP (GreenSock) | ✅ Activo |
 | **Multimedia** | Web Speech API (voz) · Web Audio API (sonido retro sintetizado) | ✅ Activo |
+| **PDF (cliente)** | pdf.js (`pdfjs-dist`) — extracción de texto de CV en el navegador | ✅ Activo |
+| **Scraping** | Cheerio (Computrabajo, solo desde el cron) | ✅ Activo |
 | **Auth** | OAuth — Google · GitHub · Facebook | 🔜 Planificado |
 | **Monorepo** | Turborepo + pnpm workspaces | 🔜 Planificado |
 | **CI/CD** | GitHub Actions + Vercel | 🔜 Planificado |
@@ -356,7 +370,6 @@ SUPABASE_ANON_KEY=sb_publishable_xxxxxxxx
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
 JOOBLE_API_KEY=tu_clave_de_jooble_aqui
 JOB_CACHE_TTL_HOURS=1
-JOB_SCRAPER_CRON_HOURS=6
 CRON_SECRET=genera_un_valor_aleatorio_largo_aqui
 ```
 
@@ -377,6 +390,8 @@ Agrega ofertas de empleo recientes (últimos 7 días) a partir de un formulario 
 
 Deduplicación (por título + empresa normalizados) y filtro de "últimos 7 días" en `lib/jobs/aggregator.js` (función pura, con tests en `lib/jobs/__tests__/aggregator.test.js` — corre con `npm test`).
 
+**Análisis de CV con IA** (`pages/api/jobs/analyze-cv.js`): un botón "Subir mi CV" extrae el texto del PDF **en el navegador** con `pdf.js` — el archivo nunca sale de tu computadora, solo el texto extraído viaja al servidor. Ese texto se le pasa a la misma cascada de IA del asistente del sitio (`lib/ai/complete.js`, compartida con `pages/api/chat.js`), que devuelve un JSON estructurado (carrera, experiencia, tipo de empleo, habilidades clave) con el mismo formato que ya usa el formulario de búsqueda — así el resultado pre-llena la búsqueda y la dispara solo, sin duplicar ninguna lógica de agregación. Las ofertas que coinciden con tus habilidades se muestran primero, con un chip "Coincide en: ...". Nada del CV se guarda en el servidor.
+
 ---
 
 ## 📁 Estructura del repositorio
@@ -386,26 +401,48 @@ El-Club-de-la-Ingenier-a/
 │
 ├── 📂 public/                  # Assets estáticos servidos por Next.js
 │   ├── index.html              # Landing completa con holograma interactivo y widget de voz
-│   ├── linux-cli.html          # Kernel Cero — Reto Terminal Linux (31 niveles)
+│   ├── linux-cli.html          # Kernel Cero — Reto Terminal Linux (31 niveles + economía ByteCoin)
 │   ├── privacidad.html         # Aviso de tratamiento de datos (LOPDP)
+│   ├── sitemap.xml             # Sitemap para indexación (Google Search Console)
 │   ├── hero-banner.jpg         # Banner principal
 │   └── logo.jpg                # Logo del club
 │
 ├── 📂 pages/
-│   └── 📂 api/
-│       ├── chat.js             # Proxy IA multianfitrión (Groq/NVIDIA) + cuota Supabase
-│       ├── public-config.js    # Config pública de Supabase para el cliente sin bundler
-│       └── join.js             # Formulario de unión (service role, server-side)
+│   ├── 📂 api/
+│   │   ├── chat.js             # Endpoint del asistente IA (usa lib/ai/complete.js)
+│   │   ├── public-config.js    # Config pública de Supabase para el cliente sin bundler
+│   │   ├── join.js             # Formulario de unión (service role, server-side)
+│   │   ├── 📂 jobs/
+│   │   │   ├── search.js       # Búsqueda agregada Jooble + caché de Computrabajo
+│   │   │   └── analyze-cv.js   # Analiza el texto de un CV con IA (ver lib/ai/complete.js)
+│   │   └── 📂 cron/
+│   │       └── scrape-jobs.js  # Cron diario: scrapea Computrabajo para términos curados
+│   └── 📂 proyectos/
+│       └── buscador-empleo.js  # Buscador de Empleo + subida de CV
+│
+├── 📂 lib/
+│   ├── 📂 ai/
+│   │   └── complete.js         # Cascada compartida Groq→OpenRouter→NVIDIA + cuota Supabase
+│   └── 📂 jobs/
+│       ├── jooble.js           # Cliente de la API de Jooble
+│       ├── aggregator.js       # Dedupe + filtro de fecha (función pura, con tests)
+│       ├── cache.js            # Caché de búsquedas (Supabase o archivo local)
+│       ├── rateLimit.js        # Guardia anti-abuso por IP, reutilizable
+│       ├── cronTerms.js        # Términos curados que scrapea el cron
+│       └── 📂 scrapers/
+│           └── computrabajo.js # Scraper ligero de Computrabajo Ecuador
 │
 ├── 📂 supabase/
 │   └── 📂 migrations/          # Migraciones de base de datos SQL
 │       ├── 0001_auth_and_members.sql
-│       └── 0002_ia_uso_diario.sql   # Tabla y función RPC para control de cuota de IA
+│       ├── 0002_ia_uso_diario.sql       # Tabla y función RPC para control de cuota de IA
+│       └── 0003_job_listings_cache.sql  # Caché de ofertas scrapeadas por el cron
 │
 ├── 📂 docs/
 │   └── teoria-operacion-laboratorio-b.md   # Teoría aplicada del reto, nivel por nivel
 │
-├── 📄 next.config.js           # Rewrite / → index.html
+├── 📄 next.config.js           # Rewrite / → index.html + cache headers de imágenes
+├── 📄 vercel.json               # Configuración del cron (1 vez al día, límite plan Hobby)
 ├── 📄 package.json             # Dependencias y scripts
 ├── 📄 .env.local.example       # Plantilla de variables de entorno
 ├── 📄 .gitignore               # Excluye node_modules, .next, .env*
@@ -535,7 +572,12 @@ flowchart LR
 </tr>
 <tr>
 <td><strong>Reto Linux</strong></td>
-<td>Kernel Cero (Operación Laboratorio-B) — 31 niveles, sonido, respuestas locales, teoría</td>
+<td>Kernel Cero (Operación Laboratorio-B) — 31 niveles, economía ByteCoin, sonido, respuestas locales, teoría</td>
+<td align="center">✅</td>
+</tr>
+<tr>
+<td><strong>Buscador de Empleo</strong></td>
+<td>Jooble + Computrabajo + análisis de CV con IA (matching de ofertas)</td>
 <td align="center">✅</td>
 </tr>
 <tr>
