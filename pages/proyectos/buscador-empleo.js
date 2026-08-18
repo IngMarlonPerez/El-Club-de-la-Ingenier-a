@@ -23,6 +23,14 @@ const FUENTE_STYLE = {
 
 const MAX_CV_TEXT_CHARS = 6000;
 const MAX_CV_FILE_BYTES = 8 * 1024 * 1024;
+const WARN_DISMISSED_KEY = 'empleo-warn-dismissed';
+
+const UBICACION_OPTIONS = [
+  'Ecuador', 'Remoto',
+  'Quito', 'Guayaquil', 'Cuenca', 'Milagro', 'Machala', 'Manta', 'Ambato',
+  'Loja', 'Riobamba', 'Portoviejo', 'Santo Domingo', 'Ibarra', 'Esmeraldas',
+  'Durán', 'Babahoyo', 'Latacunga', 'Quevedo',
+];
 
 function formatFecha(iso) {
   if (!iso) return '';
@@ -77,6 +85,17 @@ export default function BuscadorEmpleo() {
   const [cvErrorMsg, setCvErrorMsg] = useState('');
   const [cvSkills, setCvSkills] = useState([]);
   const [cvResumen, setCvResumen] = useState('');
+
+  // El aviso de seguridad empieza oculto y solo se muestra si localStorage confirma
+  // que el usuario no lo cerró antes — evita el parpadeo de mostrarlo y ocultarlo.
+  const [warnDismissed, setWarnDismissed] = useState(true);
+  useEffect(() => {
+    setWarnDismissed(typeof window !== 'undefined' && window.localStorage.getItem(WARN_DISMISSED_KEY) === '1');
+  }, []);
+  const dismissWarn = useCallback(() => {
+    try { window.localStorage.setItem(WARN_DISMISSED_KEY, '1'); } catch (e) {}
+    setWarnDismissed(true);
+  }, []);
 
   const runSearch = useCallback(async (filters) => {
     if (!filters.carrera || filters.carrera.trim().length < 2) {
@@ -246,10 +265,13 @@ export default function BuscadorEmpleo() {
         </div>
       </a>
 
-      <div className="warn-box">
-        <span className="warn-icon">⚠️</span>
-        <span><b>Antes de postular en cualquier oferta</b> (aquí o en cualquier portal): nunca compartas datos bancarios, pagues por un &quot;proceso de selección&quot;, ni entregues copias de tu cédula sin confirmar que la empresa es real. Ante la duda, prioriza siempre ofertas de Red Socio Empleo o empresas que puedas verificar de forma independiente.</span>
-      </div>
+      {!warnDismissed && (
+        <div className="warn-box">
+          <span className="warn-icon">⚠️</span>
+          <span className="warn-text">No compartas datos bancarios ni copias de tu cédula, ni pagues por un &quot;proceso de selección&quot; sin confirmar que la empresa es real.</span>
+          <button type="button" className="warn-close" aria-label="Cerrar aviso" onClick={dismissWarn}>✕</button>
+        </div>
+      )}
 
       <div className="cv-card">
         <div className="cv-card-icon">📄</div>
@@ -297,7 +319,10 @@ export default function BuscadorEmpleo() {
         </label>
         <label>
           <span className="field-label"><span className="field-icon">📍</span> Ubicación <span className="optional">(opcional)</span></span>
-          <input type="text" name="ubicacion" value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} placeholder="Ecuador" maxLength={80} />
+          <input type="text" name="ubicacion" list="ubicacion-list" value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} placeholder="Ecuador" maxLength={80} autoComplete="off" />
+          <datalist id="ubicacion-list">
+            {UBICACION_OPTIONS.map((u) => <option key={u} value={u} />)}
+          </datalist>
         </label>
         <button type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? (<><span className="spinner" aria-hidden="true" /> Buscando…</>) : (<>🔎 Buscar ofertas</>)}
@@ -398,8 +423,11 @@ export default function BuscadorEmpleo() {
         .gov-card p{font-size:.84rem;color:#8fa89c;line-height:1.55;margin:0 0 .6rem;}
         .gov-card-link{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.78rem;color:#e8b23a;}
 
-        .warn-box{display:flex;gap:.7rem;align-items:flex-start;background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.35);border-radius:10px;padding:1rem 1.2rem;font-size:.82rem;line-height:1.6;color:#eef3f6;margin-bottom:1.4rem;}
+        .warn-box{display:flex;gap:.6rem;align-items:center;background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.3);border-radius:8px;padding:.55rem .8rem;font-size:.76rem;line-height:1.45;color:#c9d6cf;margin-bottom:1rem;}
         .warn-icon{flex-shrink:0;}
+        .warn-text{flex:1;}
+        .warn-close{flex-shrink:0;background:none;border:none;color:#8fa89c;cursor:pointer;font-size:.85rem;padding:.2rem .3rem;line-height:1;}
+        .warn-close:hover{color:#eef3f6;}
 
         .cv-card{display:flex;gap:1rem;align-items:flex-start;background:linear-gradient(135deg,#101a2c,#0d1e22);border:1px dashed #2fd8c9;border-radius:12px;padding:1.3rem;margin-bottom:1.4rem;}
         .cv-card-icon{font-size:2.1rem;flex-shrink:0;}

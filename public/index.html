@@ -410,6 +410,7 @@
   #ai-panel.open{display:flex;}
   #ai-backdrop{position:fixed;inset:0;z-index:94;background:rgba(2,6,4,.72);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s ease;}
   #ai-backdrop.show{opacity:1;pointer-events:auto;}
+  #ai-backdrop.show-soft{opacity:1;pointer-events:auto;background:rgba(2,6,4,.4);backdrop-filter:blur(2px);}
   #ai-panel.maximized{inset:0;width:auto;height:auto;max-height:none;z-index:200;border-radius:0;box-shadow:none;}
   body.ai-lock-scroll{overflow:hidden;}
   #ai-panel.maximized .ai-bar{padding-top:calc(.7rem + env(safe-area-inset-top));}
@@ -1289,13 +1290,17 @@
     const willOpen = open ?? !panel.classList.contains('open');
     panel.classList.toggle('open', willOpen);
     if (!willOpen) setMaximized(false);
-    if (willOpen) setTimeout(() => input.focus(), 50);
+    else {
+      if (!panel.classList.contains('maximized')) backdrop.classList.add('show-soft');
+      setTimeout(() => input.focus(), 50);
+    }
   }
 
   function setMaximized(on){
     const willMax = on ?? !panel.classList.contains('maximized');
     panel.classList.toggle('maximized', willMax);
     backdrop.classList.toggle('show', willMax);
+    backdrop.classList.toggle('show-soft', !willMax && panel.classList.contains('open'));
     document.body.classList.toggle('ai-lock-scroll', willMax);
     maxBtn.textContent = willMax ? '⤡' : '⛶';
     maxBtn.title = willMax ? 'Restaurar tamaño' : 'Pantalla completa';
@@ -1305,7 +1310,10 @@
   floatBtn.addEventListener('click', () => togglePanel());
   closeBtn.addEventListener('click', () => togglePanel(false));
   maxBtn.addEventListener('click', () => setMaximized());
-  backdrop.addEventListener('click', () => setMaximized(false));
+  backdrop.addEventListener('click', () => {
+    if (panel.classList.contains('maximized')) setMaximized(false);
+    else togglePanel(false);
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && panel.classList.contains('maximized')) setMaximized(false);
   });
