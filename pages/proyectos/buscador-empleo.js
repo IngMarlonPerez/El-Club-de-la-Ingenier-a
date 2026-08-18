@@ -388,6 +388,10 @@ export default function BuscadorEmpleo() {
         </div>
       </a>
 
+      <a className="other-source" href="https://www.linkedin.com/jobs/search/?location=Ecuador" target="_blank" rel="noopener noreferrer">
+        💼 Ver ofertas en LinkedIn (Ecuador) →
+      </a>
+
       <a className="other-source" href="https://www.multitrabajos.com" target="_blank" rel="noopener noreferrer">
         🔎 También puedes buscar directo en Multitrabajos.com →
       </a>
