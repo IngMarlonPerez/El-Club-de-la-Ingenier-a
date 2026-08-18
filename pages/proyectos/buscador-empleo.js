@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Head from 'next/head';
+import { createClient } from '@supabase/supabase-js';
 
 const EXPERIENCIA_OPTIONS = [
   { value: 'sin_experiencia', label: 'Sin experiencia' },
@@ -80,11 +81,55 @@ export default function BuscadorEmpleo() {
 
   // ---- Análisis de CV (opcional): sube un PDF, la IA lo lee y pre-llena esta misma
   // búsqueda -- el CV se procesa en el navegador (pdf.js), solo el texto extraído viaja
-  // al servidor, nunca el PDF en sí, y nada se guarda.
+  // al servidor para el análisis. El PDF en sí solo se guarda si el usuario tiene sesión
+  // iniciada y da su consentimiento explícito (ver saveCurrentCv más abajo).
   const [cvStatus, setCvStatus] = useState('idle'); // idle | reading | analyzing | done | error
   const [cvErrorMsg, setCvErrorMsg] = useState('');
   const [cvSkills, setCvSkills] = useState([]);
   const [cvResumen, setCvResumen] = useState('');
+  const cvFileRef = useRef(null);
+
+  // ---- Guardar CV (opcional, requiere login): cliente de Supabase en el navegador,
+  // mismo patrón que public/index.html (public-config -> createClient). Si hay sesión,
+  // se busca si ya existe un CV guardado para precargarlo.
+  const [supabase, setSupabase] = useState(null);
+  const [session, setSession] = useState(null);
+  const [savedCv, setSavedCv] = useState(null);
+  const [cvSaveStatus, setCvSaveStatus] = useState('idle'); // idle | saving | error
+  const [cvSaveConsent, setCvSaveConsent] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/public-config');
+        const config = await res.json();
+        if (!res.ok || !config.supabaseUrl || !active) return;
+        const client = createClient(config.supabaseUrl, config.supabaseAnonKey);
+        setSupabase(client);
+
+        const { data: { session: s } } = await client.auth.getSession();
+        if (!active) return;
+        setSession(s);
+        if (s) {
+          const { data } = await client
+            .from('cv_uploads')
+            .select('id, storage_path, nombre_original, subido_en')
+            .eq('user_id', s.user.id)
+            .maybeSingle();
+          if (active && data) setSavedCv(data);
+        }
+
+        client.auth.onAuthStateChange((_event, s2) => {
+          setSession(s2);
+          if (!s2) setSavedCv(null);
+        });
+      } catch (err) {
+        console.error('No se pudo inicializar Supabase en el buscador de empleo', err);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
 
   // El aviso de seguridad empieza oculto y solo se muestra si localStorage confirma
   // que el usuario no lo cerró antes — evita el parpadeo de mostrarlo y ocultarlo.
@@ -151,51 +196,26 @@ export default function BuscadorEmpleo() {
     return () => form.removeEventListener('submit', onNativeSubmit, { capture: true });
   }, [handleSubmit]);
 
-  const onCvFileChange = useCallback(async (e) => {
-    const file = e.target.files && e.target.files[0];
-    e.target.value = ''; // permite volver a elegir el mismo archivo si hace falta reintentar
-    if (!file) return;
-
-    if (file.type !== 'application/pdf') {
-      setCvErrorMsg('Ese archivo no es un PDF. Sube tu CV en formato PDF.');
-      setCvStatus('error');
-      return;
-    }
-    if (file.size > MAX_CV_FILE_BYTES) {
-      setCvErrorMsg('El PDF es muy grande (máximo 8MB).');
-      setCvStatus('error');
-      return;
-    }
-
-    setCvErrorMsg('');
-    setCvSkills([]);
-    setCvResumen('');
-    setCvStatus('reading');
-
+  const extractPdfText = useCallback(async (fileLike) => {
+    const pdfjsLib = await import('pdfjs-dist');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    const buffer = await fileLike.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
     let texto = '';
-    try {
-      const pdfjsLib = await import('pdfjs-dist');
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-      const buffer = await file.arrayBuffer();
-      const doc = await pdfjsLib.getDocument({ data: buffer }).promise;
-      for (let i = 1; i <= doc.numPages && texto.length < MAX_CV_TEXT_CHARS; i++) {
-        const page = await doc.getPage(i);
-        const content = await page.getTextContent();
-        texto += content.items.map((it) => it.str || '').join(' ') + '\n';
-      }
-    } catch (err) {
-      setCvErrorMsg('No pudimos leer ese PDF. Intenta con otro archivo o usa el formulario manual de abajo.');
-      setCvStatus('error');
-      return;
+    for (let i = 1; i <= doc.numPages && texto.length < MAX_CV_TEXT_CHARS; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      texto += content.items.map((it) => it.str || '').join(' ') + '\n';
     }
+    return texto.trim().slice(0, MAX_CV_TEXT_CHARS);
+  }, []);
 
-    texto = texto.trim().slice(0, MAX_CV_TEXT_CHARS);
+  const analyzeAndFill = useCallback(async (texto) => {
     if (texto.length < 30) {
       setCvErrorMsg('No encontramos texto en ese PDF (¿es una imagen escaneada?). Prueba con el formulario manual de abajo.');
       setCvStatus('error');
       return;
     }
-
     setCvStatus('analyzing');
     try {
       const res = await fetch('/api/jobs/analyze-cv', {
@@ -221,6 +241,97 @@ export default function BuscadorEmpleo() {
       setCvStatus('error');
     }
   }, [runSearch, ubicacion]);
+
+  const onCvFileChange = useCallback(async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = ''; // permite volver a elegir el mismo archivo si hace falta reintentar
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setCvErrorMsg('Ese archivo no es un PDF. Sube tu CV en formato PDF.');
+      setCvStatus('error');
+      return;
+    }
+    if (file.size > MAX_CV_FILE_BYTES) {
+      setCvErrorMsg('El PDF es muy grande (máximo 8MB).');
+      setCvStatus('error');
+      return;
+    }
+
+    cvFileRef.current = file;
+    setCvErrorMsg('');
+    setCvSkills([]);
+    setCvResumen('');
+    setCvSaveStatus('idle');
+    setCvSaveConsent(false);
+    setCvStatus('reading');
+
+    let texto = '';
+    try {
+      texto = await extractPdfText(file);
+    } catch (err) {
+      setCvErrorMsg('No pudimos leer ese PDF. Intenta con otro archivo o usa el formulario manual de abajo.');
+      setCvStatus('error');
+      return;
+    }
+    await analyzeAndFill(texto);
+  }, [extractPdfText, analyzeAndFill]);
+
+  // Re-analiza el CV que el usuario ya tenía guardado, sin que tenga que volver a
+  // subir el archivo -- lo descarga de su propia carpeta en Storage (protegida por RLS).
+  const applySavedCv = useCallback(async () => {
+    if (!supabase || !savedCv) return;
+    cvFileRef.current = null;
+    setCvErrorMsg('');
+    setCvSkills([]);
+    setCvResumen('');
+    setCvStatus('reading');
+    try {
+      const { data: blob, error } = await supabase.storage.from('cv-uploads').download(savedCv.storage_path);
+      if (error) throw error;
+      const texto = await extractPdfText(blob);
+      await analyzeAndFill(texto);
+    } catch (err) {
+      console.error('No se pudo usar el CV guardado', err);
+      setCvErrorMsg('No pudimos usar tu CV guardado. Intenta subir uno nuevo.');
+      setCvStatus('error');
+    }
+  }, [supabase, savedCv, extractPdfText, analyzeAndFill]);
+
+  // Guarda el PDF ya analizado en Storage, atado a la cuenta del usuario -- solo se
+  // llama tras el checkbox de consentimiento explícito (ver JSX más abajo).
+  const saveCurrentCv = useCallback(async () => {
+    if (!supabase || !session || !cvFileRef.current || !cvSaveConsent) return;
+    setCvSaveStatus('saving');
+    try {
+      const file = cvFileRef.current;
+      const path = `${session.user.id}/${Date.now()}-${file.name}`;
+      const { error: upErr } = await supabase.storage.from('cv-uploads').upload(path, file, { contentType: 'application/pdf' });
+      if (upErr) throw upErr;
+      const { data, error: insErr } = await supabase
+        .from('cv_uploads')
+        .insert({ user_id: session.user.id, storage_path: path, nombre_original: file.name, tamano_bytes: file.size })
+        .select('id, storage_path, nombre_original, subido_en')
+        .single();
+      if (insErr) throw insErr;
+      setSavedCv(data);
+      setCvSaveStatus('idle');
+    } catch (err) {
+      console.error('No se pudo guardar el CV', err);
+      setCvSaveStatus('error');
+    }
+  }, [supabase, session, cvSaveConsent]);
+
+  const deleteSavedCv = useCallback(async () => {
+    if (!supabase || !savedCv) return;
+    try {
+      await supabase.storage.from('cv-uploads').remove([savedCv.storage_path]);
+      await supabase.from('cv_uploads').delete().eq('id', savedCv.id);
+      setSavedCv(null);
+    } catch (err) {
+      console.error('No se pudo eliminar el CV guardado', err);
+    }
+  }, [supabase, savedCv]);
 
   const displayOfertas = useMemo(() => {
     if (!cvSkills.length) return ofertas;
@@ -276,17 +387,38 @@ export default function BuscadorEmpleo() {
       <div className="cv-card">
         <div className="cv-card-icon">📄</div>
         <div className="cv-card-body">
-          <h2>¿Tienes tu CV a mano?</h2>
-          <p>Súbelo en PDF y dejamos que la IA rellene la búsqueda por ti, resaltando qué ofertas coinciden más con tu perfil. Tu CV se procesa en tu navegador — solo el texto extraído se envía a la IA para el análisis, nunca se guarda en nuestros servidores.</p>
-          <label className={`cv-upload-btn${cvBusy ? ' busy' : ''}`}>
-            {cvBusy ? (
-              <><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo PDF…' : 'Analizando con IA…'}</>
-            ) : (
-              <>📎 Subir mi CV (PDF)</>
-            )}
-            <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
-          </label>
+          {savedCv ? (
+            <>
+              <h2>Ya tienes un CV guardado</h2>
+              <p>Subido el {formatFecha(savedCv.subido_en)} ({savedCv.nombre_original}).</p>
+              <div className="cv-saved-actions">
+                <button type="button" className="cv-upload-btn" onClick={applySavedCv} disabled={cvBusy}>
+                  {cvBusy ? (<><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo…' : 'Analizando…'}</>) : (<>🔎 Usarlo para buscar</>)}
+                </button>
+                <label className={`cv-upload-btn ghost${cvBusy ? ' busy' : ''}`}>
+                  📎 Subir otro
+                  <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
+                </label>
+                <button type="button" className="cv-delete-btn" onClick={deleteSavedCv} disabled={cvBusy}>🗑️ Eliminar</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2>¿Tienes tu CV a mano?</h2>
+              <p>Súbelo en PDF y dejamos que la IA rellene la búsqueda por ti, resaltando qué ofertas coinciden más con tu perfil. Tu CV se procesa en tu navegador — solo el texto extraído se envía a la IA para el análisis, nunca se guarda a menos que tú decidas guardarlo.</p>
+              <label className={`cv-upload-btn${cvBusy ? ' busy' : ''}`}>
+                {cvBusy ? (
+                  <><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo PDF…' : 'Analizando con IA…'}</>
+                ) : (
+                  <>📎 Subir mi CV (PDF)</>
+                )}
+                <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
+              </label>
+            </>
+          )}
+
           {cvErrorMsg && <p className="cv-error">⚠️ {cvErrorMsg}</p>}
+
           {cvStatus === 'done' && (
             <div className="cv-result">
               {cvResumen && <p className="cv-resumen"><b>Perfil detectado:</b> {cvResumen}</p>}
@@ -294,6 +426,22 @@ export default function BuscadorEmpleo() {
                 <div className="cv-skills">
                   {cvSkills.map((s, i) => <span key={i} className="skill-chip">{s}</span>)}
                 </div>
+              )}
+              {!savedCv && cvFileRef.current && (
+                session ? (
+                  <div className="cv-save-row">
+                    <label className="cv-consent">
+                      <input type="checkbox" checked={cvSaveConsent} onChange={(e) => setCvSaveConsent(e.target.checked)} />
+                      Entiendo que mi CV quedará guardado en mi cuenta hasta que yo lo elimine — <a href="/privacidad.html" target="_blank" rel="noopener noreferrer">ver política de privacidad</a>.
+                    </label>
+                    <button type="button" className="cv-save-btn" onClick={saveCurrentCv} disabled={!cvSaveConsent || cvSaveStatus === 'saving'}>
+                      {cvSaveStatus === 'saving' ? 'Guardando…' : '💾 Guardar mi CV para la próxima vez'}
+                    </button>
+                    {cvSaveStatus === 'error' && <p className="cv-error">⚠️ No pudimos guardar tu CV. Intenta de nuevo.</p>}
+                  </div>
+                ) : (
+                  <p className="cv-login-note">¿Quieres que recordemos tu CV la próxima vez? <a href="/#join">Inicia sesión</a> para guardarlo.</p>
+                )
               )}
             </div>
           )}
@@ -447,6 +595,21 @@ export default function BuscadorEmpleo() {
         .cv-resumen{font-size:.84rem;color:#eef3f6;line-height:1.5;margin:0 0 .6rem;}
         .cv-skills{display:flex;flex-wrap:wrap;gap:.4rem;}
         .skill-chip{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.7rem;color:#2fd8c9;background:rgba(47,216,201,.1);border:1px solid rgba(47,216,201,.3);border-radius:20px;padding:.25rem .6rem;}
+
+        .cv-saved-actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;}
+        .cv-upload-btn.ghost{background:transparent;border:1px solid #2fd8c9;color:#2fd8c9;}
+        .cv-delete-btn{background:none;border:1px solid rgba(255,95,95,.4);color:#ff9f9f;border-radius:8px;padding:.65rem 1rem;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.8rem;cursor:pointer;transition:background .15s;}
+        .cv-delete-btn:hover{background:rgba(255,95,95,.1);}
+        .cv-delete-btn:disabled,.cv-upload-btn:disabled{opacity:.6;cursor:not-allowed;}
+
+        .cv-save-row{margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
+        .cv-consent{display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:#8fa89c;line-height:1.5;margin-bottom:.7rem;cursor:pointer;}
+        .cv-consent input{margin-top:.2rem;flex-shrink:0;}
+        .cv-consent a{color:#2fd8c9;}
+        .cv-save-btn{background:#2fd8c9;color:#04140a;border:none;border-radius:8px;padding:.65rem 1.1rem;font-weight:700;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.82rem;cursor:pointer;}
+        .cv-save-btn:disabled{opacity:.5;cursor:not-allowed;}
+        .cv-login-note{font-size:.82rem;color:#8fa89c;margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
+        .cv-login-note a{color:#2fd8c9;}
 
         .search-form{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;background:#101a2c;border:1px solid #1d2b42;border-radius:14px;padding:1.6rem;margin-bottom:1.4rem;box-shadow:0 20px 50px rgba(0,0,0,.25);}
         .search-form label{display:flex;flex-direction:column;gap:.5rem;font-size:.8rem;color:#8fa89c;grid-column:span 1;}

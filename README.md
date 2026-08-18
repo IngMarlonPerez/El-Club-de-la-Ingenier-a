@@ -410,7 +410,9 @@ Agrega ofertas de empleo recientes (últimos 7 días) a partir de un formulario 
 
 Deduplicación (por título + empresa normalizados) y filtro de "últimos 7 días" en `lib/jobs/aggregator.js` (función pura, con tests en `lib/jobs/__tests__/aggregator.test.js` — corre con `npm test`).
 
-**Análisis de CV con IA** (`pages/api/jobs/analyze-cv.js`): un botón "Subir mi CV" extrae el texto del PDF **en el navegador** con `pdf.js` — el archivo nunca sale de tu computadora, solo el texto extraído viaja al servidor. Ese texto se le pasa a la misma cascada de IA del asistente del sitio (`lib/ai/complete.js`, compartida con `pages/api/chat.js`), que devuelve un JSON estructurado (carrera, experiencia, tipo de empleo, habilidades clave) con el mismo formato que ya usa el formulario de búsqueda — así el resultado pre-llena la búsqueda y la dispara solo, sin duplicar ninguna lógica de agregación. Las ofertas que coinciden con tus habilidades se muestran primero, con un chip "Coincide en: ...". Nada del CV se guarda en el servidor.
+**Análisis de CV con IA** (`pages/api/jobs/analyze-cv.js`): un botón "Subir mi CV" extrae el texto del PDF **en el navegador** con `pdf.js` — el archivo nunca sale de tu computadora, solo el texto extraído viaja al servidor. Ese texto se le pasa a la misma cascada de IA del asistente del sitio (`lib/ai/complete.js`, compartida con `pages/api/chat.js`), que devuelve un JSON estructurado (carrera, experiencia, tipo de empleo, habilidades clave) con el mismo formato que ya usa el formulario de búsqueda — así el resultado pre-llena la búsqueda y la dispara solo, sin duplicar ninguna lógica de agregación. Las ofertas que coinciden con tus habilidades se muestran primero, con un chip "Coincide en: ...". Por defecto nada del CV se guarda en el servidor.
+
+**Guardar el CV (opcional, requiere login):** si iniciaste sesión, tras analizar tu CV aparece un botón opt-in "Guardar mi CV para la próxima vez" con su propio checkbox de consentimiento (ver `0005_cv_uploads.sql`). El navegador sube el PDF **directo a un bucket privado de Supabase Storage** (nunca pasa por nuestro servidor), en una carpeta con tu propio `user_id` — las políticas de RLS de Storage garantizan que solo tú puedes leer, listar o borrar tus propios archivos. Puedes eliminarlo cuando quieras con el botón "Eliminar" en la misma página.
 
 ---
 
@@ -457,7 +459,8 @@ El-Club-de-la-Ingenier-a/
 │       ├── 0001_auth_and_members.sql
 │       ├── 0002_ia_uso_diario.sql       # Tabla y función RPC para control de cuota de IA
 │       ├── 0003_job_listings_cache.sql  # Caché de ofertas scrapeadas por el cron
-│       └── 0004_rate_limits.sql         # Tabla y función RPC para rate limiting real
+│       ├── 0004_rate_limits.sql         # Tabla y función RPC para rate limiting real
+│       └── 0005_cv_uploads.sql          # Bucket de Storage + tabla para CVs guardados (opt-in, requiere login)
 │
 ├── 📂 docs/
 │   └── teoria-operacion-laboratorio-b.md   # Teoría aplicada del reto, nivel por nivel
