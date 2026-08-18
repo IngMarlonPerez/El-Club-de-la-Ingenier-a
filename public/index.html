@@ -188,7 +188,7 @@
   .lede{margin-top:1.6rem;font-size:1.05rem;color:var(--ink-dim);max-width:42ch;line-height:1.65;}
 
   .cta-row{display:flex;gap:1rem;margin-top:2.4rem;flex-wrap:wrap;}
-  .btn{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;padding:.85rem 1.5rem;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:transform .15s ease, background .2s ease;border:1px solid transparent;}
+  .btn{font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;padding:.85rem 1.5rem;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;transition:transform .15s ease, background .2s ease;border:1px solid transparent;background:transparent;}
   .btn:hover{transform:translateY(-2px);}
   .btn-primary{background:var(--teal);color:#04140a;font-weight:600;}
   .btn-primary:hover{background:#5cf0e0;}
@@ -1361,7 +1361,10 @@
 </script>
 
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// ?bundle: esm.sh empaqueta todas las sub-dependencias (auth-js, postgrest-js,
+// realtime-js, storage-js, functions-js y los polyfills de Node) en un solo archivo,
+// en vez de que el navegador resuelva ~17 solicitudes en cadena una por una.
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2?bundle';
 
 const accountArea = document.getElementById('account-area');
 const joinOauth = document.getElementById('join-oauth');
