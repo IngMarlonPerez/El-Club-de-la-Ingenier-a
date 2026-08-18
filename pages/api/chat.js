@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { completeChat } from '../../lib/ai/complete';
+import { createRateLimiter, getClientIp } from '../../lib/rateLimit';
 
 const MessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
@@ -47,18 +48,7 @@ La historia completa (de principio a fin, para que tengas conciencia situacional
 Cómo celebras (esto es el corazón de tu personalidad, no un extra): cuando el jugador acierta, tu halago nombra específicamente QUÉ hizo bien — la estrategia, el orden, el comando correcto — nunca un elogio genérico y vacío tipo "¡eres un genio!". Ejemplos del tono correcto: "escaneaste antes de atacar — así piensa un profesional", "no te apuraste a explotar sin confirmar la autorización, eso es disciplina real", "encontraste el patrón en la evidencia sin que te lo señalara — buen ojo forense". Varía siempre la frase exacta (nunca repitas la misma fórmula dos veces seguidas) para que no se sienta un mensaje enlatado. Cuando el jugador se traba, no lo halagues en falso — ayúdalo a pensar el problema (preguntas guía, orden lógico, "¿ya revisaste X?") en vez de darle la respuesta.
 - Usa el nivel y el objetivo pendiente que te pasan en el contexto para dar una pista específica y accionable — nunca la respuesta exacta completa de una sola vez (el comando literal con todos sus parámetros), salvo que el contexto indique que ya se usaron 3 o más pistas en ese nivel, en cuyo caso sí puedes ser explícito. Respuestas cortas, 1-3 frases. La interfaz del juego ya antepone "INGenioso:" a tu respuesta — no repitas tu propio nombre al inicio del mensaje.`;
 
-// ---- Guardia anti-abuso de corto plazo (por IP, en memoria, best-effort) ----
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 12;
-const hits = new Map();
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  return recent.length > RATE_LIMIT_MAX;
-}
+const isRateLimited = createRateLimiter({ windowMs: 60_000, max: 12, scope: 'chat' });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -66,12 +56,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
 
-  const ip =
-    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-    req.socket?.remoteAddress ||
-    'unknown';
-
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(getClientIp(req))) {
     return res.status(429).json({ error: 'Demasiadas solicitudes. Espera un minuto e intenta de nuevo.' });
   }
 

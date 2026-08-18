@@ -1,6 +1,11 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   agentRules: false,
+  // Build liviano pensado para contenedores (ver Dockerfile) -- no afecta el
+  // build/deploy en Vercel, que no usa esta salida.
+  output: 'standalone',
   async rewrites() {
     return [{ source: '/', destination: '/index.html' }];
   },
@@ -19,4 +24,11 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// El plugin de Sentry solo sube source maps si SENTRY_AUTH_TOKEN está configurado
+// (paso opcional en CI/Vercel); sin esa variable, el build sigue funcionando igual,
+// solo sin subir source maps al dashboard de Sentry.
+module.exports = withSentryConfig(nextConfig, {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+});

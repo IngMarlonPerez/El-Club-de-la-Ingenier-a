@@ -2,10 +2,10 @@ import { z } from 'zod';
 import { searchJooble } from '../../../lib/jobs/jooble';
 import { aggregateJobs } from '../../../lib/jobs/aggregator';
 import { readCache, writeCache, readScrapedListings } from '../../../lib/jobs/cache';
-import { createRateLimiter, getClientIp } from '../../../lib/jobs/rateLimit';
+import { createRateLimiter, getClientIp } from '../../../lib/rateLimit';
 import { CRON_SEARCH_TERMS } from '../../../lib/jobs/cronTerms';
 
-const isRateLimited = createRateLimiter({ windowMs: 60_000, max: 20 });
+const isRateLimited = createRateLimiter({ windowMs: 60_000, max: 20, scope: 'jobs-search' });
 
 const BodySchema = z.object({
   carrera: z.string().trim().min(2).max(80),
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
 
-  if (isRateLimited(getClientIp(req))) {
+  if (await isRateLimited(getClientIp(req))) {
     return res.status(429).json({ error: 'Demasiadas búsquedas seguidas. Espera un minuto e intenta de nuevo.' });
   }
 

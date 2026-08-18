@@ -186,7 +186,7 @@ Agrega ofertas de Jooble + Computrabajo, enlaza al portal oficial del gobierno, 
 | **UI Runtime** | React 19 | ✅ Activo |
 | **Validación** | Zod | ✅ Activo |
 | **IA** | Groq + OpenRouter + NVIDIA NIM (cascada con respaldo automático) | ✅ Activo |
-| **Base de datos** | Supabase (PostgreSQL + RLS) | ⚠️ En desarrollo (Migraciones creadas) |
+| **Base de datos** | Supabase (PostgreSQL + RLS) | ✅ Activo — 4 migraciones aplicadas (`miembros`, `solicitudes`, `ia_uso_diario`, `job_listings_cache`, `rate_limits`) |
 | **Animaciones** | GSAP (GreenSock) | ✅ Activo |
 | **Multimedia** | Web Speech API (voz) · Web Audio API (sonido retro sintetizado) | ✅ Activo |
 | **PDF (cliente)** | pdf.js (`pdfjs-dist`) — extracción de texto de CV en el navegador | ✅ Activo |
@@ -194,7 +194,9 @@ Agrega ofertas de Jooble + Computrabajo, enlaza al portal oficial del gobierno, 
 | **Auth** | OAuth — Google · GitHub · Facebook | 🔜 Planificado |
 | **Monorepo** | Turborepo + pnpm workspaces | 🔜 Planificado |
 | **CI/CD** | GitHub Actions + Vercel | 🔜 Planificado |
-| **Observabilidad** | Sentry · Vercel Analytics | 🔜 Planificado |
+| **Rate limiting** | Función atómica en Supabase (`increment_rate_limit`), con respaldo en memoria si Supabase no está configurado | ✅ Activo |
+| **Observabilidad** | Sentry (`@sentry/nextjs`, opt-in con `SENTRY_DSN`) | ✅ Cableado — activar con una cuenta gratuita |
+| **Contenedores** | Docker + docker-compose (solo desarrollo local portable; producción sigue en Vercel) | ✅ Activo |
 
 </div>
 
@@ -330,6 +332,20 @@ npm start
 ```
 
 <details>
+<summary><strong>🐳 Desarrollo con Docker (opcional, portable)</strong></summary>
+
+Producción real sigue en Vercel (cron, dominio, SSL sin cambios) — esto es solo para tener un entorno de desarrollo idéntico en cualquier máquina.
+
+```bash
+docker compose build
+docker compose up
+```
+
+Usa las mismas variables de `.env.local` (vía `env_file`, nunca se copian dentro de la imagen). El sitio queda disponible en `http://localhost:3000`, igual que con `npm run dev`.
+
+</details>
+
+<details>
 <summary><strong>☁️ Desplegar en Vercel (recomendado)</strong></summary>
 
 1. Importa el repositorio en [vercel.com/new](https://vercel.com/new)
@@ -358,6 +374,8 @@ npm start
 | `JOB_CACHE_TTL_HOURS` | ❌ | Horas de vigencia de la caché de búsquedas (por defecto: 1) |
 | `JOB_SCRAPER_CRON_HOURS` | ❌ | No usada actualmente por el código — el cron corre 1 vez al día (`vercel.json`), el límite del plan Hobby de Vercel (máx. 1 ejecución/día por cron) |
 | `CRON_SECRET` | ⚠️ | Protege `pages/api/cron/scrape-jobs.js` — Vercel lo envía solo si está en las variables de entorno del proyecto |
+| `SENTRY_DSN` | ❌ | Activa el monitoreo de errores del servidor (crear cuenta gratis en [sentry.io](https://sentry.io)) — sin esta variable, Sentry no hace nada |
+| `NEXT_PUBLIC_SENTRY_DSN` | ❌ | Igual que arriba, pero para errores del navegador (necesita el prefijo `NEXT_PUBLIC_` para llegar al bundle del cliente) |
 
 ```env
 # .env.local
@@ -371,6 +389,8 @@ SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key_aqui
 JOOBLE_API_KEY=tu_clave_de_jooble_aqui
 JOB_CACHE_TTL_HOURS=1
 CRON_SECRET=genera_un_valor_aleatorio_largo_aqui
+SENTRY_DSN=
+NEXT_PUBLIC_SENTRY_DSN=
 ```
 
 ---
@@ -421,13 +441,13 @@ El-Club-de-la-Ingenier-a/
 │       └── buscador-empleo.js  # Buscador de Empleo + subida de CV
 │
 ├── 📂 lib/
+│   ├── rateLimit.js             # Guardia anti-abuso por IP (Supabase, con respaldo en memoria)
 │   ├── 📂 ai/
 │   │   └── complete.js         # Cascada compartida Groq→OpenRouter→NVIDIA + cuota Supabase
 │   └── 📂 jobs/
 │       ├── jooble.js           # Cliente de la API de Jooble
 │       ├── aggregator.js       # Dedupe + filtro de fecha (función pura, con tests)
 │       ├── cache.js            # Caché de búsquedas (Supabase o archivo local)
-│       ├── rateLimit.js        # Guardia anti-abuso por IP, reutilizable
 │       ├── cronTerms.js        # Términos curados que scrapea el cron
 │       └── 📂 scrapers/
 │           └── computrabajo.js # Scraper ligero de Computrabajo Ecuador
@@ -436,13 +456,19 @@ El-Club-de-la-Ingenier-a/
 │   └── 📂 migrations/          # Migraciones de base de datos SQL
 │       ├── 0001_auth_and_members.sql
 │       ├── 0002_ia_uso_diario.sql       # Tabla y función RPC para control de cuota de IA
-│       └── 0003_job_listings_cache.sql  # Caché de ofertas scrapeadas por el cron
+│       ├── 0003_job_listings_cache.sql  # Caché de ofertas scrapeadas por el cron
+│       └── 0004_rate_limits.sql         # Tabla y función RPC para rate limiting real
 │
 ├── 📂 docs/
 │   └── teoria-operacion-laboratorio-b.md   # Teoría aplicada del reto, nivel por nivel
 │
-├── 📄 next.config.js           # Rewrite / → index.html + cache headers de imágenes
+├── 📄 next.config.js           # Rewrite / → index.html, output standalone, wrapper de Sentry
 ├── 📄 vercel.json               # Configuración del cron (1 vez al día, límite plan Hobby)
+├── 📄 sentry.server.config.js   # Monitoreo de errores del servidor (opt-in, SENTRY_DSN)
+├── 📄 sentry.client.config.js   # Monitoreo de errores del navegador (opt-in, NEXT_PUBLIC_SENTRY_DSN)
+├── 📄 Dockerfile                # Imagen para desarrollo local portable (multi-stage)
+├── 📄 docker-compose.yml       # Levanta el sitio en Docker con .env.local
+├── 📄 .dockerignore            # Excluye node_modules, .next, .git, .env* de la imagen
 ├── 📄 package.json             # Dependencias y scripts
 ├── 📄 .env.local.example       # Plantilla de variables de entorno
 ├── 📄 .gitignore               # Excluye node_modules, .next, .env*
@@ -463,7 +489,7 @@ El endpoint `/api/chat` actúa como **proxy seguro** e inteligente entre el fron
 | **Control de Cuota** | Registro diario de mensajes en Supabase (`ia_uso_diario`) para control estricto de cuota gratuita. |
 | **Voz & UI** | Síntesis de voz interactiva mediante Web Speech API y visualización holográfica reactiva por GSAP. |
 | **Validación** | Zod — roles `user`/`assistant`, máx. 20 mensajes, 1000 chars c/u |
-| **Rate limit** | 12 solicitudes / minuto / IP (en memoria) |
+| **Rate limit** | 12 solicitudes / minuto / IP — atómico en Supabase (`increment_rate_limit`), con respaldo en memoria si Supabase no está configurado |
 | **Seguridad** | API Keys y Service Role Key nunca expuestas al cliente |
 | **Contexto** | System prompt optimizado con misión, visión y enlaces oficiales del club |
 

@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { completeChat } from '../../../lib/ai/complete';
-import { createRateLimiter, getClientIp } from '../../../lib/jobs/rateLimit';
+import { createRateLimiter, getClientIp } from '../../../lib/rateLimit';
 
 // Límite más estricto que la búsqueda normal (6/min en vez de 20/min): cada análisis
 // consume una llamada real a la cuota diaria compartida de IA, no es gratis como leer caché.
-const isRateLimited = createRateLimiter({ windowMs: 60_000, max: 6 });
+const isRateLimited = createRateLimiter({ windowMs: 60_000, max: 6, scope: 'analyze-cv' });
 
 const BodySchema = z.object({
   // El texto ya viene extraído en el navegador (pdf.js) -- este endpoint nunca recibe
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
 
-  if (isRateLimited(getClientIp(req))) {
+  if (await isRateLimited(getClientIp(req))) {
     return res.status(429).json({ error: 'Demasiados análisis seguidos. Espera un minuto e intenta de nuevo.' });
   }
 
