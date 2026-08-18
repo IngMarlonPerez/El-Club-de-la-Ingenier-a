@@ -12,14 +12,20 @@ on conflict (id) do nothing;
 
 -- Un usuario solo puede subir/leer/borrar objetos dentro de su propia carpeta
 -- (convención de ruta: {user_id}/{archivo}.pdf) -- patrón estándar de Supabase Storage.
+-- `drop policy if exists` antes de cada `create` para que el script se pueda volver a
+-- correr sin error si una corrida anterior quedó a medias (Postgres no soporta
+-- `create policy if not exists`).
+drop policy if exists "cv_uploads_select_own" on storage.objects;
 create policy "cv_uploads_select_own" on storage.objects
   for select
   using (bucket_id = 'cv-uploads' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "cv_uploads_insert_own" on storage.objects;
 create policy "cv_uploads_insert_own" on storage.objects
   for insert
   with check (bucket_id = 'cv-uploads' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "cv_uploads_delete_own" on storage.objects;
 create policy "cv_uploads_delete_own" on storage.objects
   for delete
   using (bucket_id = 'cv-uploads' and (storage.foldername(name))[1] = auth.uid()::text);
@@ -39,14 +45,17 @@ create table if not exists public.cv_uploads (
 
 alter table public.cv_uploads enable row level security;
 
+drop policy if exists "cv_uploads_meta_select_own" on public.cv_uploads;
 create policy "cv_uploads_meta_select_own" on public.cv_uploads
   for select
   using (auth.uid() = user_id);
 
+drop policy if exists "cv_uploads_meta_insert_own" on public.cv_uploads;
 create policy "cv_uploads_meta_insert_own" on public.cv_uploads
   for insert
   with check (auth.uid() = user_id);
 
+drop policy if exists "cv_uploads_meta_delete_own" on public.cv_uploads;
 create policy "cv_uploads_meta_delete_own" on public.cv_uploads
   for delete
   using (auth.uid() = user_id);

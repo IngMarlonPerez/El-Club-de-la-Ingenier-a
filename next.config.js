@@ -3,9 +3,11 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   agentRules: false,
-  // Build liviano pensado para contenedores (ver Dockerfile) -- no afecta el
-  // build/deploy en Vercel, que no usa esta salida.
-  output: 'standalone',
+  // Build liviano pensado para contenedores (ver Dockerfile). Solo se activa cuando
+  // el propio Dockerfile define DOCKER_BUILD=1 antes de compilar -- activarlo siempre
+  // rompe el build en Vercel (ENOENT en .next/next-server.js.nft.json: el tracing de
+  // archivos de Vercel no es compatible con la salida "standalone" de Next).
+  ...(process.env.DOCKER_BUILD === '1' ? { output: 'standalone' } : {}),
   async rewrites() {
     return [{ source: '/', destination: '/index.html' }];
   },
