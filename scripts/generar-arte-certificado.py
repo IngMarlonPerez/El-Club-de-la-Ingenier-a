@@ -144,6 +144,12 @@ def base():
     medalla(im, W - 560, 470, 225); d = ImageDraw.Draw(im)
     # línea de firma (firma impresa: nombre y cargo del fundador; no se dibuja una firma manuscrita falsa)
     fx0, fx1 = 520, 1480
+    # firma manuscrita del fundador (imagen con fondo transparente) sobre la línea
+    firma = os.path.join(ASSETS, "firma-fundador.png")
+    if os.path.exists(firma):
+        fi = Image.open(firma).convert("RGBA"); ancho = 400
+        fi = fi.resize((ancho, int(fi.height * ancho / fi.width)), Image.LANCZOS)
+        im.paste(fi, ((fx0 + fx1) // 2 - ancho // 2, 2058 - fi.height), fi); d = ImageDraw.Draw(im)
     d.line([fx0, 2050, fx1, 2050], fill=TINTA, width=3)
     centrado(d, 2068, "Marlon David Pérez Almachi", F(SEGB, 44), TINTA, fx0, fx1)
     centrado(d, 2126, "Fundador · El Club de la Ingeniería", F(SEG, 34), GRIS, fx0, fx1)
@@ -154,7 +160,7 @@ def base():
     d.text((qx + 350, 2052), SITIO + "/verificar", font=F(SEGB, 28), fill=TURQ_OSC)
     centrado(d, H - 265, "Reconocimiento educativo y simbólico del Club de la Ingeniería. No constituye título académico, "
                          "certificación profesional ni acreditación pericial.", F(SEG, 26), GRIS)
-    layout = {"ancho": W, "alto": H, "nombre_y": 930, "nombre_max_ancho": W - 900, "fecha_y": y_fecha, "folio_y": y_fecha + 150,
+    layout = {"ancho": W, "alto": H, "nombre_y": 930, "nombre_max_ancho": W - 900, "fecha_y": y_fecha, "folio_y": y_fecha + 95,
               "qr": {"x": qx, "y": 1860, "lado": 300}, "codigo": {"x": qx + 350, "y": 1945}, "tinta": TINTA, "gris": GRIS}
     return im, layout
 
