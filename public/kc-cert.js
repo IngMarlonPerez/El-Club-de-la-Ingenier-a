@@ -140,9 +140,13 @@
   function bloque(ctx) { return '<div>' + paper(nombreVista(), S.cert ? new Date(S.cert.emitido_en).toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' }) : '') + pie() + '</div><div>' + (ctx === 'card' ? '<h3>🎓 CONSIGUE TU CERTIFICADO</h3>' : '') + cuerpo(ctx) + '</div>'; }
 
   var card, modal;
+  // El tamaño del texto sobre el certificado se calcula con el ancho real del papel (funciona en cualquier navegador).
+  var ro = window.ResizeObserver ? new ResizeObserver(function (es) { es.forEach(function (e) { e.target.style.setProperty('--cw', e.contentRect.width + 'px'); }); }) : null;
+  function medir() { document.querySelectorAll('.kcc-paper').forEach(function (p) { p.style.setProperty('--cw', p.getBoundingClientRect().width + 'px'); if (ro && !p.dataset.ro) { p.dataset.ro = '1'; ro.observe(p); } }); }
   function render() {
     if (card) card.innerHTML = bloque('card');
     if (modal) { var b = $('.kcc-modal-body', modal); if (b) b.innerHTML = '<div class="kcc-card" style="margin:0">' + bloque('modal') + '</div>'; }
+    medir();
     var fin = $('#kcc-final'); if (fin) fin.style.display = progreso() >= TOTAL ? '' : 'none';
   }
   function onClick(e) {

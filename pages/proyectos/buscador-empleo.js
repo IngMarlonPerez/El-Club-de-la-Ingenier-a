@@ -386,6 +386,9 @@ export default function BuscadorEmpleo() {
     <div className={s.root}>
       <Head>
         <title>Buscador de Empleo | El Club de la Ingeniería</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#050a12" />
+        <meta name="color-scheme" content="dark" />
         <meta name="description" content="Busca ofertas de empleo recientes en Ecuador, mide qué tanto encajas con cada una y descubre qué te falta, con tu CV protegido: los datos personales se ocultan antes de enviar nada." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -397,7 +400,7 @@ export default function BuscadorEmpleo() {
       <div className={s.scanBar} aria-hidden="true" />
       <div className={s.vignette} aria-hidden="true" />
 
-      <main className={s.shell}>
+      <main className={`${s.shell} ${s.shellApp}`}>
         <div className={s.topbar}>
           <a className={s.back} href="/">◀ VOLVER AL CLUB</a>
           <div className={s.sysline}>

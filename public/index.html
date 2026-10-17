@@ -481,7 +481,75 @@
   .holo-wrap.css-fallback .holo-ring.gold{animation-duration:20s;animation-direction:reverse;}
 
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+
+  /* ===== Certificado "Héroe del Club": sección principal bajo el hero + botón de juego ===== */
+  #certificado{position:relative;padding:4.5rem 1.5rem 3.6rem;overflow:hidden;scroll-margin-top:88px;}
+  #certificado::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(820px 420px at 78% 38%,rgba(232,178,58,.11),transparent 62%),radial-gradient(640px 360px at 8% 72%,rgba(0,243,255,.10),transparent 62%);}
+  .cert-wrap{position:relative;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:3.2rem;align-items:center;}
+  .cert-tag{font-family:'Share Tech Mono',var(--mono);letter-spacing:.26em;font-size:.72rem;color:var(--gold);display:inline-flex;gap:.6rem;align-items:center;}
+  .cert-tag i{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold);animation:certPulse 1.8s ease-in-out infinite;}
+  @keyframes certPulse{50%{opacity:.35;transform:scale(.8);}}
+  #certificado h2{font-family:'Orbitron',var(--mono);font-weight:900;font-size:clamp(1.7rem,3.7vw,2.85rem);line-height:1.13;margin:.9rem 0 1.1rem;color:var(--ink);letter-spacing:.015em;}
+  #certificado h2 span{background:linear-gradient(90deg,#f6dc84,#e8b23a 45%,#b9975b);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(232,178,58,.32));}
+  .cert-lede{color:var(--ink-dim);line-height:1.7;max-width:50ch;margin:0 0 1.3rem;}
+  .cert-lede strong{color:var(--ink);}
+  .cert-points{list-style:none;padding:0;margin:0 0 1.7rem;display:grid;gap:.7rem;}
+  .cert-points li{display:flex;gap:.75rem;align-items:flex-start;font-size:.95rem;color:var(--ink);line-height:1.45;}
+  .cert-points .ic{flex:0 0 28px;height:28px;display:grid;place-items:center;border:1px solid rgba(47,216,201,.5);background:rgba(47,216,201,.08);color:var(--teal);font-size:.82rem;clip-path:polygon(0 6px,6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%);}
+  .cert-cta{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;}
+  .game-glow{display:inline-block;filter:drop-shadow(0 0 14px rgba(0,243,255,.45));animation:gameGlow 2.6s ease-in-out infinite;}
+  @keyframes gameGlow{50%{filter:drop-shadow(0 0 24px rgba(57,255,106,.6));}}
+  .btn-game{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.75rem;font-family:'Orbitron',var(--mono);font-weight:700;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:#03141a;text-decoration:none;padding:1.05rem 1.8rem;background:linear-gradient(135deg,#00f3ff,#1ad9c4 55%,#39ff6a);clip-path:polygon(0 12px,12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);transition:transform .15s ease,filter .2s ease;}
+  .btn-game::before{content:'';position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:gameShine 3.4s ease-in-out infinite;}
+  @keyframes gameShine{0%,55%{left:-60%;}100%{left:140%;}}
+  .btn-game .play{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#03141a;color:#39ff6a;font-size:.65rem;}
+  .btn-game:hover{transform:translateY(-3px);filter:brightness(1.08);}
+  .btn-game-ghost{font-family:'Share Tech Mono',var(--mono);font-size:.78rem;letter-spacing:.12em;color:var(--teal);text-decoration:none;border-bottom:1px dashed rgba(47,216,201,.5);padding:.2rem 0;}
+  .btn-game-ghost:hover{color:#7dfff0;border-bottom-color:#7dfff0;}
+  .cert-mini{display:flex;flex-wrap:wrap;gap:1.8rem;margin-top:1.8rem;}
+  .cert-mini div{font-family:'Share Tech Mono',var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--ink-dim);}
+  .cert-mini b{display:block;font-family:'Orbitron',var(--mono);font-size:1.45rem;color:var(--teal);letter-spacing:0;text-shadow:0 0 16px rgba(47,216,201,.45);}
+
+  .cert-stage{position:relative;padding:1.2rem;}
+  .cert-glow{position:absolute;inset:6% 4%;background:radial-gradient(closest-side,rgba(232,178,58,.35),rgba(0,243,255,.12) 60%,transparent);filter:blur(34px);animation:certBreath 5s ease-in-out infinite;}
+  @keyframes certBreath{50%{opacity:.6;transform:scale(.96);}}
+  .cert-card{position:relative;--rx:0deg;--ry:0deg;transform:perspective(1300px) rotateY(var(--ry)) rotateX(var(--rx)) rotate(-1.2deg);transition:transform .25s ease;animation:certFloat 6s ease-in-out infinite;will-change:transform;}
+  @keyframes certFloat{50%{translate:0 -9px;}}
+  .cert-paper{position:relative;width:100%;aspect-ratio:3508/2480;--cw:700px;background:#fdfdfb url('/cert/club-cert-ejemplo.jpg') center/cover no-repeat;box-shadow:0 34px 70px rgba(0,0,0,.6),0 0 0 1px rgba(232,178,58,.55),0 0 60px rgba(232,178,58,.18);overflow:hidden;}
+  .cert-name{position:absolute;left:0;right:0;top:calc(950 / 2480 * 100%);text-align:center;font:700 calc(var(--cw) * .041)/1 'Times New Roman',Times,serif;color:#06141c;text-transform:uppercase;white-space:nowrap;}
+  .cert-date{position:absolute;left:0;right:0;top:calc(1631 / 2480 * 100%);text-align:center;font:400 calc(var(--cw) * .0125)/1 'Segoe UI',Arial,sans-serif;color:#5a6b78;}
+  .cert-sheen{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .cert-sheen::after{content:'';position:absolute;top:-10%;bottom:-10%;width:35%;left:-50%;background:linear-gradient(110deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:certSheen 5.5s ease-in-out infinite;}
+  @keyframes certSheen{0%,55%{left:-50%;}100%{left:130%;}}
+  .cert-badge{position:absolute;font-family:'Share Tech Mono',var(--mono);font-size:.64rem;letter-spacing:.14em;color:#04140a;background:linear-gradient(135deg,#f6dc84,#e8b23a);padding:.45rem .8rem;box-shadow:0 8px 24px rgba(0,0,0,.45);clip-path:polygon(0 6px,6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%);animation:certBadge 4.5s ease-in-out infinite;white-space:nowrap;}
+  .cert-badge.b1{right:-.2rem;bottom:18%;}
+  .cert-badge.b2{left:-.4rem;top:9%;background:linear-gradient(135deg,#00f3ff,#39ff6a);animation-delay:1.4s;}
+  @keyframes certBadge{50%{transform:translateY(-6px);}}
+  .cert-cap{text-align:center;font-family:'Share Tech Mono',var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--ink-dim);margin-top:1.1rem;}
+
+  .cert-steps{position:relative;max-width:1200px;margin:3rem auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+  .cert-step{position:relative;border:1px solid rgba(0,243,255,.28);background:linear-gradient(160deg,rgba(10,28,40,.7),rgba(5,12,20,.8));padding:1.2rem 1.2rem 1.1rem;clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px));transition:transform .2s ease,border-color .2s ease,background .2s ease;}
+  .cert-step:hover{transform:translateY(-4px);border-color:#00f3ff;background:linear-gradient(160deg,rgba(14,40,56,.8),rgba(5,12,20,.85));}
+  .cert-step .n{font-family:'Orbitron',var(--mono);font-weight:900;font-size:1.9rem;color:rgba(0,243,255,.28);line-height:1;}
+  .cert-step h3{font-family:'Orbitron',var(--mono);font-size:.82rem;letter-spacing:.12em;color:var(--ink);margin:.5rem 0 .4rem;text-transform:uppercase;}
+  .cert-step p{margin:0;color:var(--ink-dim);font-size:.88rem;line-height:1.55;}
+  .cert-verify{position:relative;max-width:1200px;margin:1.4rem auto 0;display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:center;justify-content:space-between;border:1px dashed rgba(232,178,58,.45);background:rgba(232,178,58,.05);padding:.9rem 1.2rem;}
+  .cert-verify p{margin:0;color:var(--ink);font-size:.92rem;}
+  .cert-verify p span{color:var(--ink-dim);}
+  .cert-verify form{display:flex;gap:.5rem;flex-wrap:wrap;}
+  .cert-verify input{background:rgba(2,10,16,.8);border:1px solid rgba(232,178,58,.45);color:#fff4d6;font-family:'Share Tech Mono',var(--mono);font-size:.82rem;letter-spacing:.06em;padding:.6rem .8rem;min-width:220px;outline:none;text-transform:uppercase;}
+  .cert-verify input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,178,58,.18);}
+  .cert-verify button{font-family:'Orbitron',var(--mono);font-weight:700;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;color:var(--gold);background:rgba(232,178,58,.08);border:1px solid var(--gold);padding:.6rem 1rem;transition:background .15s;}
+  .cert-verify button:hover{background:rgba(232,178,58,.2);}
+  .cert-verify .msg{flex-basis:100%;margin:0;font-size:.8rem;color:#ff9f9f;min-height:1em;}
+  #certificado .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;}
+  #certificado .reveal.in{opacity:1;transform:none;}
+  @media (max-width:900px){.cert-wrap{grid-template-columns:1fr;gap:2.2rem;}.cert-steps{grid-template-columns:1fr;}.cert-badge.b1{right:.2rem;}.cert-badge.b2{left:.2rem;}#certificado{padding:3.4rem 1.1rem 3rem;}}
+  @media (prefers-reduced-motion:reduce){.cert-card,.cert-glow,.cert-badge,.game-glow,.btn-game::before,.cert-sheen::after,.cert-tag i{animation:none!important;}#certificado .reveal{opacity:1;transform:none;transition:none;}}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -532,6 +600,7 @@
     </a>
     <nav>
       <a href="#about">sobre-nosotros</a>
+      <a href="#certificado">certificado</a>
       <a href="#game-hero">proyectos</a>
       <a href="#team">equipo</a>
       <a href="#media">contacto</a>
@@ -554,9 +623,9 @@
         <a href="#join" class="btn btn-primary">Únete al club →</a>
         <a href="https://wa.me/593986023149?text=Hola%2C%20quiero%20saber%20m%C3%A1s%20sobre%20el%20Club%20de%20Ingenier%C3%ADa" target="_blank" rel="noopener" class="btn btn-whatsapp">Escríbenos por WhatsApp</a>
       </div>
-      <a href="#game-hero" class="hero-game-promo">
-        <span class="badge">🎮 NUEVO</span>
-        <span class="txt"><strong>Kernel Cero</strong> — el reto de terminal Linux de 31 niveles. Juega con INGenioso</span>
+      <a href="#certificado" class="hero-game-promo">
+        <span class="badge">🏆 CERTIFICADO</span>
+        <span class="txt">Juega <strong>Kernel Cero</strong> y gana tu certificado oficial del Club</span>
         <span class="arrow">↓</span>
       </a>
       <div class="hero-stats">
@@ -564,6 +633,59 @@
         <div class="stat"><b>18</b><span>PROYECTOS EN CURSO</span></div>
         <div class="stat"><b>6</b><span>ÁREAS TÉCNICAS</span></div>
       </div>
+    </div>
+  </section>
+
+  <section id="certificado" aria-labelledby="cert-titulo">
+    <div class="cert-wrap">
+      <div class="cert-copy reveal">
+        <div class="cert-tag"><i></i>RECONOCIMIENTO OFICIAL DEL CLUB</div>
+        <h2 id="cert-titulo">Juega. Llega al final. <span>Llévate tu certificado.</span></h2>
+        <p class="cert-lede">Supera los <strong>31 niveles de Kernel Cero</strong>, el reto de ciberseguridad y terminal Linux del club, y recibe el <strong>certificado de Héroe del Club</strong>, firmado por el fundador y con un <strong>código QR</strong> que cualquiera puede escanear para comprobar que es auténtico.</p>
+        <ul class="cert-points">
+          <li><span class="ic">✍</span><span><b>Con tu nombre.</b> Regístrate con Google o GitHub y sale a tu nombre.</span></li>
+          <li><span class="ic">▣</span><span><b>Verificable al instante.</b> Un QR único lleva a nuestra página de verificación.</span></li>
+          <li><span class="ic">⬇</span><span><b>Tuyo en PDF.</b> Se descarga solo cuando completas todos los niveles.</span></li>
+        </ul>
+        <div class="cert-cta">
+          <span class="game-glow"><a class="btn-game" href="/linux-cli.html"><span class="play">▶</span>Jugar Kernel Cero</a></span>
+          <a class="btn-game-ghost" href="#cert-pasos">Cómo funciona ↓</a>
+        </div>
+        <div class="cert-mini" aria-hidden="true">
+          <div><b>31</b>NIVELES</div>
+          <div><b>7</b>EPISODIOS</div>
+          <div><b>QR</b>VERIFICABLE</div>
+        </div>
+      </div>
+
+      <div class="cert-stage reveal" id="cert-stage">
+        <div class="cert-glow" aria-hidden="true"></div>
+        <div class="cert-card" id="cert-card">
+          <div class="cert-paper" role="img" aria-label="Ejemplo del certificado de Héroe del Club, con firma del fundador y código QR de verificación">
+            <div class="cert-name">Victor Lluilema</div>
+            <div class="cert-date" id="cert-date"></div>
+          </div>
+          <div class="cert-sheen" aria-hidden="true"></div>
+        </div>
+        <div class="cert-badge b2" aria-hidden="true">✍ FIRMADO POR EL FUNDADOR</div>
+        <div class="cert-badge b1" aria-hidden="true">▣ QR VERIFICABLE</div>
+        <div class="cert-cap">EJEMPLO ILUSTRATIVO · EL TUYO SALDRÁ CON TU NOMBRE</div>
+      </div>
+    </div>
+
+    <div class="cert-steps" id="cert-pasos">
+      <div class="cert-step reveal"><div class="n">01</div><h3>Regístrate</h3><p>Entra con Google o GitHub para que tu progreso se guarde y el certificado lleve tu nombre.</p></div>
+      <div class="cert-step reveal"><div class="n">02</div><h3>Supera los 31 niveles</h3><p>Siete episodios: de reconocimiento y forense a pentesting autorizado, ISO/IEC 27001 y auditoría de nube. Todo simulado y guiado por INGenioso.</p></div>
+      <div class="cert-step reveal"><div class="n">03</div><h3>Descarga tu certificado</h3><p>PDF firmado por el Club, con tu nombre, un código único y un QR de verificación pública.</p></div>
+    </div>
+
+    <div class="cert-verify reveal">
+      <p>🔎 <strong>¿Ya tienes un certificado del Club?</strong> <span>Comprueba que es auténtico con su código.</span></p>
+      <form id="cert-verify-form" novalidate>
+        <input id="cert-code" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="CLUB-CERT-2026-0001" aria-label="Código del certificado" maxlength="24">
+        <button type="submit">Verificar</button>
+      </form>
+      <p class="msg" id="cert-msg" role="status"></p>
     </div>
   </section>
 
@@ -617,7 +739,7 @@
           <div class="sec-tag">⭐ PROYECTO PRINCIPAL — RETO INTERACTIVO, 31 NIVELES</div>
           <h2>¿Te atreves a convertirte en héroe del club?</h2>
           <p>Aprende comandos reales de Linux jugando <strong>Kernel Cero</strong> (nombre en clave: Operación Laboratorio-B): reconocimiento, WiFi, criptografía, detección de amenazas, defensa contra DDoS, análisis forense digital, pentesting web autorizado, ISO/IEC 27001 y una auditoría de datacenter y nube — 7 episodios, 31 niveles, 100% simulado y ficticio, guiado paso a paso por <strong>INGenioso</strong>, nuestro oso cyborg asistente con IA (con sonido retro, respuestas locales y un documento de teoría propio).</p>
-          <a href="/linux-cli.html" class="btn btn-primary">Jugar Kernel Cero →</a>
+          <span class="game-glow"><a href="/linux-cli.html" class="btn-game"><span class="play">▶</span>Jugar Kernel Cero</a></span>
           <div class="game-roadmap" aria-hidden="true">
             <span class="rm-step" title="Reconocimiento">🔰</span>
             <span class="rm-step" title="Infiltración WiFi">🔰</span>
@@ -1566,5 +1688,23 @@ joinForm.addEventListener('submit', async (e) => {
 })();
 </script>
 
+<script>
+(function(){
+  var d = document.getElementById('cert-date');
+  if (d) d.textContent = 'Dado y firmado en Milagro, Ecuador, el ' + new Date().toLocaleDateString('es-EC',{day:'numeric',month:'long',year:'numeric'}) + '.';
+  var paper = document.querySelector('.cert-paper');
+  if (paper) { var setCw = function(){ paper.style.setProperty('--cw', paper.getBoundingClientRect().width + 'px'); }; setCw(); if ('ResizeObserver' in window) new ResizeObserver(setCw).observe(paper); else window.addEventListener('resize', setCw); }
+  var stage = document.getElementById('cert-stage'), card = document.getElementById('cert-card');
+  if (stage && card && !window.matchMedia('(prefers-reduced-motion: reduce)').matches && window.matchMedia('(hover:hover)').matches) {
+    stage.addEventListener('pointermove', function(e){ var r = stage.getBoundingClientRect(); var x = (e.clientX-r.left)/r.width-.5, y = (e.clientY-r.top)/r.height-.5; card.style.setProperty('--ry', (x*10).toFixed(2)+'deg'); card.style.setProperty('--rx', (-y*8).toFixed(2)+'deg'); });
+    stage.addEventListener('pointerleave', function(){ card.style.setProperty('--ry','0deg'); card.style.setProperty('--rx','0deg'); });
+  }
+  var items = document.querySelectorAll('#certificado .reveal');
+  if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, {threshold:.15}); items.forEach(function(el,i){ el.style.transitionDelay = (i%3)*90+'ms'; io.observe(el); }); }
+  else items.forEach(function(el){ el.classList.add('in'); });
+  var f = document.getElementById('cert-verify-form'), m = document.getElementById('cert-msg');
+  if (f) f.addEventListener('submit', function(e){ e.preventDefault(); var c = document.getElementById('cert-code').value.trim().toUpperCase(); if (!/^CLUB-CERT-\d{4}-\d{4,6}$/.test(c)) { m.textContent = 'El código tiene el formato CLUB-CERT-2026-0001. Revísalo en tu certificado.'; return; } m.textContent = ''; location.href = '/verificar/' + c; });
+})();
+</script>
 </body>
 </html>
