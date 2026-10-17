@@ -124,6 +124,7 @@
   var ACTIONS = [
     { i: '💡', t: 'Pedir una pista', k: 'pista', kw: 'ayuda hint ayúdame trabado', f: function () { click('#quick-hint-btn'); } },
     { i: '📋', t: 'Pedir un ejemplo', k: 'ejemplo', kw: 'ejemplo muestra comando', f: function () { click('#quick-example-btn'); } },
+    { i: '🎓', t: 'Mi certificado de Héroe del Club', k: 'certificado', kw: 'diploma reconocimiento pdf qr verificar nombre', f: function () { if (window.KC_CERT) KC_CERT.open(); } },
     { i: '🛰️', t: 'Abrir el Centro de Mando', k: 'F2', kw: 'mando centro c2 mapa red telemetría bitácora tutor prompts estudio', f: function () { click('#c2-toggle'); } },
     { i: '📖', t: 'Abrir el Codex (referencia)', k: 'codex', kw: 'referencia sintaxis comandos teoría glosario', f: function () { click('#codex-toggle'); } },
     { i: '🎯', t: 'Elegir nivel', k: 'niveles', kw: 'menu menú misión mision nivel episodio', f: function () { click('#menu-btn'); } },

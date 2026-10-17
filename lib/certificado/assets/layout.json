@@ -1,0 +1,19 @@
+{
+  "ancho": 3508,
+  "alto": 2480,
+  "nombre_y": 930,
+  "nombre_max_ancho": 2608,
+  "fecha_y": 1631,
+  "folio_y": 1726,
+  "qr": {
+    "x": 2278,
+    "y": 1860,
+    "lado": 300
+  },
+  "codigo": {
+    "x": 2628,
+    "y": 1945
+  },
+  "tinta": "#06141c",
+  "gris": "#5a6b78"
+}
