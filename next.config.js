@@ -3,6 +3,8 @@ const { withSentryConfig } = require('@sentry/nextjs');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   agentRules: false,
+  // El arte del certificado (PNG + layout) lo lee la función serverless del PDF desde el disco.
+  outputFileTracingIncludes: { '/api/kc/certificado-pdf': ['./lib/certificado/assets/**/*'] },
   // Build liviano pensado para contenedores (ver Dockerfile). Solo se activa cuando
   // el propio Dockerfile define DOCKER_BUILD=1 antes de compilar -- activarlo siempre
   // rompe el build en Vercel (ENOENT en .next/next-server.js.nft.json: el tracing de

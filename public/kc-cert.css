@@ -1,0 +1,33 @@
+/* ===== Kernel Cero — certificado "Héroe del Club" ===== */
+.kcc-paper{position:relative;width:100%;aspect-ratio:3508/2480;container-type:inline-size;background:#fdfdfb url('/cert/club-cert-ejemplo.jpg') center/cover no-repeat;box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(232,178,58,.4),0 0 40px rgba(0,243,255,.12);overflow:hidden;transition:transform .3s,box-shadow .3s;}
+.kcc-paper:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 26px 60px rgba(0,0,0,.6),0 0 0 1px rgba(232,178,58,.7),0 0 50px rgba(0,243,255,.22);}
+.kcc-paper::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:kccShine 5s ease-in-out infinite;}
+@keyframes kccShine{0%,60%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
+.kcc-name{position:absolute;left:0;right:0;top:calc(950 / 2480 * 100%);text-align:center;font:700 4.1cqw/1 'Times New Roman',Times,serif;color:#06141c;text-transform:uppercase;white-space:nowrap;letter-spacing:.01em;}
+.kcc-name.m{font-size:3.4cqw;}.kcc-name.l{font-size:2.8cqw;}.kcc-name.xl{font-size:2.3cqw;}
+.kcc-date{position:absolute;left:0;right:0;top:calc(1631 / 2480 * 100%);text-align:center;font:400 1.25cqw/1 'Segoe UI',Arial,sans-serif;color:#5a6b78;}
+
+.kcc-card{margin:1rem 0;border:1px solid var(--hud-line,rgba(0,243,255,.32));background:linear-gradient(160deg,rgba(10,28,40,.7),rgba(5,12,20,.8));padding:1rem;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1.1rem;align-items:center;text-align:left;}
+.kcc-card h3{margin:0 0 .4rem;font-family:'Orbitron',var(--mono,monospace);font-size:.82rem;letter-spacing:.18em;color:var(--neon-cyan,#00f3ff);text-shadow:0 0 12px rgba(0,243,255,.5);}
+.kcc-card p{margin:0 0 .6rem;font-size:.82rem;line-height:1.5;color:var(--ink-dim,#8fa89c);}
+.kcc-card p b{color:var(--ink,#eef3f6);}
+.kcc-cap{font-family:var(--mono,monospace);font-size:.6rem;letter-spacing:.14em;color:#5a7380;text-align:center;margin-top:.45rem;}
+.kcc-lock{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono,monospace);font-size:.7rem;letter-spacing:.08em;color:var(--gold,#e8b23a);border:1px solid rgba(232,178,58,.5);background:rgba(232,178,58,.07);padding:.3rem .6rem;margin:.2rem 0 .6rem;}
+.kcc-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;}
+.kcc-btn{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;border:1px solid var(--neon-cyan,#00f3ff);background:rgba(0,243,255,.08);color:var(--neon-cyan,#00f3ff);font-family:'Orbitron',var(--mono,monospace);font-weight:700;font-size:.68rem;letter-spacing:.14em;padding:.6rem .9rem;text-transform:uppercase;transition:background .15s,box-shadow .2s,transform .15s;clip-path:polygon(0 7px,7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%);text-decoration:none;}
+.kcc-btn:hover:not(:disabled){background:rgba(0,243,255,.2);box-shadow:0 0 18px rgba(0,243,255,.45);transform:translateY(-1px);}
+.kcc-btn.primary{background:linear-gradient(135deg,#00f3ff,#1aa79b);color:#03141a;border-color:transparent;}
+.kcc-btn.gold{border-color:var(--gold,#e8b23a);color:var(--gold,#e8b23a);background:rgba(232,178,58,.08);}
+.kcc-btn:disabled{opacity:.45;cursor:not-allowed;}
+.kcc-prog{height:8px;background:rgba(255,255,255,.08);margin:.3rem 0 .7rem;overflow:hidden;}
+.kcc-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#0a8f87,#00f3ff,#39ff6a);box-shadow:0 0 12px rgba(0,243,255,.6);transition:width .8s cubic-bezier(.2,.8,.2,1);}
+.kcc-msg{font-size:.82rem;line-height:1.45;margin:.5rem 0 0;color:var(--ink-dim,#8fa89c);}
+.kcc-msg.err{color:#ff9f9f;}.kcc-msg.ok{color:#39ff6a;}
+.kcc-input{width:100%;box-sizing:border-box;background:rgba(2,10,16,.8);border:1px solid rgba(0,243,255,.35);color:#eaffff;padding:.65rem .8rem;font-family:'Rajdhani',var(--sans,sans-serif);font-size:1.1rem;outline:none;margin:.3rem 0;}
+.kcc-input:focus{border-color:#00f3ff;box-shadow:0 0 0 3px rgba(0,243,255,.18);}
+.kcc-modal-body{display:flex;flex-direction:column;gap:1rem;}
+.kcc-final{margin:1rem 0;text-align:center;border:1px dashed rgba(232,178,58,.55);background:rgba(232,178,58,.06);padding:.9rem;}
+.kcc-final p{margin:0 0 .6rem;font-size:.85rem;color:var(--ink,#eef3f6);}
+#kcc-modal .modal{width:min(980px,100%);max-height:94vh;overflow:auto;}
+@media (max-width:760px){.kcc-card{grid-template-columns:1fr;}}
+@media (prefers-reduced-motion:reduce){.kcc-paper::after{animation:none;display:none;}}

@@ -198,7 +198,7 @@
       '<div class="c2-grid">' +
       '<div class="c2-col">' +
       '<section class="c2-panel" style="--d:40ms"><h2><i class="c2-led"></i>MISIÓN ACTIVA<em id="c2-lv"></em></h2><div class="c2-body"><div class="c2-mission"><div class="c2-ring"><svg viewBox="0 0 86 86"><circle class="trk" cx="43" cy="43" r="37"/><circle class="arc" id="c2-arc" cx="43" cy="43" r="37"/></svg><b><span id="c2-pct">0%</span><small>NIVEL</small></b></div><div><h3 id="c2-title"></h3><p id="c2-brief"></p></div></div><ul class="c2-obj" id="c2-obj"></ul></div></section>' +
-      '<section class="c2-panel" style="--d:120ms"><h2>ACCESOS DIRECTOS</h2><div class="c2-body"><div class="c2-tabs"><button class="c2-btn" data-act="hint">💡 PISTA</button><button class="c2-btn" data-act="example">📋 EJEMPLO</button><button class="c2-btn alt" data-act="codex">📖 CODEX</button><button class="c2-btn alt" data-act="levels">🎯 NIVELES</button><button class="c2-btn alt" data-act="shop">🏪 TIENDA</button></div><div class="c2-stats" id="c2-stats"></div></div></section>' +
+      '<section class="c2-panel" style="--d:120ms"><h2>ACCESOS DIRECTOS</h2><div class="c2-body"><div class="c2-tabs"><button class="c2-btn" data-act="hint">💡 PISTA</button><button class="c2-btn" data-act="example">📋 EJEMPLO</button><button class="c2-btn alt" data-act="codex">📖 CODEX</button><button class="c2-btn alt" data-act="levels">🎯 NIVELES</button><button class="c2-btn alt" data-act="shop">🏪 TIENDA</button><button class="c2-btn alt" data-act="cert">🎓 CERTIFICADO</button></div><div class="c2-stats" id="c2-stats"></div></div></section>' +
       '</div>' +
       '<div class="c2-col">' +
       '<section class="c2-panel" style="--d:80ms"><h2><i class="c2-led"></i>MAPA DE RED<em id="c2-ep"></em></h2><div class="c2-body"><div class="c2-map" id="c2-map"></div><div class="c2-legend"><span><i style="--c:#3a4d5c"></i>Sin explorar</span><span><i style="--c:#e8b23a"></i>Descubierto</span><span><i style="--c:#39ff6a"></i>Asegurado/analizado</span><span><i style="--c:#ff5f5f"></i>Alerta</span></div><div class="c2-nodecard" id="c2-nodecard"></div></div></section>' +
@@ -225,6 +225,7 @@
   function onClick(e) {
     var t = e.target.closest('[data-act],[data-node],[data-tab],[data-prompt]'); if (!t) return;
     if (t.dataset.act) {
+      if (t.dataset.act === 'cert') { close(); setTimeout(function () { if (window.KC_CERT) KC_CERT.open(); }, 120); return; }
       var map = { hint: '#quick-hint-btn', example: '#quick-example-btn', codex: '#codex-toggle', levels: '#menu-btn', shop: '#shop-toggle' };
       var b = $(map[t.dataset.act]); if (b) { if (t.dataset.act === 'hint' || t.dataset.act === 'example') { close(); } else { close(); } setTimeout(function () { b.click(); }, 120); }
     } else if (t.dataset.node != null) { selNode = +t.dataset.node; renderMap(); }
