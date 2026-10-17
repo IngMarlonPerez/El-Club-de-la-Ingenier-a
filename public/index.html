@@ -168,6 +168,8 @@
   a:focus-visible, button:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
   @media (max-width:760px){nav{display:none;}}
 
+  .nav-play{font-family:var(--mono);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:#03141a;background:linear-gradient(135deg,#00f3ff,#39ff6a);padding:.5rem .85rem;min-height:36px;display:inline-flex;align-items:center;gap:.4rem;clip-path:polygon(0 6px,6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%);white-space:nowrap}
+  .nav-play:hover{filter:brightness(1.1)}
   .account-area{font-family:var(--mono);font-size:.74rem;display:flex;align-items:center;gap:.7rem;}
   .account-link{color:var(--teal);text-decoration:none;letter-spacing:.05em;border:1px solid var(--teal-dim);padding:.4rem .8rem;border-radius:4px;transition:background .2s;}
   .account-link:hover{background:rgba(47,216,201,.1);}
@@ -607,6 +609,7 @@
       <a href="#eventos">eventos</a>
       <a href="#join">unirse</a>
     </nav>
+    <a class="nav-play" href="/kernel0">▶ Jugar</a>
     <div class="account-area" id="account-area">
       <a href="#join" class="account-link" id="account-link">unirse</a>
     </div>
@@ -648,7 +651,7 @@
           <li><span class="ic">⬇</span><span><b>Tuyo en PDF.</b> Se descarga solo cuando completas todos los niveles.</span></li>
         </ul>
         <div class="cert-cta">
-          <span class="game-glow"><a class="btn-game" href="/linux-cli.html"><span class="play">▶</span>Jugar Kernel Cero</a></span>
+          <span class="game-glow"><a class="btn-game" href="/kernel0"><span class="play">▶</span>Jugar Kernel Cero</a></span>
           <a class="btn-game-ghost" href="#cert-pasos">Cómo funciona ↓</a>
         </div>
         <div class="cert-mini" aria-hidden="true">
@@ -739,7 +742,7 @@
           <div class="sec-tag">⭐ PROYECTO PRINCIPAL — RETO INTERACTIVO, 31 NIVELES</div>
           <h2>¿Te atreves a convertirte en héroe del club?</h2>
           <p>Aprende comandos reales de Linux jugando <strong>Kernel Cero</strong> (nombre en clave: Operación Laboratorio-B): reconocimiento, WiFi, criptografía, detección de amenazas, defensa contra DDoS, análisis forense digital, pentesting web autorizado, ISO/IEC 27001 y una auditoría de datacenter y nube — 7 episodios, 31 niveles, 100% simulado y ficticio, guiado paso a paso por <strong>INGenioso</strong>, nuestro oso cyborg asistente con IA (con sonido retro, respuestas locales y un documento de teoría propio).</p>
-          <span class="game-glow"><a href="/linux-cli.html" class="btn-game"><span class="play">▶</span>Jugar Kernel Cero</a></span>
+          <span class="game-glow"><a href="/kernel0" class="btn-game"><span class="play">▶</span>Jugar Kernel Cero</a></span>
           <div class="game-roadmap" aria-hidden="true">
             <span class="rm-step" title="Reconocimiento">🔰</span>
             <span class="rm-step" title="Infiltración WiFi">🔰</span>
