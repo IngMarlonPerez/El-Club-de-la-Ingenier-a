@@ -406,6 +406,8 @@
 
   @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;}}
 </style>
+<link rel="stylesheet" href="/kc-c2.css">
+<link rel="stylesheet" href="/kc-hud.css">
 </head>
 <body>
 
@@ -418,6 +420,7 @@
     <div class="meta">
       <span><span class="dot"></span> <span id="level-label">NIVEL 1</span></span>
       <span id="timer">00:00</span>
+      <button class="menu-btn" id="c2-toggle" type="button" aria-label="Abrir el Centro de Mando (F2)" title="Centro de Mando (F2)">🛰️ <span class="btn-label">mando</span></button>
       <button class="menu-btn" id="menu-btn" type="button">🎯 <span class="btn-label">niveles</span></button>
       <button class="menu-btn" id="codex-toggle" type="button" aria-label="Abrir Codex de ayuda">📖 <span class="btn-label">codex</span></button>
       <button class="menu-btn" id="shop-toggle" type="button" aria-label="Abrir la Tienda del Laboratorio">🏪 <span class="btn-label" id="shop-wallet-label">₿0</span></button>
@@ -5957,5 +5960,7 @@
 })();
 </script>
 
+<script src="/kc-c2.js" defer></script>
+<script src="/kc-fx.js" defer></script>
 </body>
 </html>
