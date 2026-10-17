@@ -1,11 +1,11 @@
 /* ===== Kernel Cero — certificado "Héroe del Club" ===== */
-.kcc-paper{position:relative;width:100%;aspect-ratio:3508/2480;container-type:inline-size;background:#fdfdfb url('/cert/club-cert-ejemplo.jpg') center/cover no-repeat;box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(232,178,58,.4),0 0 40px rgba(0,243,255,.12);overflow:hidden;transition:transform .3s,box-shadow .3s;}
+.kcc-paper{position:relative;width:100%;aspect-ratio:3508/2480;--cw:600px;background:#fdfdfb url('/cert/club-cert-ejemplo.jpg') center/cover no-repeat;box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(232,178,58,.4),0 0 40px rgba(0,243,255,.12);overflow:hidden;transition:transform .3s,box-shadow .3s;}
 .kcc-paper:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 26px 60px rgba(0,0,0,.6),0 0 0 1px rgba(232,178,58,.7),0 0 50px rgba(0,243,255,.22);}
 .kcc-paper::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:kccShine 5s ease-in-out infinite;}
 @keyframes kccShine{0%,60%{transform:translateX(-120%);}100%{transform:translateX(120%);}}
-.kcc-name{position:absolute;left:0;right:0;top:calc(950 / 2480 * 100%);text-align:center;font:700 4.1cqw/1 'Times New Roman',Times,serif;color:#06141c;text-transform:uppercase;white-space:nowrap;letter-spacing:.01em;}
-.kcc-name.m{font-size:3.4cqw;}.kcc-name.l{font-size:2.8cqw;}.kcc-name.xl{font-size:2.3cqw;}
-.kcc-date{position:absolute;left:0;right:0;top:calc(1631 / 2480 * 100%);text-align:center;font:400 1.25cqw/1 'Segoe UI',Arial,sans-serif;color:#5a6b78;}
+.kcc-name{position:absolute;left:0;right:0;top:calc(950 / 2480 * 100%);text-align:center;font:700 calc(var(--cw) * .041)/1 'Times New Roman',Times,serif;color:#06141c;text-transform:uppercase;white-space:nowrap;letter-spacing:.01em;}
+.kcc-name.m{font-size:calc(var(--cw) * .034);}.kcc-name.l{font-size:calc(var(--cw) * .028);}.kcc-name.xl{font-size:calc(var(--cw) * .023);}
+.kcc-date{position:absolute;left:0;right:0;top:calc(1631 / 2480 * 100%);text-align:center;font:400 calc(var(--cw) * .0125)/1 'Segoe UI',Arial,sans-serif;color:#5a6b78;}
 
 .kcc-card{margin:1rem 0;border:1px solid var(--hud-line,rgba(0,243,255,.32));background:linear-gradient(160deg,rgba(10,28,40,.7),rgba(5,12,20,.8));padding:1rem;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1.1rem;align-items:center;text-align:left;}
 .kcc-card h3{margin:0 0 .4rem;font-family:'Orbitron',var(--mono,monospace);font-size:.82rem;letter-spacing:.18em;color:var(--neon-cyan,#00f3ff);text-shadow:0 0 12px rgba(0,243,255,.5);}
