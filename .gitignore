@@ -6,3 +6,7 @@ node_modules
 *.log
 .claude/
 
+
+# Notas privadas con claves y secretos (nunca se suben a Git)
+docs/PRIVADO-*
+*.privado.txt
