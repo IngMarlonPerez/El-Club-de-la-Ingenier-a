@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { completeChat } from '../../../lib/ai/complete';
 import { createRateLimiter, getClientIp } from '../../../lib/rateLimit';
+import { maskPII } from '../../../lib/privacy/maskPII';
 
 // Límite más estricto que la búsqueda normal (6/min en vez de 20/min): cada análisis
 // consume una llamada real a la cuota diaria compartida de IA, no es gratis como leer caché.
@@ -50,7 +51,8 @@ export default async function handler(req, res) {
 
   const messages = [
     { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: parsed.data.textoCv },
+    // Segunda barrera de privacidad: el navegador ya enmascara, pero el servidor nunca confía en eso.
+    { role: 'user', content: maskPII(parsed.data.textoCv).texto },
   ];
 
   let raw;
