@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
+import s from '../../styles/hud.module.css';
+import HudBackground from '../../components/hud/HudBackground';
+import BootSequence from '../../components/hud/BootSequence';
+import Panel from '../../components/hud/Panel';
+import Radar from '../../components/hud/Radar';
+import RingGauge, { DECISION_COLOR, useCountUp } from '../../components/hud/RingGauge';
+import { maskPII } from '../../lib/privacy/maskPII';
+import { evaluarAjuste } from '../../lib/jobs/fit';
 
 const EXPERIENCIA_OPTIONS = [
   { value: 'sin_experiencia', label: 'Sin experiencia' },
@@ -18,9 +26,12 @@ const TIPO_EMPLEO_OPTIONS = [
 ];
 
 const FUENTE_STYLE = {
-  Jooble: { color: '#2fd8c9', icon: '🌐' },
-  Computrabajo: { color: '#e8b23a', icon: '💼' },
+  Jooble: { color: '#2fd8c9' },
+  Computrabajo: { color: '#e8b23a' },
 };
+
+const DECISION_LABEL = { POSTULAR: 'POSTULAR', ADAPTAR: 'POSTULAR ADAPTANDO', NO_PRIORIZAR: 'NO PRIORIZAR', SIN_DETALLE: 'SIN DETALLE' };
+const NIVEL_TXT = { cv: 'con evidencia en tu CV', habilidad: 'solo en tus habilidades', falta: 'sin evidencia' };
 
 const MAX_CV_TEXT_CHARS = 6000;
 const MAX_CV_FILE_BYTES = 8 * 1024 * 1024;
@@ -45,29 +56,41 @@ function haceCuanto(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
   const dias = Math.floor((Date.now() - d.getTime()) / 86400000);
-  if (dias <= 0) return 'Hoy';
-  if (dias === 1) return 'Ayer';
-  return `Hace ${dias} días`;
+  if (dias <= 0) return 'HOY';
+  if (dias === 1) return 'AYER';
+  return `HACE ${dias} DÍAS`;
 }
 
-function matchedSkillsFor(oferta, skills) {
-  if (!skills.length) return [];
-  const haystack = `${oferta.titulo} ${oferta.empresa}`.toLowerCase();
-  return skills.filter((s) => haystack.includes(s.toLowerCase()));
-}
-
-function SkeletonCard({ delay }) {
+function Stat({ valor, etiqueta, sufijo = '' }) {
+  const v = useCountUp(valor == null ? null : valor, 1100);
   return (
-    <div className="skeleton-card" style={{ animationDelay: `${delay}ms` }}>
-      <div className="sk-line sk-badge" />
-      <div className="sk-line sk-title" />
-      <div className="sk-line sk-meta" />
-      <div className="sk-line sk-link" />
+    <div className={s.stat}>
+      <b>{valor == null ? '—' : `${v}${sufijo}`}</b>
+      <span>{etiqueta}</span>
     </div>
   );
 }
 
+function Requisitos({ fit }) {
+  if (!fit || !fit.requisitos.length) return <p className={s.notes}>No se detectaron requisitos concretos en el texto disponible.</p>;
+  return (
+    <>
+      <p className={s.legendMini}>● verde: evidencia en tu CV · ● ámbar: solo en tus habilidades · ● rojo tachado: sin evidencia</p>
+      <div className={s.pills}>
+        {fit.requisitos.map((r) => (
+          <span key={r.termino} className={`${s.pill} ${s[`pill_${r.nivel}`] || ''}`} title={NIVEL_TXT[r.nivel] || 'sin evaluar'}>{r.termino}{r.peso === 2 ? ' ★' : ''}</span>
+        ))}
+      </div>
+      {fit.filtros.length > 0 && <ul className={s.notes}>{fit.filtros.map((f) => <li key={f}>{f}</li>)}</ul>}
+      {fit.brechas.length > 0 && <p className={s.legendMini}>Antes de postular: confirma si dominas {fit.brechas.slice(0, 4).map((b) => b.termino).join(', ')}. Si es así, súbelo a tu CV con un proyecto; si no, no lo afirmes.</p>}
+    </>
+  );
+}
+
 export default function BuscadorEmpleo() {
+  const [booted, setBooted] = useState(false);
+  const onBootDone = useCallback(() => setBooted(true), []);
+
   const [carrera, setCarrera] = useState('');
   const [experiencia, setExperiencia] = useState('sin_experiencia');
   const [tipoEmpleo, setTipoEmpleo] = useState('tiempo_completo');
@@ -78,24 +101,28 @@ export default function BuscadorEmpleo() {
   const [errorMsg, setErrorMsg] = useState('');
   const formRef = useRef(null);
   const resultsRef = useRef(null);
+  const [activo, setActivo] = useState(null);
+  const [abierta, setAbierta] = useState(null);
+  const [modal, setModal] = useState(null); // índice de oferta para evaluar con descripción pegada
+  const [descPegada, setDescPegada] = useState('');
+  const [fitManual, setFitManual] = useState({}); // { [indice]: fit calculado con la descripción pegada }
 
-  // ---- Análisis de CV (opcional): sube un PDF, la IA lo lee y pre-llena esta misma
-  // búsqueda -- el CV se procesa en el navegador (pdf.js), solo el texto extraído viaja
-  // al servidor para el análisis. El PDF en sí solo se guarda si el usuario tiene sesión
-  // iniciada y da su consentimiento explícito (ver saveCurrentCv más abajo).
+  // ---- Análisis de CV (opcional): el PDF se lee en el navegador (pdf.js) y ANTES de enviar nada
+  // se enmascaran los datos personales (lib/privacy/maskPII). Solo el texto ya enmascarado viaja
+  // al servidor para el análisis, y el servidor lo enmascara de nuevo. El PDF solo se guarda si la
+  // persona tiene sesión y lo consiente de forma explícita.
   const [cvStatus, setCvStatus] = useState('idle'); // idle | reading | analyzing | done | error
   const [cvErrorMsg, setCvErrorMsg] = useState('');
   const [cvSkills, setCvSkills] = useState([]);
   const [cvResumen, setCvResumen] = useState('');
+  const [cvTexto, setCvTexto] = useState(''); // texto ya enmascarado: base del ajuste, solo en memoria
+  const [escudo, setEscudo] = useState(null); // { total, resumen }
   const cvFileRef = useRef(null);
 
-  // ---- Guardar CV (opcional, requiere login): cliente de Supabase en el navegador,
-  // mismo patrón que public/index.html (public-config -> createClient). Si hay sesión,
-  // se busca si ya existe un CV guardado para precargarlo.
   const [supabase, setSupabase] = useState(null);
   const [session, setSession] = useState(null);
   const [savedCv, setSavedCv] = useState(null);
-  const [cvSaveStatus, setCvSaveStatus] = useState('idle'); // idle | saving | error
+  const [cvSaveStatus, setCvSaveStatus] = useState('idle');
   const [cvSaveConsent, setCvSaveConsent] = useState(false);
 
   useEffect(() => {
@@ -108,14 +135,14 @@ export default function BuscadorEmpleo() {
         const client = createClient(config.supabaseUrl, config.supabaseAnonKey);
         setSupabase(client);
 
-        const { data: { session: s } } = await client.auth.getSession();
+        const { data: { session: s0 } } = await client.auth.getSession();
         if (!active) return;
-        setSession(s);
-        if (s) {
+        setSession(s0);
+        if (s0) {
           const { data } = await client
             .from('cv_uploads')
             .select('id, storage_path, nombre_original, subido_en')
-            .eq('user_id', s.user.id)
+            .eq('user_id', s0.user.id)
             .maybeSingle();
           if (active && data) setSavedCv(data);
         }
@@ -131,8 +158,6 @@ export default function BuscadorEmpleo() {
     return () => { active = false; };
   }, []);
 
-  // El aviso de seguridad empieza oculto y solo se muestra si localStorage confirma
-  // que el usuario no lo cerró antes — evita el parpadeo de mostrarlo y ocultarlo.
   const [warnDismissed, setWarnDismissed] = useState(true);
   useEffect(() => {
     setWarnDismissed(typeof window !== 'undefined' && window.localStorage.getItem(WARN_DISMISSED_KEY) === '1');
@@ -151,6 +176,7 @@ export default function BuscadorEmpleo() {
     setStatus('loading');
     setErrorMsg('');
     setAviso('');
+    setActivo(null); setAbierta(null); setFitManual({});
     try {
       const res = await fetch('/api/jobs/search', {
         method: 'POST',
@@ -183,14 +209,11 @@ export default function BuscadorEmpleo() {
     runSearch({ carrera, experiencia, tipoEmpleo, ubicacion });
   }, [runSearch, carrera, experiencia, tipoEmpleo, ubicacion]);
 
-  // Se ata el listener de "submit" directamente al DOM (en vez de depender solo del
-  // onSubmit sintético de React) para blindar contra un envío nativo del formulario
-  // (recarga completa de página con los filtros como query string) detectado durante
-  // pruebas — con esto, el preventDefault() corre siempre, sin importar el orden de
-  // inicialización del sistema de eventos de React.
+  // El listener de "submit" se ata al DOM además del sintético de React (ver historial: se detectó
+  // un envío nativo con recarga completa en pruebas anteriores).
   useEffect(() => {
     const form = formRef.current;
-    if (!form) return;
+    if (!form) return undefined;
     const onNativeSubmit = (e) => { e.preventDefault(); handleSubmit(e); };
     form.addEventListener('submit', onNativeSubmit, { capture: true });
     return () => form.removeEventListener('submit', onNativeSubmit, { capture: true });
@@ -210,18 +233,22 @@ export default function BuscadorEmpleo() {
     return texto.trim().slice(0, MAX_CV_TEXT_CHARS);
   }, []);
 
-  const analyzeAndFill = useCallback(async (texto) => {
-    if (texto.length < 30) {
-      setCvErrorMsg('No encontramos texto en ese PDF (¿es una imagen escaneada?). Prueba con el formulario manual de abajo.');
+  const analyzeAndFill = useCallback(async (textoOriginal) => {
+    if (textoOriginal.length < 30) {
+      setCvErrorMsg('No encontramos texto en ese PDF (¿es una imagen escaneada?). Prueba con el formulario manual.');
       setCvStatus('error');
       return;
     }
+    // Escudo de privacidad: se enmascara ANTES de enviar y antes de guardar en memoria.
+    const masked = maskPII(textoOriginal);
+    setEscudo({ total: masked.total, resumen: masked.resumen });
+    setCvTexto(masked.texto);
     setCvStatus('analyzing');
     try {
       const res = await fetch('/api/jobs/analyze-cv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ textoCv: texto }),
+        body: JSON.stringify({ textoCv: masked.texto }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -244,48 +271,28 @@ export default function BuscadorEmpleo() {
 
   const onCvFileChange = useCallback(async (e) => {
     const file = e.target.files && e.target.files[0];
-    e.target.value = ''; // permite volver a elegir el mismo archivo si hace falta reintentar
+    e.target.value = '';
     if (!file) return;
-
-    if (file.type !== 'application/pdf') {
-      setCvErrorMsg('Ese archivo no es un PDF. Sube tu CV en formato PDF.');
-      setCvStatus('error');
-      return;
-    }
-    if (file.size > MAX_CV_FILE_BYTES) {
-      setCvErrorMsg('El PDF es muy grande (máximo 8MB).');
-      setCvStatus('error');
-      return;
-    }
+    if (file.type !== 'application/pdf') { setCvErrorMsg('Ese archivo no es un PDF. Sube tu CV en formato PDF.'); setCvStatus('error'); return; }
+    if (file.size > MAX_CV_FILE_BYTES) { setCvErrorMsg('El PDF es muy grande (máximo 8MB).'); setCvStatus('error'); return; }
 
     cvFileRef.current = file;
-    setCvErrorMsg('');
-    setCvSkills([]);
-    setCvResumen('');
-    setCvSaveStatus('idle');
-    setCvSaveConsent(false);
-    setCvStatus('reading');
+    setCvErrorMsg(''); setCvSkills([]); setCvResumen(''); setCvTexto(''); setEscudo(null);
+    setCvSaveStatus('idle'); setCvSaveConsent(false); setCvStatus('reading');
 
     let texto = '';
-    try {
-      texto = await extractPdfText(file);
-    } catch (err) {
-      setCvErrorMsg('No pudimos leer ese PDF. Intenta con otro archivo o usa el formulario manual de abajo.');
+    try { texto = await extractPdfText(file); } catch (err) {
+      setCvErrorMsg('No pudimos leer ese PDF. Intenta con otro archivo o usa el formulario manual.');
       setCvStatus('error');
       return;
     }
     await analyzeAndFill(texto);
   }, [extractPdfText, analyzeAndFill]);
 
-  // Re-analiza el CV que el usuario ya tenía guardado, sin que tenga que volver a
-  // subir el archivo -- lo descarga de su propia carpeta en Storage (protegida por RLS).
   const applySavedCv = useCallback(async () => {
     if (!supabase || !savedCv) return;
     cvFileRef.current = null;
-    setCvErrorMsg('');
-    setCvSkills([]);
-    setCvResumen('');
-    setCvStatus('reading');
+    setCvErrorMsg(''); setCvSkills([]); setCvResumen(''); setCvTexto(''); setEscudo(null); setCvStatus('reading');
     try {
       const { data: blob, error } = await supabase.storage.from('cv-uploads').download(savedCv.storage_path);
       if (error) throw error;
@@ -298,8 +305,6 @@ export default function BuscadorEmpleo() {
     }
   }, [supabase, savedCv, extractPdfText, analyzeAndFill]);
 
-  // Guarda el PDF ya analizado en Storage, atado a la cuenta del usuario -- solo se
-  // llama tras el checkbox de consentimiento explícito (ver JSX más abajo).
   const saveCurrentCv = useCallback(async () => {
     if (!supabase || !session || !cvFileRef.current || !cvSaveConsent) return;
     setCvSaveStatus('saving');
@@ -333,344 +338,323 @@ export default function BuscadorEmpleo() {
     }
   }, [supabase, savedCv]);
 
+  // ---- Ajuste por oferta (local, determinista, sin IA ni cuota) ----
+  const perfil = useMemo(() => ({ cvTexto, habilidades: cvSkills, carrera, resumen: cvResumen }), [cvTexto, cvSkills, carrera, cvResumen]);
+  const tienePerfil = Boolean(cvTexto);
+
   const displayOfertas = useMemo(() => {
-    if (!cvSkills.length) return ofertas;
-    return [...ofertas].sort((a, b) => matchedSkillsFor(b, cvSkills).length - matchedSkillsFor(a, cvSkills).length);
-  }, [ofertas, cvSkills]);
+    const conFit = ofertas.map((o, idx) => ({
+      ...o,
+      _idx: idx,
+      fit: tienePerfil ? evaluarAjuste(perfil, `${o.titulo}. ${o.resumen || ''}`) : null,
+    }));
+    if (!tienePerfil) return conFit;
+    return [...conFit].sort((a, b) => (b.fit?.ajuste ?? -1) - (a.fit?.ajuste ?? -1));
+  }, [ofertas, perfil, tienePerfil]);
+
+  // Evalúa con la descripción pegada (todo en el navegador)
+  const evaluarPegada = useCallback(() => {
+    if (modal == null) return;
+    const o = displayOfertas[modal];
+    const fit = evaluarAjuste(perfil, `${o.titulo}. ${descPegada}`, { minRequisitos: 2 });
+    setFitManual((m) => ({ ...m, [o._idx]: fit }));
+  }, [modal, displayOfertas, perfil, descPegada]);
+
+  const fitDe = (o) => fitManual[o._idx] || o.fit;
+
+  const telemetria = useMemo(() => {
+    const evaluadas = displayOfertas.map((o) => fitDe(o)).filter((f) => f && f.ajuste != null);
+    const medio = evaluadas.length ? Math.round(evaluadas.reduce((a, f) => a + f.ajuste, 0) / evaluadas.length) : null;
+    const freq = new Map();
+    evaluadas.forEach((f) => f.brechas.forEach((b) => freq.set(b.termino, (freq.get(b.termino) || 0) + 1)));
+    const top = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const mejor = evaluadas.length ? Math.max(...evaluadas.map((f) => f.ajuste)) : null;
+    return { n: displayOfertas.length, evaluadas: evaluadas.length, medio, mejor, top };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayOfertas, fitManual]);
+
+  const enfocar = useCallback((i) => {
+    setActivo(i);
+    const el = document.getElementById(`oferta-${i}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
 
   const cvBusy = cvStatus === 'reading' || cvStatus === 'analyzing';
+  const radarOfertas = displayOfertas.map((o) => ({ ...o, fit: fitDe(o) }));
 
   return (
-    <div className="page">
+    <div className={s.root}>
       <Head>
         <title>Buscador de Empleo | El Club de la Ingeniería</title>
-        <meta name="description" content="Busca ofertas de empleo recientes en Ecuador: agregamos Jooble y Computrabajo, y te llevamos directo a Red Socio Empleo, el portal oficial del gobierno." />
+        <meta name="description" content="Busca ofertas de empleo recientes en Ecuador, mide qué tanto encajas con cada una y descubre qué te falta, con tu CV protegido: los datos personales se ocultan antes de enviar nada." />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </Head>
 
-      <div className="bg-glow bg-glow-a" aria-hidden="true" />
-      <div className="bg-glow bg-glow-b" aria-hidden="true" />
+      {!booted && <BootSequence onDone={onBootDone} />}
+      <HudBackground />
+      <div className={s.scan} aria-hidden="true" />
+      <div className={s.scanBar} aria-hidden="true" />
+      <div className={s.vignette} aria-hidden="true" />
 
-      <header className="topbar">
-        <a className="back" href="/">← volver al club</a>
-        <span className="topbar-pill">CIE · LAB-EMPLEO</span>
-      </header>
-
-      <section className="hero">
-        <div className="hero-icon" aria-hidden="true">💼</div>
-        <span className="eyebrow">EMPLEO &amp; DATOS</span>
-        <h1>Buscador de <span>Empleo</span></h1>
-        <p className="subtitle">Filtra por carrera, experiencia y tipo de empleo. Agregamos ofertas recientes de varias fuentes y te llevamos directo al sitio original — nunca alojamos el contenido completo de una oferta.</p>
-        <div className="hero-facts">
-          <div className="fact"><b>7 días</b><span>ventana de publicación</span></div>
-          <div className="fact"><b>10</b><span>ofertas por búsqueda</span></div>
-          <div className="fact"><b>3</b><span>fuentes consultadas</span></div>
+      <main className={s.shell}>
+        <div className={s.topbar}>
+          <a className={s.back} href="/">◀ VOLVER AL CLUB</a>
+          <div className={s.sysline}>
+            <span><i className={s.dotLive} />SISTEMA <b>EN LÍNEA</b></span>
+            <span>MÓDULO <b>LAB-EMPLEO</b></span>
+            <span>PRIVACIDAD <b>ACTIVA</b></span>
+          </div>
         </div>
-      </section>
 
-      <a className="gov-card" href="https://encuentraempleo.trabajo.gob.ec/socioEmpleo-war/paginas/index.jsf" target="_blank" rel="noopener noreferrer">
-        <div className="gov-card-icon">🏛️</div>
-        <div>
-          <h2>Red Socio Empleo — portal oficial del gobierno</h2>
-          <p>Es la fuente más confiable que existe: la administra directamente el Ministerio del Trabajo de Ecuador. <b>Recomendamos revisarla siempre</b>, además de los resultados de aquí abajo.</p>
-          <span className="gov-card-link">Buscar en el portal oficial →</span>
+        <div className={s.titleBlock}>
+          <div className={s.eyebrow}>EL CLUB DE LA INGENIERÍA</div>
+          <h1 className={s.title} data-t="EMPLEO·OS">EMPLEO·OS</h1>
+          <p className={s.sub}>Encuentra ofertas de los últimos 7 días, mide cuánto encajas con cada una y descubre qué te falta. Tu CV se lee en tu navegador y los datos personales se ocultan antes de enviar nada.</p>
         </div>
-      </a>
 
-      {!warnDismissed && (
-        <div className="warn-box">
-          <span className="warn-icon">⚠️</span>
-          <span className="warn-text">No compartas datos bancarios ni copias de tu cédula, ni pagues por un &quot;proceso de selección&quot; sin confirmar que la empresa es real.</span>
-          <button type="button" className="warn-close" aria-label="Cerrar aviso" onClick={dismissWarn}>✕</button>
-        </div>
-      )}
+        <div className={s.hud}>
+          {/* ================= COLUMNA IZQUIERDA: OPERADOR ================= */}
+          <div className={`${s.col} ${s.colLeft}`}>
+            <Panel titulo="Perfil · operador" etiqueta="CV" tilt style={{ '--pd': '120ms' }} led={tienePerfil ? 'ok' : 'warn'}>
+              {savedCv ? (
+                <>
+                  <p className={s.p}>CV guardado el {formatFecha(savedCv.subido_en)} <span className={s.tag}>({savedCv.nombre_original})</span></p>
+                  <div className={s.row}>
+                    <button type="button" className={`${s.btn} ${s.btnPrimary} ${s.btnSm}`} onClick={applySavedCv} disabled={cvBusy}>
+                      {cvBusy ? (<><span className={s.spinner} aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo' : 'Analizando'}</>) : 'Usarlo para buscar'}
+                    </button>
+                    <label className={`${s.btn} ${s.btnGhost} ${s.btnSm} ${s.fileLbl}`}>
+                      Subir otro
+                      <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
+                    </label>
+                    <button type="button" className={`${s.btn} ${s.btnDanger} ${s.btnSm}`} onClick={deleteSavedCv} disabled={cvBusy}>Eliminar</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className={s.p}>Sube tu CV en PDF: la IA completa la búsqueda y el sistema calcula tu ajuste con cada oferta. Se procesa en tu navegador y <b style={{ color: '#e8f4f6' }}>no se guarda</b> a menos que tú lo decidas.</p>
+                  <label className={`${s.btn} ${s.btnPrimary} ${s.fileLbl}`}>
+                    {cvBusy ? (<><span className={s.spinner} aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo PDF' : 'Analizando'}</>) : 'Cargar CV (PDF)'}
+                    <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
+                  </label>
+                </>
+              )}
 
-      <div className="cv-card">
-        <div className="cv-card-icon">📄</div>
-        <div className="cv-card-body">
-          {savedCv ? (
-            <>
-              <h2>Ya tienes un CV guardado</h2>
-              <p>Subido el {formatFecha(savedCv.subido_en)} ({savedCv.nombre_original}).</p>
-              <div className="cv-saved-actions">
-                <button type="button" className="cv-upload-btn" onClick={applySavedCv} disabled={cvBusy}>
-                  {cvBusy ? (<><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo…' : 'Analizando…'}</>) : (<>🔎 Usarlo para buscar</>)}
-                </button>
-                <label className={`cv-upload-btn ghost${cvBusy ? ' busy' : ''}`}>
-                  📎 Subir otro
-                  <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
-                </label>
-                <button type="button" className="cv-delete-btn" onClick={deleteSavedCv} disabled={cvBusy}>🗑️ Eliminar</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2>¿Tienes tu CV a mano?</h2>
-              <p>Súbelo en PDF y dejamos que la IA rellene la búsqueda por ti, resaltando qué ofertas coinciden más con tu perfil. Tu CV se procesa en tu navegador — solo el texto extraído se envía a la IA para el análisis, nunca se guarda a menos que tú decidas guardarlo.</p>
-              <label className={`cv-upload-btn${cvBusy ? ' busy' : ''}`}>
-                {cvBusy ? (
-                  <><span className="spinner spinner-dark" aria-hidden="true" /> {cvStatus === 'reading' ? 'Leyendo PDF…' : 'Analizando con IA…'}</>
-                ) : (
-                  <>📎 Subir mi CV (PDF)</>
-                )}
-                <input type="file" accept="application/pdf" onChange={onCvFileChange} disabled={cvBusy} hidden />
-              </label>
-            </>
-          )}
+              {cvErrorMsg && <p className={s.err}>⚠ {cvErrorMsg}</p>}
 
-          {cvErrorMsg && <p className="cv-error">⚠️ {cvErrorMsg}</p>}
-
-          {cvStatus === 'done' && (
-            <div className="cv-result">
-              {cvResumen && <p className="cv-resumen"><b>Perfil detectado:</b> {cvResumen}</p>}
-              {cvSkills.length > 0 && (
-                <div className="cv-skills">
-                  {cvSkills.map((s, i) => <span key={i} className="skill-chip">{s}</span>)}
+              {escudo && (
+                <div className={s.shield}>
+                  <svg className={s.shieldIcon} viewBox="0 0 24 24" fill="none" stroke="#39ff6a" strokeWidth="1.6" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9-8 11-4.6-2-8-6-8-11V5l8-3z" /><path d="M8.5 12.2l2.4 2.4 4.6-4.8" /></svg>
+                  <div>
+                    <b>ESCUDO DE PRIVACIDAD</b>
+                    <span>{escudo.total ? `Se ocultaron ${escudo.resumen.join(', ')} antes de enviar tu CV.` : 'No se detectaron datos personales para ocultar.'}</span>
+                  </div>
                 </div>
               )}
-              {!savedCv && cvFileRef.current && (
-                session ? (
-                  <div className="cv-save-row">
-                    <label className="cv-consent">
-                      <input type="checkbox" checked={cvSaveConsent} onChange={(e) => setCvSaveConsent(e.target.checked)} />
-                      Entiendo que mi CV quedará guardado en mi cuenta hasta que yo lo elimine — <a href="/privacidad.html" target="_blank" rel="noopener noreferrer">ver política de privacidad</a>.
-                    </label>
-                    <button type="button" className="cv-save-btn" onClick={saveCurrentCv} disabled={!cvSaveConsent || cvSaveStatus === 'saving'}>
-                      {cvSaveStatus === 'saving' ? 'Guardando…' : '💾 Guardar mi CV para la próxima vez'}
-                    </button>
-                    {cvSaveStatus === 'error' && <p className="cv-error">⚠️ No pudimos guardar tu CV. Intenta de nuevo.</p>}
+
+              {cvStatus === 'done' && (
+                <div style={{ marginTop: '.9rem' }}>
+                  {cvResumen && <p className={s.p}><span className={s.tag}>PERFIL DETECTADO</span><br />{cvResumen}</p>}
+                  {cvSkills.length > 0 && <div className={s.chips}>{cvSkills.map((sk, i) => <span key={sk + i} className={s.chip} style={{ '--i': i }}>{sk}</span>)}</div>}
+                  {!savedCv && cvFileRef.current && (
+                    session ? (
+                      <>
+                        <hr className={s.sep} />
+                        <label className={s.consent}>
+                          <input type="checkbox" checked={cvSaveConsent} onChange={(e) => setCvSaveConsent(e.target.checked)} />
+                          <span>Entiendo que mi CV quedará guardado en mi cuenta hasta que yo lo elimine — <a href="/privacidad.html" target="_blank" rel="noopener noreferrer">política de privacidad</a>.</span>
+                        </label>
+                        <button type="button" className={`${s.btn} ${s.btnSm}`} onClick={saveCurrentCv} disabled={!cvSaveConsent || cvSaveStatus === 'saving'}>
+                          {cvSaveStatus === 'saving' ? 'Guardando…' : 'Guardar mi CV'}
+                        </button>
+                        {cvSaveStatus === 'error' && <p className={s.err}>⚠ No pudimos guardar tu CV. Intenta de nuevo.</p>}
+                      </>
+                    ) : (
+                      <p className={s.p} style={{ marginTop: '.8rem' }}>¿Quieres que recordemos tu CV? <a href="/#join" style={{ color: '#7dfff0' }}>Inicia sesión</a> para guardarlo.</p>
+                    )
+                  )}
+                </div>
+              )}
+            </Panel>
+
+            {!warnDismissed && (
+              <div className={s.warn}>
+                <span>⚠</span>
+                <span>No compartas datos bancarios ni copias de tu cédula, ni pagues por un «proceso de selección» sin confirmar que la empresa es real.</span>
+                <button type="button" aria-label="Cerrar aviso" onClick={dismissWarn}>✕</button>
+              </div>
+            )}
+          </div>
+
+          {/* ================= COLUMNA CENTRAL: CONSOLA + RADAR ================= */}
+          <div className={`${s.col} ${s.colMain}`}>
+            <Panel titulo="Consola de búsqueda" etiqueta="FILTROS" style={{ '--pd': '60ms' }}>
+              <form className={s.form} ref={formRef} noValidate>
+                <div className={`${s.field} ${s.fieldWide}`}>
+                  <label htmlFor="f-carrera">Carrera o profesión</label>
+                  <input id="f-carrera" type="text" name="carrera" value={carrera} onChange={(e) => setCarrera(e.target.value)} placeholder="Ej. Desarrollador web, Contabilidad, Marketing…" maxLength={80} />
+                </div>
+                <div className={s.field}>
+                  <label htmlFor="f-exp">Experiencia</label>
+                  <select id="f-exp" name="experiencia" value={experiencia} onChange={(e) => setExperiencia(e.target.value)}>
+                    {EXPERIENCIA_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div className={s.field}>
+                  <label htmlFor="f-tipo">Tipo de empleo</label>
+                  <select id="f-tipo" name="tipoEmpleo" value={tipoEmpleo} onChange={(e) => setTipoEmpleo(e.target.value)}>
+                    {TIPO_EMPLEO_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div className={`${s.field} ${s.fieldWide}`}>
+                  <label htmlFor="f-ubi">Ubicación (opcional)</label>
+                  <input id="f-ubi" type="text" name="ubicacion" list="ubicacion-list" value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} placeholder="Ecuador" maxLength={80} autoComplete="off" />
+                  <datalist id="ubicacion-list">{UBICACION_OPTIONS.map((u) => <option key={u} value={u} />)}</datalist>
+                </div>
+                <button type="submit" className={`${s.btn} ${s.btnPrimary} ${s.formBtn}`} disabled={status === 'loading'}>
+                  {status === 'loading' ? (<><span className={s.spinner} aria-hidden="true" /> Escaneando</>) : 'Escanear ofertas'}
+                </button>
+              </form>
+            </Panel>
+
+            {errorMsg && <div className={s.warn} style={{ borderColor: 'rgba(255,107,107,.5)', background: 'rgba(255,107,107,.08)' }}>⚠ {errorMsg}</div>}
+            {aviso && <div className={s.warn}>ℹ {aviso}</div>}
+
+            <div ref={resultsRef}>
+              <Panel titulo="Radar de ofertas" etiqueta={status === 'loading' ? 'ESCANEANDO…' : `${displayOfertas.length} OBJETIVOS`} led={status === 'loading' ? 'warn' : 'ok'} style={{ '--pd': '180ms' }}>
+                <div className={s.radarWrap}>
+                  <Radar ofertas={radarOfertas} activo={activo} onSelect={enfocar} escaneando={status === 'loading'} />
+                  <div className={s.legend}>
+                    <span style={{ '--c': DECISION_COLOR.POSTULAR }}><i /> Ajuste alto (≥ 65 %): postular</span>
+                    <span style={{ '--c': DECISION_COLOR.ADAPTAR }}><i /> Ajuste medio: postular adaptando el CV</span>
+                    <span style={{ '--c': DECISION_COLOR.NO_PRIORIZAR }}><i /> Ajuste bajo: no priorizar</span>
+                    <span style={{ '--c': DECISION_COLOR.SIN_DETALLE }}><i /> Sin detalle suficiente</span>
+                    <span className={s.tag} style={{ marginTop: '.4rem' }}>{tienePerfil ? 'Cuanto más cerca del centro, mejor encajas. Toca un punto para ver la oferta.' : 'Carga tu CV para ubicar cada oferta según tu ajuste.'}</span>
                   </div>
-                ) : (
-                  <p className="cv-login-note">¿Quieres que recordemos tu CV la próxima vez? <a href="/#join">Inicia sesión</a> para guardarlo.</p>
-                )
+                </div>
+              </Panel>
+
+              {status === 'loading' && (
+                <ul className={s.list} style={{ marginTop: '1rem' }}>
+                  {[0, 1, 2].map((i) => <li key={i} className={s.skeleton} style={{ '--i': i }} />)}
+                </ul>
+              )}
+
+              {status === 'done' && ofertas.length === 0 && !aviso && (
+                <div className={s.empty} style={{ marginTop: '1rem' }}>
+                  Sin objetivos en los últimos 7 días para ese filtro. Prueba un término más general o revisa el portal oficial del gobierno.
+                </div>
+              )}
+
+              {displayOfertas.length > 0 && (
+                <>
+                  <div className={s.countLine}><span>{displayOfertas.length} OFERTA{displayOfertas.length === 1 ? '' : 'S'} DETECTADA{displayOfertas.length === 1 ? '' : 'S'}</span><span>{tienePerfil ? 'ORDENADAS POR AJUSTE' : 'ORDENADAS POR FECHA'}</span></div>
+                  <ul className={s.list}>
+                    {displayOfertas.map((o, i) => {
+                      const f = fitDe(o);
+                      const fuente = FUENTE_STYLE[o.fuente] || { color: '#8fa8b3' };
+                      const color = f ? DECISION_COLOR[f.decision] : fuente.color;
+                      return (
+                        <li id={`oferta-${i}`} key={`${o.url}-${i}`} className={`${s.offer} ${activo === i ? s.offerActive : ''}`} style={{ '--i': i, '--c': color }} onMouseEnter={() => setActivo(i)}>
+                          <div className={s.offerMain}>
+                            <div className={s.offerTop}>
+                              <span className={s.num}>#{String(i + 1).padStart(2, '0')}</span>
+                              <span className={s.badge} style={{ background: fuente.color }}>{o.fuente}</span>
+                              <span className={s.date} title={formatFecha(o.fechaPublicacion)}>{haceCuanto(o.fechaPublicacion) || formatFecha(o.fechaPublicacion)}</span>
+                            </div>
+                            <h3>{o.titulo}</h3>
+                            <div className={s.meta}>
+                              <span>🏢 {o.empresa}</span><span>📍 {o.ubicacion}</span>{o.tipoEmpleo && <span>🕒 {o.tipoEmpleo}</span>}
+                            </div>
+                            {f && <span className={s.verdict}>{DECISION_LABEL[f.decision]}</span>}
+                          </div>
+                          <div className={s.offerSide}>
+                            {f && f.ajuste != null
+                              ? <RingGauge value={f.ajuste} color={color} />
+                              : <div className={s.noFit}>{tienePerfil ? 'SIN DETALLE' : 'CARGA TU CV'}</div>}
+                          </div>
+                          <div className={s.actions}>
+                            <a className={s.link} href={o.url} target="_blank" rel="noopener noreferrer">VER OFERTA Y POSTULAR ▶</a>
+                            {tienePerfil && (
+                              <>
+                                <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => setAbierta(abierta === i ? null : i)}>{abierta === i ? 'Ocultar análisis' : 'Ver análisis'}</button>
+                                <button type="button" className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => { setModal(i); setDescPegada(''); }}>Pegar descripción</button>
+                              </>
+                            )}
+                          </div>
+                          {abierta === i && f && <div className={s.drawer}><Requisitos fit={f} /></div>}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
               )}
             </div>
-          )}
-        </div>
-      </div>
-
-      <form className="search-form" ref={formRef} noValidate>
-        <label className="field-carrera">
-          <span className="field-label"><span className="field-icon">🔍</span> Carrera o profesión</span>
-          <input type="text" name="carrera" value={carrera} onChange={(e) => setCarrera(e.target.value)} placeholder="Ej. Ingeniería en Sistemas, Marketing, Contabilidad..." maxLength={80} />
-        </label>
-        <label>
-          <span className="field-label"><span className="field-icon">📈</span> Experiencia</span>
-          <select name="experiencia" value={experiencia} onChange={(e) => setExperiencia(e.target.value)}>
-            {EXPERIENCIA_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </label>
-        <label>
-          <span className="field-label"><span className="field-icon">🕒</span> Tipo de empleo</span>
-          <select name="tipoEmpleo" value={tipoEmpleo} onChange={(e) => setTipoEmpleo(e.target.value)}>
-            {TIPO_EMPLEO_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-        </label>
-        <label>
-          <span className="field-label"><span className="field-icon">📍</span> Ubicación <span className="optional">(opcional)</span></span>
-          <input type="text" name="ubicacion" list="ubicacion-list" value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} placeholder="Ecuador" maxLength={80} autoComplete="off" />
-          <datalist id="ubicacion-list">
-            {UBICACION_OPTIONS.map((u) => <option key={u} value={u} />)}
-          </datalist>
-        </label>
-        <button type="submit" disabled={status === 'loading'}>
-          {status === 'loading' ? (<><span className="spinner" aria-hidden="true" /> Buscando…</>) : (<>🔎 Buscar ofertas</>)}
-        </button>
-      </form>
-
-      {errorMsg && <div className="error-box">⚠️ {errorMsg}</div>}
-      {aviso && <div className="aviso-box">ℹ️ {aviso}</div>}
-
-      <div ref={resultsRef}>
-        {status === 'loading' && (
-          <div className="results">
-            <SkeletonCard delay={0} />
-            <SkeletonCard delay={90} />
-            <SkeletonCard delay={180} />
           </div>
-        )}
 
-        {status === 'done' && ofertas.length === 0 && !aviso && (
-          <div className="empty-state">
-            <div className="empty-icon">🗂️</div>
-            No encontramos ofertas nuevas (últimos 7 días) para ese filtro todavía. Prueba con un término más general, o revisa el portal oficial de arriba — se actualiza directamente por el gobierno.
+          {/* ================= COLUMNA DERECHA: TELEMETRÍA ================= */}
+          <div className={`${s.col} ${s.colRight}`}>
+            <Panel titulo="Telemetría" etiqueta="LIVE" tilt style={{ '--pd': '240ms' }}>
+              <div className={s.stats}>
+                <Stat valor={telemetria.n} etiqueta="OFERTAS" />
+                <Stat valor={telemetria.evaluadas} etiqueta="EVALUADAS" />
+                <Stat valor={telemetria.medio} etiqueta="AJUSTE MEDIO" sufijo="%" />
+                <Stat valor={telemetria.mejor} etiqueta="MEJOR AJUSTE" sufijo="%" />
+              </div>
+              {telemetria.top.length > 0 && (
+                <>
+                  <hr className={s.sep} />
+                  <p className={s.tag}>BRECHAS MÁS FRECUENTES</p>
+                  <div className={s.bars}>
+                    {telemetria.top.map(([term, n], i) => (
+                      <div key={term} className={s.bar}>
+                        <span>{term}</span>
+                        <div className={s.barTrack}><div className={s.barFill} style={{ '--w': `${Math.round((n / Math.max(1, telemetria.evaluadas)) * 100)}%`, '--i': i }} /></div>
+                        <span>{n}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className={s.legendMini} style={{ marginTop: '.7rem' }}>Aprender estas habilidades (y mostrarlas en un proyecto) sube tu ajuste en varias ofertas a la vez.</p>
+                </>
+              )}
+              {!tienePerfil && <p className={s.p} style={{ marginTop: '.8rem' }}>Carga tu CV para activar el ajuste y las brechas.</p>}
+            </Panel>
+
+            <Panel titulo="Portal oficial" etiqueta="GOB.EC" tilt style={{ '--pd': '300ms' }} led="warn">
+              <a className={s.gov} href="https://encuentraempleo.trabajo.gob.ec/socioEmpleo-war/paginas/index.jsf" target="_blank" rel="noopener noreferrer">
+                <h3>RED SOCIO EMPLEO</h3>
+                <p>La administra el Ministerio del Trabajo de Ecuador: es la fuente más confiable. Revísala siempre, además de estos resultados. ▶</p>
+              </a>
+            </Panel>
+
+            <Panel titulo="Más fuentes" etiqueta="LINKS" style={{ '--pd': '360ms' }}>
+              <div className={s.otherLinks}>
+                <a href="https://www.linkedin.com/jobs/search/?location=Ecuador" target="_blank" rel="noopener noreferrer">▸ Ofertas en LinkedIn (Ecuador)</a>
+                <a href="https://www.multitrabajos.com" target="_blank" rel="noopener noreferrer">▸ Multitrabajos.com</a>
+                <a href="https://www.linkedin.com/in/marlon-p%C3%A9rez-06ab32303/" target="_blank" rel="noopener noreferrer">▸ JuniorJobs: boletín semanal júnior</a>
+              </div>
+            </Panel>
           </div>
-        )}
-
-        {displayOfertas.length > 0 && (
-          <>
-            <div className="results-count">{displayOfertas.length} oferta{displayOfertas.length === 1 ? '' : 's'} encontrada{displayOfertas.length === 1 ? '' : 's'}</div>
-            <ul className="results">
-              {displayOfertas.map((o, i) => {
-                const fuenteStyle = FUENTE_STYLE[o.fuente] || { color: '#8fa89c', icon: '📋' };
-                const coincidencias = matchedSkillsFor(o, cvSkills);
-                return (
-                  <li key={i} className="result-card" style={{ '--accent': fuenteStyle.color }}>
-                    <div className="result-top">
-                      <span className="badge" style={{ background: fuenteStyle.color }}>{fuenteStyle.icon} {o.fuente}</span>
-                      <span className="result-date" title={formatFecha(o.fechaPublicacion)}>{haceCuanto(o.fechaPublicacion) || formatFecha(o.fechaPublicacion)}</span>
-                    </div>
-                    <h3>{o.titulo}</h3>
-                    <p className="result-meta">
-                      <span className="meta-item">🏢 {o.empresa}</span>
-                      <span className="meta-item">📍 {o.ubicacion}</span>
-                      {o.tipoEmpleo && <span className="meta-item">🕒 {o.tipoEmpleo}</span>}
-                    </p>
-                    {coincidencias.length > 0 && (
-                      <p className="match-chip">✓ Coincide en: {coincidencias.join(', ')}</p>
-                    )}
-                    <a href={o.url} target="_blank" rel="noopener noreferrer" className="result-link">Ver oferta y postular →</a>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
-      </div>
-
-      <a className="junior-card" href="https://www.linkedin.com/in/marlon-p%C3%A9rez-06ab32303/" target="_blank" rel="noopener noreferrer">
-        <div className="junior-card-icon">📬</div>
-        <div>
-          <h2>JuniorJobs — boletín semanal para perfiles júnior</h2>
-          <p>Cada domingo, JuniorJobs selecciona a mano decenas de ofertas para perfiles con 0-2 años de experiencia en España, Europa y LATAM. No reproducimos su lista aquí (es contenido curado por su autor) — compartimos el boletín en nuestro LinkedIn, míralo ahí.</p>
-          <span className="junior-card-link">Ver en LinkedIn →</span>
         </div>
-      </a>
+      </main>
 
-      <a className="other-source" href="https://www.linkedin.com/jobs/search/?location=Ecuador" target="_blank" rel="noopener noreferrer">
-        💼 Ver ofertas en LinkedIn (Ecuador) →
-      </a>
-
-      <a className="other-source" href="https://www.multitrabajos.com" target="_blank" rel="noopener noreferrer">
-        🔎 También puedes buscar directo en Multitrabajos.com →
-      </a>
-
-      <style jsx>{`
-        :global(body){background:#0a0f1a;}
-        .page{max-width:820px;margin:0 auto;padding:2.2rem 1.2rem 4rem;font-family:'IBM Plex Sans',-apple-system,sans-serif;color:#eef3f6;background:#0a0f1a;min-height:100vh;position:relative;overflow-x:hidden;}
-        .bg-glow{position:fixed;width:60vw;height:60vw;max-width:640px;max-height:640px;border-radius:50%;filter:blur(90px);opacity:.12;pointer-events:none;z-index:0;}
-        .bg-glow-a{background:#2fd8c9;top:-20vw;right:-15vw;}
-        .bg-glow-b{background:#e8b23a;bottom:-10vw;left:-20vw;opacity:.08;}
-        .page > *:not(.bg-glow){position:relative;z-index:1;}
-
-        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
-        .back{color:#2fd8c9;text-decoration:none;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.8rem;}
-        .back:hover{text-decoration:underline;}
-        .topbar-pill{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.66rem;letter-spacing:.1em;color:#5c7267;border:1px solid #1d2b42;border-radius:20px;padding:.25rem .7rem;}
-
-        .hero{text-align:center;margin-bottom:1.8rem;padding:0 .5rem;}
-        .hero-icon{font-size:2.6rem;margin-bottom:.6rem;filter:drop-shadow(0 0 18px rgba(47,216,201,.35));}
-        .eyebrow{display:inline-block;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.72rem;letter-spacing:.18em;color:#2fd8c9;margin-bottom:.6rem;}
-        h1{font-family:'IBM Plex Mono','Courier New',monospace;font-size:clamp(1.6rem,4vw,2.1rem);margin:0 0 .7rem;}
-        h1 span{color:#e8b23a;}
-        .subtitle{color:#8fa89c;font-size:.94rem;line-height:1.65;max-width:52ch;margin:0 auto;}
-        .hero-facts{display:flex;justify-content:center;gap:2rem;margin-top:1.6rem;flex-wrap:wrap;}
-        .fact{display:flex;flex-direction:column;font-family:'IBM Plex Mono','Courier New',monospace;}
-        .fact b{font-size:1.15rem;color:#eef3f6;}
-        .fact span{font-size:.68rem;color:#5c7267;letter-spacing:.03em;}
-
-        .gov-card{display:flex;gap:1rem;align-items:flex-start;background:linear-gradient(135deg,#101a2c,#0d1826);border:1px solid #e8b23a;border-radius:12px;padding:1.3rem;text-decoration:none;color:inherit;margin-bottom:1rem;transition:border-color .2s,transform .2s,box-shadow .2s;}
-        .gov-card:hover{transform:translateY(-3px);border-color:#f5c869;box-shadow:0 12px 30px rgba(232,178,58,.12);}
-        .gov-card-icon{font-size:2.1rem;flex-shrink:0;}
-        .gov-card h2{font-size:1rem;color:#eef3f6;margin:0 0 .4rem;}
-        .gov-card p{font-size:.84rem;color:#8fa89c;line-height:1.55;margin:0 0 .6rem;}
-        .gov-card-link{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.78rem;color:#e8b23a;}
-
-        .warn-box{display:flex;gap:.6rem;align-items:center;background:rgba(232,178,58,.08);border:1px solid rgba(232,178,58,.3);border-radius:8px;padding:.55rem .8rem;font-size:.76rem;line-height:1.45;color:#c9d6cf;margin-bottom:1rem;}
-        .warn-icon{flex-shrink:0;}
-        .warn-text{flex:1;}
-        .warn-close{flex-shrink:0;background:none;border:none;color:#8fa89c;cursor:pointer;font-size:.85rem;padding:.2rem .3rem;line-height:1;}
-        .warn-close:hover{color:#eef3f6;}
-
-        .cv-card{display:flex;gap:1rem;align-items:flex-start;background:linear-gradient(135deg,#101a2c,#0d1e22);border:1px dashed #2fd8c9;border-radius:12px;padding:1.3rem;margin-bottom:1.4rem;}
-        .cv-card-icon{font-size:2.1rem;flex-shrink:0;}
-        .cv-card-body{flex:1;min-width:0;}
-        .cv-card h2{font-size:1rem;color:#eef3f6;margin:0 0 .4rem;}
-        .cv-card p{font-size:.84rem;color:#8fa89c;line-height:1.55;margin:0 0 .8rem;}
-        .cv-upload-btn{display:inline-flex;align-items:center;gap:.5rem;background:#2fd8c9;color:#04140a;border-radius:8px;padding:.7rem 1.1rem;font-weight:700;font-family:'IBM Plex Mono','Courier New',monospace;cursor:pointer;font-size:.85rem;transition:transform .15s,box-shadow .15s;}
-        .cv-upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(47,216,201,.25);}
-        .cv-upload-btn.busy{cursor:wait;opacity:.85;}
-        .spinner-dark{border-color:rgba(4,20,10,.35);border-top-color:#04140a;}
-        .cv-error{font-size:.82rem;color:#ff9f9f;margin-top:.7rem;}
-        .cv-result{margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
-        .cv-resumen{font-size:.84rem;color:#eef3f6;line-height:1.5;margin:0 0 .6rem;}
-        .cv-skills{display:flex;flex-wrap:wrap;gap:.4rem;}
-        .skill-chip{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.7rem;color:#2fd8c9;background:rgba(47,216,201,.1);border:1px solid rgba(47,216,201,.3);border-radius:20px;padding:.25rem .6rem;}
-
-        .cv-saved-actions{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;}
-        .cv-upload-btn.ghost{background:transparent;border:1px solid #2fd8c9;color:#2fd8c9;}
-        .cv-delete-btn{background:none;border:1px solid rgba(255,95,95,.4);color:#ff9f9f;border-radius:8px;padding:.65rem 1rem;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.8rem;cursor:pointer;transition:background .15s;}
-        .cv-delete-btn:hover{background:rgba(255,95,95,.1);}
-        .cv-delete-btn:disabled,.cv-upload-btn:disabled{opacity:.6;cursor:not-allowed;}
-
-        .cv-save-row{margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
-        .cv-consent{display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:#8fa89c;line-height:1.5;margin-bottom:.7rem;cursor:pointer;}
-        .cv-consent input{margin-top:.2rem;flex-shrink:0;}
-        .cv-consent a{color:#2fd8c9;}
-        .cv-save-btn{background:#2fd8c9;color:#04140a;border:none;border-radius:8px;padding:.65rem 1.1rem;font-weight:700;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.82rem;cursor:pointer;}
-        .cv-save-btn:disabled{opacity:.5;cursor:not-allowed;}
-        .cv-login-note{font-size:.82rem;color:#8fa89c;margin-top:.9rem;padding-top:.9rem;border-top:1px solid #1d2b42;}
-        .cv-login-note a{color:#2fd8c9;}
-
-        .search-form{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;background:#101a2c;border:1px solid #1d2b42;border-radius:14px;padding:1.6rem;margin-bottom:1.4rem;box-shadow:0 20px 50px rgba(0,0,0,.25);}
-        .search-form label{display:flex;flex-direction:column;gap:.5rem;font-size:.8rem;color:#8fa89c;grid-column:span 1;}
-        .field-carrera{grid-column:span 2;}
-        .field-label{display:flex;align-items:center;gap:.4rem;font-family:'IBM Plex Mono','Courier New',monospace;font-size:.74rem;letter-spacing:.02em;}
-        .field-icon{font-size:.85rem;}
-        .optional{color:#5c7267;}
-        .search-form input,.search-form select{background:#0a0f1a;border:1px solid #1d2b42;border-radius:8px;padding:.75rem .85rem;color:#eef3f6;font-family:inherit;font-size:.9rem;transition:border-color .15s;}
-        .search-form input:focus,.search-form select:focus{outline:none;border-color:#2fd8c9;box-shadow:0 0 0 3px rgba(47,216,201,.15);}
-        .search-form button{grid-column:span 2;display:flex;align-items:center;justify-content:center;gap:.55rem;background:linear-gradient(135deg,#2fd8c9,#22b8ab);color:#04140a;border:none;border-radius:8px;padding:.95rem;font-weight:700;font-family:'IBM Plex Mono','Courier New',monospace;cursor:pointer;font-size:.92rem;transition:transform .15s,box-shadow .15s;}
-        .search-form button:disabled{opacity:.7;cursor:wait;}
-        .search-form button:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(47,216,201,.25);}
-        .spinner{width:14px;height:14px;border:2px solid rgba(4,20,10,.35);border-top-color:#04140a;border-radius:50%;animation:spin .7s linear infinite;}
-        @keyframes spin{to{transform:rotate(360deg);}}
-
-        .error-box{background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.4);border-radius:10px;padding:.9rem 1.1rem;font-size:.85rem;margin-bottom:1.4rem;}
-        .aviso-box{background:rgba(47,216,201,.08);border:1px solid rgba(47,216,201,.3);border-radius:10px;padding:.9rem 1.1rem;font-size:.85rem;margin-bottom:1.4rem;}
-
-        .empty-state{color:#8fa89c;font-size:.9rem;line-height:1.6;padding:2.2rem 1.4rem;background:#101a2c;border:1px dashed #1d2b42;border-radius:12px;text-align:center;margin-bottom:1.4rem;}
-        .empty-icon{font-size:2rem;margin-bottom:.6rem;opacity:.7;}
-
-        .results-count{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.72rem;color:#5c7267;letter-spacing:.05em;margin-bottom:.8rem;}
-        .results{list-style:none;padding:0;display:flex;flex-direction:column;gap:.9rem;margin:0 0 1.8rem;}
-        .result-card{background:#101a2c;border:1px solid #1d2b42;border-left:3px solid var(--accent,#2fd8c9);border-radius:10px;padding:1.15rem 1.35rem;transition:transform .15s,border-color .15s;}
-        .result-card:hover{transform:translateY(-2px);border-color:#2c3f5c;}
-        .result-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.55rem;flex-wrap:wrap;gap:.4rem;}
-        .badge{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.66rem;font-weight:700;color:#04140a;padding:.25rem .55rem;border-radius:5px;white-space:nowrap;}
-        .result-date{font-size:.72rem;color:#5c7267;font-family:'IBM Plex Mono','Courier New',monospace;}
-        .result-card h3{font-size:1.02rem;margin:0 0 .5rem;line-height:1.35;}
-        .result-meta{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.82rem;color:#8fa89c;margin:0 0 .5rem;}
-        .meta-item{white-space:nowrap;}
-        .match-chip{font-size:.76rem;color:#e8b23a;margin:0 0 .6rem;}
-        .result-link{color:#2fd8c9;text-decoration:none;font-size:.82rem;font-family:'IBM Plex Mono','Courier New',monospace;}
-        .result-link:hover{text-decoration:underline;}
-
-        .skeleton-card{background:#101a2c;border:1px solid #1d2b42;border-radius:10px;padding:1.15rem 1.35rem;animation:pulse 1.4s ease-in-out infinite;}
-        .sk-line{background:#1d2b42;border-radius:5px;height:.8rem;}
-        .sk-badge{width:5rem;height:1.1rem;margin-bottom:.7rem;}
-        .sk-title{width:70%;height:1.1rem;margin-bottom:.7rem;}
-        .sk-meta{width:50%;margin-bottom:.7rem;}
-        .sk-link{width:30%;}
-        @keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
-
-        .junior-card{display:flex;gap:1rem;align-items:flex-start;background:#101a2c;border:1px solid #1d2b42;border-radius:12px;padding:1.2rem;text-decoration:none;color:inherit;margin-bottom:1rem;transition:border-color .2s,transform .2s;}
-        .junior-card:hover{transform:translateY(-2px);border-color:#2fd8c9;}
-        .junior-card-icon{font-size:1.8rem;flex-shrink:0;}
-        .junior-card h2{font-size:.94rem;color:#eef3f6;margin:0 0 .4rem;}
-        .junior-card p{font-size:.8rem;color:#8fa89c;line-height:1.55;margin:0 0 .5rem;}
-        .junior-card-link{font-family:'IBM Plex Mono','Courier New',monospace;font-size:.76rem;color:#2fd8c9;}
-
-        .other-source{display:block;text-align:center;color:#8fa89c;font-size:.82rem;text-decoration:none;padding:1rem;}
-        .other-source:hover{color:#2fd8c9;}
-
-        @media (max-width:560px){
-          .search-form{grid-template-columns:1fr;padding:1.3rem;}
-          .field-carrera{grid-column:span 1;}
-          .search-form button{grid-column:span 1;}
-          .hero-facts{gap:1.4rem;}
-          .gov-card,.junior-card,.cv-card{flex-direction:column;}
-        }
-      `}</style>
+      {modal != null && displayOfertas[modal] && (
+        <div className={s.modalBack} onClick={(e) => { if (e.target === e.currentTarget) setModal(null); }} role="dialog" aria-modal="true" aria-label="Evaluar descripción de la oferta">
+          <Panel titulo="Evaluar descripción" etiqueta="LOCAL · NO SE ENVÍA" className={s.modal}>
+            <p className={s.p}>Pega la descripción completa de «{displayOfertas[modal].titulo}». El análisis ocurre en tu navegador: el texto no se envía a ningún servidor.</p>
+            <textarea className={s.ta} value={descPegada} onChange={(e) => setDescPegada(e.target.value)} placeholder="Requisitos, conocimientos, responsabilidades…" />
+            <div className={s.modalRes}>
+              <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={evaluarPegada} disabled={descPegada.trim().length < 20}>Evaluar</button>
+              <button type="button" className={`${s.btn} ${s.btnGhost}`} onClick={() => setModal(null)}>Cerrar</button>
+              {fitManual[displayOfertas[modal]._idx] && fitManual[displayOfertas[modal]._idx].ajuste != null && (
+                <RingGauge value={fitManual[displayOfertas[modal]._idx].ajuste} color={DECISION_COLOR[fitManual[displayOfertas[modal]._idx].decision]} />
+              )}
+            </div>
+            {fitManual[displayOfertas[modal]._idx] && <div style={{ marginTop: '1rem' }}><Requisitos fit={fitManual[displayOfertas[modal]._idx]} /></div>}
+          </Panel>
+        </div>
+      )}
     </div>
   );
 }
